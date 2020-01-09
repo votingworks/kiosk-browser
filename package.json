@@ -12,11 +12,7 @@
     "lint": "tslint -c tslint.json -p tsconfig.json"
   },
   "keywords": [],
-  "author": {
-    "name": "Brian Donovan",
-    "email": "1938+eventualbuddha@users.noreply.github.com"
-  },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "config": {
     "forge": {
       "packagerConfig": {},
