@@ -5,7 +5,7 @@ import * as path from 'path';
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow;
 
-const createWindow = () => {
+const createWindow = (): void => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
