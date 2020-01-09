@@ -171,26 +171,6 @@
   optionalDependencies:
     electron-installer-debian "^2.0.0"
 
-"@electron-forge/maker-rpm@6.0.0-beta.47":
-  version "6.0.0-beta.47"
-  resolved "https://registry.yarnpkg.com/@electron-forge/maker-rpm/-/maker-rpm-6.0.0-beta.47.tgz#c82c88555250af74e6aa645b485ccc1f3c07c7e6"
-  integrity sha512-3EtQC+Bn7tEAjiTswlv/26OQWpgBg1ln9TJSVEWllbeNJtB7deg+4LV/KvV862Z5/CUWd/LScqPFGH9iejv8IA==
-  dependencies:
-    "@electron-forge/maker-base" "6.0.0-beta.47"
-    "@electron-forge/shared-types" "6.0.0-beta.47"
-  optionalDependencies:
-    electron-installer-redhat "^2.0.0"
-
-"@electron-forge/maker-zip@6.0.0-beta.47":
-  version "6.0.0-beta.47"
-  resolved "https://registry.yarnpkg.com/@electron-forge/maker-zip/-/maker-zip-6.0.0-beta.47.tgz#939970b0813146bce2590cce82612758d7d4ed41"
-  integrity sha512-6yBCOd5RPsDfow2wLx8wthgx2d/olHk4yaip/gqL5+p1/C0XCJWFr4t3XvpgKqYQUhHFAVnPjKO9jQWNTydNkA==
-  dependencies:
-    "@electron-forge/maker-base" "6.0.0-beta.47"
-    "@electron-forge/shared-types" "6.0.0-beta.47"
-    cross-zip "^2.1.5"
-    fs-extra "^8.1.0"
-
 "@electron-forge/plugin-base@6.0.0-beta.47":
   version "6.0.0-beta.47"
   resolved "https://registry.yarnpkg.com/@electron-forge/plugin-base/-/plugin-base-6.0.0-beta.47.tgz#24458bd75d9d4657c5312d5972805ddd835523c9"
@@ -873,18 +853,6 @@ electron-installer-debian@^2.0.0:
     lodash "^4.17.4"
     word-wrap "^1.2.3"
     yargs "^14.0.0"
-
-electron-installer-redhat@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/electron-installer-redhat/-/electron-installer-redhat-2.0.0.tgz#a83563f6267aed64a619592cd0a6305ffa97ba6b"
-  integrity sha512-kf7+/t8XIp1I6LIV9v6K38rBHzmY6bUr3TunJZKdlIKQ7j6wyjjpgbpxSBcg3S7pgzq1kkgCYZvpr8CsLFVivw==
-  dependencies:
-    debug "^4.1.1"
-    electron-installer-common "^0.7.1"
-    fs-extra "^8.0.1"
-    lodash "^4.17.4"
-    word-wrap "^1.2.3"
-    yargs "^13.2.2"
 
 electron-notarize@^0.1.1:
   version "0.1.1"
@@ -3111,7 +3079,7 @@ yargs-parser@^16.0.0:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs@^13.2.2, yargs@^13.2.4:
+yargs@^13.2.4:
   version "13.3.0"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-13.3.0.tgz#4c657a55e07e5f2cf947f8a366567c04a0dedc83"
   integrity sha512-2eehun/8ALW8TLoIl7MVaRUrg+yCnenu8B4kBlRxj3GJGDKU1Og7sMXPNm1BYyM1DOJmTZ4YeN/Nwxv+8XJsUA==
