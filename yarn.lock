@@ -3389,6 +3389,11 @@ xmldom@0.1.x:
   resolved "https://registry.yarnpkg.com/xmldom/-/xmldom-0.1.31.tgz#b76c9a1bd9f0a9737e5a72dc37231cf38375e2ff"
   integrity sha512-yS2uJflVQs6n+CyjHoaBmVSqIDevTAWrzMmjG1Gc7h1qQ7uVozNhEPJAwZXWyGQ/Gafo3fCwrcaokezLPupVyQ==
 
+xrandr-parse@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/xrandr-parse/-/xrandr-parse-1.0.0.tgz#20dd4edd61dabcd4ea154b2eea1b7b373a4c3e0c"
+  integrity sha1-IN1O3WHavNTqFUsu6ht7NzpMPgw=
+
 xtend@~2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-2.1.2.tgz#6efecc2a4dad8e6962c4901b337ce7ba87b5d28b"
