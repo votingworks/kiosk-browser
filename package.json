@@ -12,6 +12,11 @@
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "yarn lint --fix"
   },
+  "author": {
+    "name": "VotingWorks",
+    "email": "contact@voting.works",
+    "url": "https://voting.works"
+  },
   "keywords": [],
   "license": "GPL-3.0",
   "config": {
