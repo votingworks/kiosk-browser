@@ -2,6 +2,9 @@ import { app, BrowserWindow } from 'electron'
 import { getMainScreen } from './utils/screen'
 import getURL from './utils/getURL'
 
+// Allow use of `speechSynthesis` API.
+app.commandLine.appendSwitch('enable-speech-dispatcher')
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | undefined
