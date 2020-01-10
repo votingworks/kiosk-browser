@@ -2,7 +2,7 @@
   "name": "kiosk-browser",
   "productName": "kiosk-browser",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Generic kiosk-mode browser.",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc && electron-forge start",
