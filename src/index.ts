@@ -1,6 +1,8 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import { join } from 'path'
 import { getMainScreen } from './utils/screen'
 import getURL from './utils/getURL'
+import registerPrintHandler from './ipc/print'
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
@@ -18,13 +20,19 @@ async function createWindow(): Promise<void> {
     height: mainScreen?.height ?? 600,
     kiosk: true,
     frame: false,
+    webPreferences: {
+      preload: join(__dirname, 'preload.js'),
+    },
   })
 
-  // and load the index.html of the app.
+  // and load the initial page.
   mainWindow.loadURL(getURL().href)
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
+
+  // Register IPC handlers.
+  registerPrintHandler(ipcMain)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
