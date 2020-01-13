@@ -3,6 +3,7 @@ import { join } from 'path'
 import { getMainScreen } from './utils/screen'
 import getURL from './utils/getURL'
 import registerPrintHandler from './ipc/print'
+import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
@@ -33,6 +34,7 @@ async function createWindow(): Promise<void> {
 
   // Register IPC handlers.
   registerPrintHandler(ipcMain)
+  registerGetBatteryInfoHandler(ipcMain)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
