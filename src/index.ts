@@ -4,9 +4,13 @@ import { getMainScreen } from './utils/screen'
 import getURL from './utils/getURL'
 import registerPrintHandler from './ipc/print'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
+import registerSpeakHandler from './ipc/tts'
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
+
+// Don't require user interaction before autoplay works. (https://github.com/electron/electron/issues/13525)
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -26,15 +30,24 @@ async function createWindow(): Promise<void> {
     },
   })
 
+  const initialURL = getURL().href
+
   // and load the initial page.
-  mainWindow.loadURL(getURL().href)
+  mainWindow.loadURL(initialURL)
+
+  // Attempt to automatically fix crashes.
+  mainWindow.webContents.on('crashed', () => {
+    mainWindow?.reload()
+    console.log('crashed!')
+  })
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Register IPC handlers.
   registerPrintHandler(ipcMain)
   registerGetBatteryInfoHandler(ipcMain)
+  registerSpeakHandler(ipcMain)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {

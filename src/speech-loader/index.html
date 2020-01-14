@@ -1,0 +1,26 @@
+<em>
+  loading speech synthesis…
+</em>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    // trigger voice loading
+    speechSynthesis.getVoices()
+
+    setTimeout(() => {
+      // are they loaded now?
+      const voices = speechSynthesis.getVoices()
+      console.log('checking voices, found', voices.length)
+
+      if (voices.length === 0) {
+        // nope, try again
+        setTimeout(() => {
+          location.reload()
+        }, 200)
+      } else {
+        // yes! continue on
+        location.href = location.search.slice(1)
+      }
+    }, 1000)
+  })
+</script>
