@@ -1,9 +1,5 @@
-import { IpcMainInvokeEvent, WebContents, PrinterInfo, IpcMain } from 'electron'
-
-export function getDefaultPrinter(webContents: WebContents): PrinterInfo {
-  const printers = webContents.getPrinters()
-  return printers.find(printer => printer.isDefault) ?? printers[0]
-}
+import { IpcMainInvokeEvent, IpcMain } from 'electron'
+import getPreferredPrinter from '../utils/getPreferredPrinter'
 
 export const channel = 'print'
 
@@ -13,12 +9,15 @@ export const channel = 'print'
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
-    (event: IpcMainInvokeEvent) =>
+    (
+      event: IpcMainInvokeEvent,
+      deviceName = getPreferredPrinter(event.sender)?.name,
+    ) =>
       new Promise((resolve, reject) =>
         event.sender.print(
           {
             silent: true,
-            deviceName: getDefaultPrinter(event.sender).name,
+            deviceName,
           },
           (success, failureReason) => {
             if (success) {
