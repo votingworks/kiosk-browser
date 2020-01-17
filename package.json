@@ -41,6 +41,7 @@
     "typescript": "^3.7.0"
   },
   "dependencies": {
+    "usb-detection": "^4.7.0",
     "xrandr-parse": "^1.0.0"
   }
 }
