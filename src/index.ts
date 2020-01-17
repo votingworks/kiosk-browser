@@ -5,6 +5,8 @@ import getURL from './utils/getURL'
 import registerPrintHandler from './ipc/print'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
+import registerGetDeviceListHandler from './ipc/get-device-list'
+import registerManageDeviceSubscription from './ipc/manage-device-subscription'
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
@@ -37,6 +39,8 @@ async function createWindow(): Promise<void> {
   registerPrintHandler(ipcMain)
   registerGetBatteryInfoHandler(ipcMain)
   registerGetPrinterInfoHandler(ipcMain)
+  registerGetDeviceListHandler(ipcMain)
+  registerManageDeviceSubscription(ipcMain)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
