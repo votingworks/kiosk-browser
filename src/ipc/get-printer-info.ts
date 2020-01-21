@@ -1,8 +1,5 @@
 import { IpcMainInvokeEvent, IpcMain } from 'electron'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
-
-const exec = promisify(execFile)
+import exec from '../utils/exec'
 
 export const channel = 'get-printer-info'
 
@@ -46,27 +43,32 @@ export function printerSchemes(printers: Electron.PrinterInfo[]): Set<string> {
 /**
  * Get information about all known printers, including connection status.
  */
+export async function getPrinterInfo(
+  printers: Electron.PrinterInfo[],
+): Promise<PrinterInfo[]> {
+  const results: PrinterInfo[] = []
+  const connectedDeviceURIs = await getConnectedDeviceURIs(
+    printerSchemes(printers),
+  )
+
+  for (const printer of printers) {
+    const deviceURI = printer.options?.['device-uri']
+    const connected = deviceURI ? connectedDeviceURIs.has(deviceURI) : false
+
+    results.push({
+      ...printer,
+      connected,
+    })
+  }
+
+  return results
+}
+
+/**
+ * Registers a handler to get printer info.
+ */
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(
-    channel,
-    async (event: IpcMainInvokeEvent): Promise<PrinterInfo[]> => {
-      const results: PrinterInfo[] = []
-      const printers = event.sender.getPrinters()
-      const connectedDeviceURIs = await getConnectedDeviceURIs(
-        printerSchemes(printers),
-      )
-
-      for (const printer of printers) {
-        const deviceURI = printer.options?.['device-uri']
-        const connected = deviceURI ? connectedDeviceURIs.has(deviceURI) : false
-
-        results.push({
-          ...printer,
-          connected,
-        })
-      }
-
-      return results
-    },
+  ipcMain.handle(channel, (event: IpcMainInvokeEvent) =>
+    getPrinterInfo(event.sender.getPrinters()),
   )
 }

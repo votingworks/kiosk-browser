@@ -15,8 +15,70 @@ import {
   ChangeType,
   deviceChangeChannel,
 } from './ipc/manage-device-subscription'
+import Listeners from './utils/Listeners'
 
-type DeviceChangeListener = (changeType: ChangeType, device: Device) => void
+/**
+ * Handles listeners for device add/remove events.
+ */
+class DeviceChangeListeners extends Listeners<[ChangeType, Device]> {
+  /**
+   * Called when a listener is added, allows us to notice when we have our first
+   * listener.
+   */
+  protected listenerAdded(count: number): void {
+    if (count === 1) {
+      this.startMonitoringDevices()
+    }
+  }
+
+  /**
+   * Called when a listener is removed, allows us to notice when we have no more
+   * listeners.
+   */
+  protected listenerRemoved(count: number): void {
+    if (count === 0) {
+      this.stopMonitoringDevices()
+    }
+  }
+
+  /**
+   * Called by the main process whenever a device change happens.
+   */
+  private onDeviceChangeIpcCallback = (
+    event: IpcRendererEvent,
+    changeType: ChangeType,
+    device: Device,
+  ): void => {
+    this.trigger(changeType, device)
+  }
+
+  /**
+   * Called when the browser window closes. Allows us to stop listening for
+   * device changes.
+   */
+  private onBrowserWindowClosed(): void {
+    ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
+    ipcRenderer.off(deviceChangeChannel, this.onDeviceChangeIpcCallback)
+  }
+
+  /**
+   * Starts monitoring connected device add/remove events.
+   */
+  private startMonitoringDevices(): void {
+    ipcRenderer.invoke(manageDeviceSubscriptionChannel, true)
+    remote.getCurrentWindow().on('closed', this.onBrowserWindowClosed)
+    ipcRenderer.on(deviceChangeChannel, this.onDeviceChangeIpcCallback)
+  }
+
+  /**
+   * Stops monitoring connected device add/remove events.
+   */
+  private stopMonitoringDevices(): void {
+    ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
+    remote.getCurrentWindow().off('closed', this.onBrowserWindowClosed)
+    ipcRenderer.off(deviceChangeChannel, this.onDeviceChangeIpcCallback)
+  }
+}
 
 class Kiosk {
   public async print(deviceName?: string): Promise<void> {
@@ -31,44 +93,11 @@ class Kiosk {
     return ipcRenderer.invoke(getPrinterInfoChannel)
   }
 
-  private _onDeviceChange?: DeviceChangeListener
-  private _onDeviceChangeIpcCallback = (
-    event: IpcRendererEvent,
-    changeType: ChangeType,
-    device: Device,
-  ) => {
-    this.onDeviceChange?.(changeType, device)
-  }
-
-  public get onDeviceChange(): DeviceChangeListener | undefined {
-    return this._onDeviceChange
-  }
-
-  private _onBrowserWindowClosed = () => {
-    ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
-    ipcRenderer.off(deviceChangeChannel, this._onDeviceChangeIpcCallback)
-  }
-
-  public set onDeviceChange(onDeviceChange: DeviceChangeListener | undefined) {
-    if (!this._onDeviceChange && onDeviceChange) {
-      ipcRenderer.invoke(manageDeviceSubscriptionChannel, true)
-      remote.getCurrentWindow().on('closed', this._onBrowserWindowClosed)
-    } else if (this._onDeviceChange && !onDeviceChange) {
-      ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
-      remote.getCurrentWindow().off('closed', this._onBrowserWindowClosed)
-    }
-
-    this._onDeviceChange = onDeviceChange
-    ipcRenderer.off(deviceChangeChannel, this._onDeviceChangeIpcCallback)
-
-    if (onDeviceChange) {
-      ipcRenderer.on(deviceChangeChannel, this._onDeviceChangeIpcCallback)
-    }
-  }
-
   public async getDeviceList(): Promise<Device[]> {
     return ipcRenderer.invoke(getDeviceListChannel)
   }
+
+  public onDeviceChange = new DeviceChangeListeners()
 }
 
 ;(window as typeof window & { kiosk: Kiosk }).kiosk = new Kiosk()
