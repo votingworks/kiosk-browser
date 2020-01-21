@@ -53,20 +53,10 @@ class DeviceChangeListeners extends Listeners<[ChangeType, Device]> {
   }
 
   /**
-   * Called when the browser window closes. Allows us to stop listening for
-   * device changes.
-   */
-  private onBrowserWindowClosed(): void {
-    ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
-    ipcRenderer.off(deviceChangeChannel, this.onDeviceChangeIpcCallback)
-  }
-
-  /**
    * Starts monitoring connected device add/remove events.
    */
   private startMonitoringDevices(): void {
     ipcRenderer.invoke(manageDeviceSubscriptionChannel, true)
-    remote.getCurrentWindow().on('closed', this.onBrowserWindowClosed)
     ipcRenderer.on(deviceChangeChannel, this.onDeviceChangeIpcCallback)
   }
 
@@ -75,7 +65,6 @@ class DeviceChangeListeners extends Listeners<[ChangeType, Device]> {
    */
   private stopMonitoringDevices(): void {
     ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
-    remote.getCurrentWindow().off('closed', this.onBrowserWindowClosed)
     ipcRenderer.off(deviceChangeChannel, this.onDeviceChangeIpcCallback)
   }
 }

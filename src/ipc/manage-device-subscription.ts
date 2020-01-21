@@ -20,6 +20,9 @@ export default function register(ipcMain: IpcMain): void {
     [DeviceChangeCallback, DeviceChangeCallback]
   >()
 
+  // Always monitor devices.
+  usbDetection.startMonitoring()
+
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, subscribe: boolean) => {
     const webContents = event.sender
 
@@ -33,19 +36,16 @@ export default function register(ipcMain: IpcMain): void {
       usbDetection.on('add', onDeviceAdded)
       usbDetection.on('remove', onDeviceRemoved)
 
-      if (subscribers.size === 0) {
-        usbDetection.startMonitoring()
-      }
-
       subscribers.set(webContents, [onDeviceAdded, onDeviceRemoved])
+
+      webContents.on('destroyed', () => {
+        usbDetection.off('add', onDeviceAdded)
+        usbDetection.off('remove', onDeviceRemoved)
+      })
     } else if (!subscribe) {
       const callbacks = subscribers.get(webContents)
 
       subscribers.delete(webContents)
-
-      if (subscribers.size === 0) {
-        usbDetection.stopMonitoring()
-      }
 
       if (callbacks) {
         const [onDeviceAdded, onDeviceRemoved] = callbacks

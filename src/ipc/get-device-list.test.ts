@@ -4,6 +4,7 @@ import usbDetection from 'usb-detection'
 
 jest.mock('usb-detection', () => ({
   find: jest.fn(),
+  startMonitoring: jest.fn(),
 }))
 
 test('registers a handler for `get-device-list` channel which calls into `usb-detection` to find devices', () => {
