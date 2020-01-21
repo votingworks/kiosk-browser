@@ -5,6 +5,7 @@ Generic kiosk-mode browser.
 ## Build & Install
 
 1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
+1. Install native package dependencies with `sudo apt-get install -y build-essential libudev-dev curl git unzip python`.
 1. Install dependencies with `yarn install`.
 1. Build a Debian/Ubuntu package with `yarn make`.
 1. Copy `out/make/deb/x64/kiosk-browser_*_amd64.deb` wherever you want to install it (note wildcard).
