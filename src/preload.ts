@@ -13,8 +13,26 @@ import { Device } from './utils/usb'
 import DeviceChangeListeners from './utils/DeviceChangeListeners'
 
 class Kiosk {
-  public async print(deviceName?: string): Promise<void> {
-    await ipcRenderer.invoke(printChannel, deviceName)
+  public async print(deviceName: string): Promise<void> {
+    // NOTE: This check ensures we don't silently fail printing.
+    //
+    // This is here because we can't simply add `deviceName` as an argument
+    // when it's undefined. Doing so makes electron coerce it to null for IPC.
+    // Passing null means that default params will not be used, and null will
+    // make its way into `WebContents#print` as the `deviceName` option. This
+    // may get coerced into "null" or it may simply be declared invalid, and
+    // the print operation will fail. If we do want to use the default printer,
+    // we need to omit `deviceName` or use an empty string per the Electron
+    // docs.
+    //
+    // https://www.electronjs.org/docs/api/web-contents#contentsprintoptions-callback
+    // https://github.com/chromium/chromium/blob/4189e014e00fc9a147c7162e0cac1f699d37f33f/printing/backend/print_backend_cups.cc#L301-L303
+    //
+    if (typeof deviceName === 'string') {
+      await ipcRenderer.invoke(printChannel, deviceName)
+    } else {
+      await ipcRenderer.invoke(printChannel)
+    }
   }
 
   public async getBatteryInfo(): Promise<BatteryInfo> {
