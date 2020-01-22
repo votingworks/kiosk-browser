@@ -11,6 +11,10 @@ jest.mock('../utils/readFile', () => jest.fn())
 
 const readFileMock = mockOf(readFile)
 
+beforeEach(() => {
+  readFileMock.mockReset()
+})
+
 test('parses battery info to determine battery level and charging status', () => {
   expect(
     parseBatteryInfo(`
@@ -61,6 +65,31 @@ POWER_SUPPLY_STATUS=Disharging
   expect(readFileMock).toHaveBeenCalledWith(
     '/sys/class/power_supply/BAT0/uevent',
   )
+})
+
+test('can read battery info for a battery at a different path', async () => {
+  readFileMock.mockRejectedValueOnce(new Error('ENOENT'))
+  readFileMock.mockResolvedValueOnce(`
+POWER_SUPPLY_ENERGY_NOW=800
+POWER_SUPPLY_ENERGY_FULL=1000
+POWER_SUPPLY_STATUS=Disharging
+`)
+
+  expect(await getBatteryInfo()).toEqual({ level: 0.8, discharging: true })
+  expect(readFileMock).toHaveBeenNthCalledWith(
+    1,
+    '/sys/class/power_supply/BAT0/uevent',
+  )
+  expect(readFileMock).toHaveBeenNthCalledWith(
+    2,
+    '/sys/class/power_supply/BAT1/uevent',
+  )
+})
+
+test('fails to read battery info if the power_supply "files" are not present', async () => {
+  readFileMock.mockRejectedValueOnce(new Error('ENOENT'))
+
+  expect(getBatteryInfo()).rejects.toThrowError('No batteries found')
 })
 
 test('registers a handler to get battery info', async () => {
