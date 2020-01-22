@@ -20,7 +20,17 @@ export const channel = 'get-battery-info'
  * Get battery info for the main system battery.
  */
 export async function getBatteryInfo(): Promise<BatteryInfo> {
-  return parseBatteryInfo(await readFile('/sys/class/power_supply/BAT0/uevent'))
+  for (const batteryPath of ['BAT0', 'BAT1']) {
+    try {
+      return parseBatteryInfo(
+        await readFile(`/sys/class/power_supply/${batteryPath}/uevent`),
+      )
+    } catch {}
+  }
+
+  throw new Error(
+    'No batteries found; perhaps /sys/class/power_supply is not available?',
+  )
 }
 
 /**
