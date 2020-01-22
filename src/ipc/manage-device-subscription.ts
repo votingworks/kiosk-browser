@@ -1,5 +1,6 @@
 import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
-import usbDetection, { Device } from 'usb-detection'
+import { assertMonitoring, onDeviceChange, Device } from '../utils/usb'
+import { Listener } from '../utils/Listeners'
 
 export const channel = 'manage-device-subscription'
 export const deviceChangeChannel = 'device-change'
@@ -9,50 +10,34 @@ export enum ChangeType {
   Remove,
 }
 
-type DeviceChangeCallback = (device: Device) => void
-
 /**
  * Subscribe to add/remove USB device events.
  */
-export default function register(ipcMain: IpcMain): void {
-  const subscribers = new Map<
-    WebContents,
-    [DeviceChangeCallback, DeviceChangeCallback]
-  >()
+export default function register(ipcMain: IpcMain): (() => void) | undefined {
+  const subscribers = new Map<WebContents, Listener<[ChangeType, Device]>>()
 
   // Always monitor devices.
-  usbDetection.startMonitoring()
+  const monitoringAssertion = assertMonitoring()
 
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, subscribe: boolean) => {
     const webContents = event.sender
 
-    const onDeviceAdded: DeviceChangeCallback = device =>
-      webContents.send(deviceChangeChannel, ChangeType.Add, device)
-
-    const onDeviceRemoved: DeviceChangeCallback = device =>
-      webContents.send(deviceChangeChannel, ChangeType.Remove, device)
+    const onDeviceChanged = (changeType: ChangeType, device: Device) =>
+      webContents.send(deviceChangeChannel, changeType, device)
 
     if (subscribe && !subscribers.has(webContents)) {
-      usbDetection.on('add', onDeviceAdded)
-      usbDetection.on('remove', onDeviceRemoved)
-
-      subscribers.set(webContents, [onDeviceAdded, onDeviceRemoved])
+      subscribers.set(webContents, onDeviceChange.add(onDeviceChanged))
 
       webContents.on('destroyed', () => {
-        usbDetection.off('add', onDeviceAdded)
-        usbDetection.off('remove', onDeviceRemoved)
+        onDeviceChange.remove(onDeviceChanged)
       })
     } else if (!subscribe) {
-      const callbacks = subscribers.get(webContents)
+      const onDeviceChanged = subscribers.get(webContents)
 
       subscribers.delete(webContents)
-
-      if (callbacks) {
-        const [onDeviceAdded, onDeviceRemoved] = callbacks
-
-        usbDetection.off('add', onDeviceAdded)
-        usbDetection.off('remove', onDeviceRemoved)
-      }
+      onDeviceChanged?.remove()
     }
   })
+
+  return () => monitoringAssertion.release()
 }

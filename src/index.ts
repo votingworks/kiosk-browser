@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, IpcMain } from 'electron'
 import { join } from 'path'
 import { getMainScreen } from './utils/screen'
 import getURL from './utils/getURL'
@@ -7,6 +7,8 @@ import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerGetDeviceListHandler from './ipc/get-device-list'
 import registerManageDeviceSubscription from './ipc/manage-device-subscription'
+
+type RegisterIpcHandler = (ipcMain: IpcMain) => (() => void) | void
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
@@ -36,11 +38,17 @@ async function createWindow(): Promise<void> {
   // mainWindow.webContents.openDevTools()
 
   // Register IPC handlers.
-  registerPrintHandler(ipcMain)
-  registerGetBatteryInfoHandler(ipcMain)
-  registerGetPrinterInfoHandler(ipcMain)
-  registerGetDeviceListHandler(ipcMain)
-  registerManageDeviceSubscription(ipcMain)
+  const handlers: RegisterIpcHandler[] = [
+    registerPrintHandler,
+    registerGetBatteryInfoHandler,
+    registerGetPrinterInfoHandler,
+    registerGetDeviceListHandler,
+    registerManageDeviceSubscription,
+  ]
+
+  const handlerCleanups = handlers
+    .map(handler => handler(ipcMain))
+    .filter(Boolean) as (() => void)[]
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -48,6 +56,13 @@ async function createWindow(): Promise<void> {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = undefined
+
+    // Clean up and quit since we only ever open one window.
+    for (const cleanup of handlerCleanups) {
+      cleanup()
+    }
+
+    app.quit()
   })
 }
 

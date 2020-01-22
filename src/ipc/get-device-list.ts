@@ -1,14 +1,17 @@
 import { IpcMain } from 'electron'
-import usbDetection from 'usb-detection'
+import { assertMonitoring, getDeviceList } from '../utils/usb'
 
 export const channel = 'get-device-list'
 
 /**
  * Get information about all known USB devices.
  */
-export default function register(ipcMain: IpcMain): void {
+export default function register(ipcMain: IpcMain): () => void {
   // Always monitor devices, otherwise `getDeviceList` will be cached and stale.
-  usbDetection.startMonitoring()
+  const monitoringAssertion = assertMonitoring()
 
-  ipcMain.handle(channel, () => usbDetection.find())
+  ipcMain.handle(channel, () => getDeviceList())
+
+  // Cleanup releases USB monitoring assertion.
+  return () => monitoringAssertion.release()
 }
