@@ -1,5 +1,5 @@
 import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
-import { assertMonitoring, onDeviceChange, Device } from '../utils/usb'
+import { onDeviceChange, Device, usbResource } from '../utils/usb'
 import { Listener } from '../utils/Listeners'
 
 export const channel = 'manage-device-subscription'
@@ -17,7 +17,7 @@ export default function register(ipcMain: IpcMain): (() => void) | undefined {
   const subscribers = new Map<WebContents, Listener<[ChangeType, Device]>>()
 
   // Always monitor devices.
-  const monitoringAssertion = assertMonitoring()
+  const usbMonitor = usbResource.retain()
 
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, subscribe: boolean) => {
     const webContents = event.sender
@@ -39,5 +39,5 @@ export default function register(ipcMain: IpcMain): (() => void) | undefined {
     }
   })
 
-  return () => monitoringAssertion.release()
+  return () => usbMonitor.release()
 }

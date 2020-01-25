@@ -1,5 +1,5 @@
 import { IpcMain } from 'electron'
-import { assertMonitoring, getDeviceList } from '../utils/usb'
+import { getDeviceList, usbResource } from '../utils/usb'
 
 export const channel = 'get-device-list'
 
@@ -8,10 +8,10 @@ export const channel = 'get-device-list'
  */
 export default function register(ipcMain: IpcMain): () => void {
   // Always monitor devices, otherwise `getDeviceList` will be cached and stale.
-  const monitoringAssertion = assertMonitoring()
+  const usbMonitor = usbResource.retain()
 
   ipcMain.handle(channel, () => getDeviceList())
 
-  // Cleanup releases USB monitoring assertion.
-  return () => monitoringAssertion.release()
+  // Cleanup releases USB monitoring.
+  return () => usbMonitor.release()
 }
