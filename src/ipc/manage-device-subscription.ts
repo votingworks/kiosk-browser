@@ -1,5 +1,5 @@
 import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
-import { assertMonitoring, onDeviceChange, Device } from '../utils/usb'
+import { onDeviceChange, Device } from '../utils/usb'
 import { Listener } from '../utils/Listeners'
 
 export const channel = 'manage-device-subscription'
@@ -13,31 +13,28 @@ export enum ChangeType {
 /**
  * Subscribe to add/remove USB device events.
  */
-export default function register(ipcMain: IpcMain): (() => void) | undefined {
+export default function register(ipcMain: IpcMain) {
   const subscribers = new Map<WebContents, Listener<[ChangeType, Device]>>()
-
-  // Always monitor devices.
-  const monitoringAssertion = assertMonitoring()
 
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, subscribe: boolean) => {
     const webContents = event.sender
+    const listener = subscribers.get(webContents)
 
-    const onDeviceChanged = (changeType: ChangeType, device: Device) =>
-      webContents.send(deviceChangeChannel, changeType, device)
+    // Always remove the old listener as there's only one per WebContents.
+    listener?.remove()
 
-    if (subscribe && !subscribers.has(webContents)) {
-      subscribers.set(webContents, onDeviceChange.add(onDeviceChanged))
+    if (subscribe) {
+      const onDeviceChanged = (changeType: ChangeType, device: Device) =>
+        webContents.send(deviceChangeChannel, changeType, device)
+      const listener = onDeviceChange.add(onDeviceChanged)
 
+      subscribers.set(webContents, listener)
       webContents.on('destroyed', () => {
-        onDeviceChange.remove(onDeviceChanged)
+        listener.remove()
+        subscribers.delete(webContents)
       })
     } else if (!subscribe) {
-      const onDeviceChanged = subscribers.get(webContents)
-
       subscribers.delete(webContents)
-      onDeviceChanged?.remove()
     }
   })
-
-  return () => monitoringAssertion.release()
 }

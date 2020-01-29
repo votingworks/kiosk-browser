@@ -1,4 +1,4 @@
-import Listeners from './Listeners'
+import Listeners, { Listener } from './Listeners'
 
 class TestListeners extends Listeners {}
 
@@ -46,11 +46,11 @@ test('calls a hook on adding or removing a callback', () => {
   const calls = new Array<{ add: number } | { remove: number }>()
 
   class WithHooks extends TestListeners {
-    public listenerAdded(count: number): void {
+    public listenerAdded(callback: () => void, count: number): void {
       calls.push({ add: count })
     }
 
-    public listenerRemoved(count: number): void {
+    public listenerRemoved(callback: () => void, count: number): void {
       calls.push({ remove: count })
     }
   }
@@ -100,4 +100,17 @@ test('calls all callbacks, even if an earlier one fails', () => {
 
   expect(callbacks[0]).toHaveBeenCalledTimes(1)
   expect(callbacks[1]).toHaveBeenCalledTimes(1)
+})
+
+test('pausing callback interaction', () => {
+  const listeners = new TestListeners()
+  const callback = jest.fn()
+
+  listeners.pause()
+  listeners.add(callback)
+  listeners.trigger()
+
+  expect(callback).not.toHaveBeenCalled()
+  listeners.resume()
+  expect(callback).toHaveBeenCalledTimes(1)
 })
