@@ -1,29 +1,33 @@
 import register, { channel } from './get-device-list'
 import { IpcMain } from 'electron'
-import { assertMonitoring, getDeviceList } from '../utils/usb'
+import { onDeviceChange } from '../utils/usb'
+import usbDetection from 'usb-detection'
 import mockOf from '../../test/mockOf'
+import fakeDevice from '../../test/fakeDevice'
 
-jest.mock('../utils/usb', () => ({
-  assertMonitoring: jest.fn(),
-  getDeviceList: jest.fn(),
-}))
+test('registers a handler for `get-device-list` channel which gets devices', async () => {
+  jest.spyOn(onDeviceChange, 'add')
+  jest.spyOn(onDeviceChange, 'remove')
+  mockOf(usbDetection.find).mockResolvedValue([
+    fakeDevice({ deviceName: 'Device #1' }),
+  ])
 
-test('registers a handler for `get-device-list` channel which calls `getDeviceList`', () => {
-  const handle = jest.fn((ch: string, fn: () => void) => {
-    fn()
-  })
-
-  // Set up USB monitoring assertion.
-  const release = jest.fn()
-  mockOf(assertMonitoring).mockReturnValueOnce({ release })
-
+  // Register our handler.
+  const handle = jest.fn()
   const cleanup = register(({ handle } as unknown) as IpcMain)
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
-  expect(assertMonitoring).toHaveBeenCalledTimes(1)
-  expect(getDeviceList).toHaveBeenCalledTimes(1)
-  expect(release).not.toHaveBeenCalled()
 
-  // Ensure assertion is released.
+  // Things should be registered as expected.
+  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
+  expect(onDeviceChange.add).toHaveBeenCalledTimes(1)
+  expect(onDeviceChange.remove).not.toHaveBeenCalled()
+
+  // Is the handler wired up right?
+  const [, handler] = handle.mock.calls[0]
+  expect(await handler()).toEqual([
+    expect.objectContaining({ deviceName: 'Device #1' }),
+  ])
+
+  // Ensure cleanup removes device listener.
   cleanup()
-  expect(release).toHaveBeenCalledTimes(1)
+  expect(onDeviceChange.remove).toHaveBeenCalledTimes(1)
 })

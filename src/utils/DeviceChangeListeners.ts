@@ -21,7 +21,10 @@ export default class DeviceChangeListeners extends Listeners<
    * Called when a listener is added, allows us to notice when we have our first
    * listener.
    */
-  protected listenerAdded(count: number): void {
+  protected listenerAdded(
+    callback: (changeType: ChangeType, device: Device) => void,
+    count: number,
+  ): void {
     if (count === 1) {
       this.startMonitoringDevices()
     }
@@ -31,7 +34,10 @@ export default class DeviceChangeListeners extends Listeners<
    * Called when a listener is removed, allows us to notice when we have no more
    * listeners.
    */
-  protected listenerRemoved(count: number): void {
+  protected listenerRemoved(
+    callback: (changeType: ChangeType, device: Device) => void,
+    count: number,
+  ): void {
     if (count === 0) {
       this.stopMonitoringDevices()
     }
@@ -52,15 +58,15 @@ export default class DeviceChangeListeners extends Listeners<
    * Starts monitoring connected device add/remove events.
    */
   private startMonitoringDevices(): void {
-    this.ipcRenderer.invoke(manageDeviceSubscriptionChannel, true)
     this.ipcRenderer.on(deviceChangeChannel, this.onDeviceChangeIpcCallback)
+    this.ipcRenderer.invoke(manageDeviceSubscriptionChannel, true)
   }
 
   /**
    * Stops monitoring connected device add/remove events.
    */
   private stopMonitoringDevices(): void {
-    this.ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
     this.ipcRenderer.off(deviceChangeChannel, this.onDeviceChangeIpcCallback)
+    this.ipcRenderer.invoke(manageDeviceSubscriptionChannel, false)
   }
 }
