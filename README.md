@@ -23,6 +23,24 @@ Gets an object describing the current state of the battery, including level and 
 
 Prints the current page using the default printer. This is different from `window.print` in that it is silent; there are no dialogs or prompts. Resolves if printing succeeds, rejects otherwise.
 
+## Auto-Configure Printers
+
+If you need to print, `kiosk-browser` can automatically configure printers for you as they are detected. To do so, build a printer config file as described by `kiosk-browser --help`.
+
+## Debugging
+
+First, check the command-line help:
+
+```
+$ kiosk-browser --help
+```
+
+If something isn't working as you'd expect it to, try running with debug logging:
+
+```
+$ DEBUG=kiosk-browser:* kiosk-browser http://example.com/
+```
+
 ## License
 
 GPL-3.0
