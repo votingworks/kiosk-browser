@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron'
 import { join } from 'path'
 import { getMainScreen } from './utils/screen'
-import getURL from './utils/getURL'
+import { onDeviceChange } from './utils/usb'
+import parseOptions, { printHelp } from './utils/options'
+import autoconfigurePrint from './utils/printing'
 import registerPrintHandler from './ipc/print'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
@@ -31,8 +33,29 @@ async function createWindow(): Promise<void> {
     },
   })
 
+  const options = await parseOptions(
+    // https://github.com/electron/electron/issues/4690
+    process.argv.slice(app.isPackaged ? 1 : 2),
+    process.env,
+  )
+
+  if ('error' in options) {
+    console.log(`error: ${options.error.message}`)
+    printHelp()
+    app.quit()
+    return
+  } else if ('help' in options) {
+    printHelp()
+    app.quit()
+    return
+  }
+
+  const autoconfigurePrinterListener =
+    options.autoconfigurePrintConfig &&
+    autoconfigurePrint(options.autoconfigurePrintConfig, onDeviceChange)
+
   // and load the initial page.
-  mainWindow.loadURL(getURL().href)
+  mainWindow.loadURL(options.url.href)
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -50,8 +73,7 @@ async function createWindow(): Promise<void> {
     .map(handler => handler(ipcMain))
     .filter(Boolean) as (() => void)[]
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', () => {
+  function quit() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
@@ -62,8 +84,15 @@ async function createWindow(): Promise<void> {
       cleanup()
     }
 
+    // Stop printer autoconfigure.
+    autoconfigurePrinterListener?.remove()
+
+    // Quit the app.
     app.quit()
-  })
+  }
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', quit)
 }
 
 // This method will be called when Electron has finished
