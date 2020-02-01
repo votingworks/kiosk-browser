@@ -1,6 +1,7 @@
 import { IpcMainInvokeEvent, IpcMain } from 'electron'
 import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs'
 import printerSchemes from '../utils/printing/printerSchemes'
+import { debug } from '../utils/printing'
 
 export const channel = 'get-printer-info'
 
@@ -19,10 +20,12 @@ export async function getPrinterInfo(
     printerSchemes(printers),
   )
 
+  debug('checking known printers against connected printers')
   for (const printer of printers) {
     const deviceURI = printer.options?.['device-uri']
     const connected = deviceURI ? connectedDeviceURIs.has(deviceURI) : false
 
+    debug('known printer has connected=%o: %O', connected, printer)
     results.push({
       ...printer,
       connected,

@@ -1,4 +1,5 @@
 import exec from '../exec'
+import { debug } from '.'
 
 /**
  * Gets the URIs of any connected printers matching the given schemes.
@@ -18,7 +19,17 @@ export default async function getConnectedDeviceURIs(
   // Show available devices with `-v` vs available drivers with `-m`.
   lpinfoArgs.push('-v')
 
-  const { stdout } = await exec('lpinfo', lpinfoArgs)
+  debug('getting connected device URIs from lpinfo, args=%o', lpinfoArgs)
+  const { stdout, stderr } = await exec('lpinfo', lpinfoArgs)
+  debug('lpinfo stdout:\n%s', stdout)
+  debug('lpinfo stderr:\n%s', stderr)
 
-  return new Set(stdout.split('\n').map(line => line.split(/\s+/, 2)[1]))
+  const deviceURIs = new Set(
+    stdout
+      .split('\n')
+      .map(line => line.split(/\s+/, 2)[1])
+      .filter(Boolean),
+  )
+  debug('parsed lpinfo output as %O', deviceURIs)
+  return deviceURIs
 }
