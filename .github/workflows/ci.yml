@@ -11,6 +11,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        
+    - name: Install Native Dependencies
+      run: apt install libudev-dev
 
     - name: Get yarn cache
       id: yarn-cache
