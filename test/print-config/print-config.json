@@ -11,9 +11,9 @@
       }
     },
     {
-      "label": "HP LaserJet Pro M404",
+      "label": "HP LaserJet Pro M404n",
       "vendorId": 1008,
-      "productId": 99999,
+      "productId": 49450,
       "baseDeviceURI": "usb://HP/LaserJet%20Pro%20M404-M405",
       "ppd": {
         "path": "hp-laserjet_pro_m404-m405-ps.ppd"
