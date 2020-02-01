@@ -47,8 +47,7 @@ export function parseBatteryInfo(batteryInfoText: string): BatteryInfo {
   const energyFull = batteryInfo.get('POWER_SUPPLY_ENERGY_FULL')
   const status = batteryInfo.get('POWER_SUPPLY_STATUS') as BatteryStatus
   const level = Number(energyNow) / Number(energyFull)
-  const discharging =
-    status !== BatteryStatus.Full && status !== BatteryStatus.Charging
+  const discharging = status === BatteryStatus.Discharging
 
   return { level, discharging }
 }
