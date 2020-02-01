@@ -41,12 +41,25 @@ POWER_SUPPLY_STATUS=Full
   })
 })
 
+test('parses battery status "Unknown" to indicate battery is not discharging', () => {
+  expect(
+    parseBatteryInfo(`
+POWER_SUPPLY_ENERGY_NOW=800
+POWER_SUPPLY_ENERGY_FULL=1000
+POWER_SUPPLY_STATUS=Unknown
+    `),
+  ).toEqual({
+    level: 0.8,
+    discharging: false,
+  })
+})
+
 test('parses battery status "Discharging" to indicate battery is discharging', () => {
   expect(
     parseBatteryInfo(`
 POWER_SUPPLY_ENERGY_NOW=800
 POWER_SUPPLY_ENERGY_FULL=1000
-POWER_SUPPLY_STATUS=Disharging
+POWER_SUPPLY_STATUS=Discharging
 `),
   ).toEqual({
     level: 0.8,
@@ -58,7 +71,7 @@ test('can read battery info for the main system battery', async () => {
   readFileMock.mockResolvedValue(`
 POWER_SUPPLY_ENERGY_NOW=800
 POWER_SUPPLY_ENERGY_FULL=1000
-POWER_SUPPLY_STATUS=Disharging
+POWER_SUPPLY_STATUS=Discharging
 `)
 
   expect(await getBatteryInfo()).toEqual({ level: 0.8, discharging: true })
@@ -72,7 +85,7 @@ test('can read battery info for a battery at a different path', async () => {
   readFileMock.mockResolvedValueOnce(`
 POWER_SUPPLY_ENERGY_NOW=800
 POWER_SUPPLY_ENERGY_FULL=1000
-POWER_SUPPLY_STATUS=Disharging
+POWER_SUPPLY_STATUS=Discharging
 `)
 
   expect(await getBatteryInfo()).toEqual({ level: 0.8, discharging: true })
@@ -96,7 +109,7 @@ test('registers a handler to get battery info', async () => {
   readFileMock.mockResolvedValue(`
 POWER_SUPPLY_ENERGY_NOW=200
 POWER_SUPPLY_ENERGY_FULL=1000
-POWER_SUPPLY_STATUS=Disharging
+POWER_SUPPLY_STATUS=Discharging
 `)
 
   let channel: string | undefined
