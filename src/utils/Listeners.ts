@@ -98,10 +98,12 @@ export default class Listeners<
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected listenerAdded(callback: C, count: number): void {
     // override in subclasses
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected listenerRemoved(callback: C, count: number): void {
     // override in subclasses
   }

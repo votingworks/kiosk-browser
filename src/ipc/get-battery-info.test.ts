@@ -3,16 +3,11 @@ import register, {
   getBatteryInfo,
   channel as getBatteryInfoChannel,
 } from './get-battery-info'
-import readFile from '../utils/readFile'
-import mockOf from '../../test/mockOf'
 import { IpcMain } from 'electron'
+import { promises as fs } from 'fs'
 
-jest.mock('../utils/readFile', () => jest.fn())
-
-const readFileMock = mockOf(readFile)
-
-beforeEach(() => {
-  readFileMock.mockReset()
+afterEach(() => {
+  jest.spyOn(fs, 'readFile').mockRestore()
 })
 
 test('parses battery info to determine battery level and charging status', () => {
@@ -68,7 +63,7 @@ POWER_SUPPLY_STATUS=Discharging
 })
 
 test('can read battery info for the main system battery', async () => {
-  readFileMock.mockResolvedValue(`
+  const readFileMock = jest.spyOn(fs, 'readFile').mockResolvedValue(`
 POWER_SUPPLY_ENERGY_NOW=800
 POWER_SUPPLY_ENERGY_FULL=1000
 POWER_SUPPLY_STATUS=Discharging
@@ -77,11 +72,17 @@ POWER_SUPPLY_STATUS=Discharging
   expect(await getBatteryInfo()).toEqual({ level: 0.8, discharging: true })
   expect(readFileMock).toHaveBeenCalledWith(
     '/sys/class/power_supply/BAT0/uevent',
+    'utf8',
   )
 })
 
 test('can read battery info for a battery at a different path', async () => {
+  const readFileMock = jest.spyOn(fs, 'readFile')
+
+  // BAT0 does not exist
   readFileMock.mockRejectedValueOnce(new Error('ENOENT'))
+
+  // BAT1 exists
   readFileMock.mockResolvedValueOnce(`
 POWER_SUPPLY_ENERGY_NOW=800
 POWER_SUPPLY_ENERGY_FULL=1000
@@ -92,21 +93,23 @@ POWER_SUPPLY_STATUS=Discharging
   expect(readFileMock).toHaveBeenNthCalledWith(
     1,
     '/sys/class/power_supply/BAT0/uevent',
+    'utf8',
   )
   expect(readFileMock).toHaveBeenNthCalledWith(
     2,
     '/sys/class/power_supply/BAT1/uevent',
+    'utf8',
   )
 })
 
 test('fails to read battery info if the power_supply "files" are not present', async () => {
-  readFileMock.mockRejectedValueOnce(new Error('ENOENT'))
+  jest.spyOn(fs, 'readFile').mockRejectedValue(new Error('ENOENT'))
 
-  expect(getBatteryInfo()).rejects.toThrowError('No batteries found')
+  await expect(getBatteryInfo()).rejects.toThrowError('No batteries found')
 })
 
 test('registers a handler to get battery info', async () => {
-  readFileMock.mockResolvedValue(`
+  jest.spyOn(fs, 'readFile').mockResolvedValue(`
 POWER_SUPPLY_ENERGY_NOW=200
 POWER_SUPPLY_ENERGY_FULL=1000
 POWER_SUPPLY_STATUS=Discharging
@@ -115,7 +118,7 @@ POWER_SUPPLY_STATUS=Discharging
   let channel: string | undefined
   let listener: (() => unknown) | undefined
 
-  function handle(ch: string, fn: () => void) {
+  function handle(ch: string, fn: () => void): void {
     channel = ch
     listener = fn
   }

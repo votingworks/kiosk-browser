@@ -1,5 +1,5 @@
 import { IpcMain } from 'electron'
-import readFile from '../utils/readFile'
+import { promises as fs } from 'fs'
 
 enum BatteryStatus {
   Charging = 'Charging',
@@ -23,9 +23,14 @@ export async function getBatteryInfo(): Promise<BatteryInfo> {
   for (const batteryPath of ['BAT0', 'BAT1']) {
     try {
       return parseBatteryInfo(
-        await readFile(`/sys/class/power_supply/${batteryPath}/uevent`),
+        await fs.readFile(
+          `/sys/class/power_supply/${batteryPath}/uevent`,
+          'utf8',
+        ),
       )
-    } catch {}
+    } catch {
+      // ignore missing paths
+    }
   }
 
   throw new Error(

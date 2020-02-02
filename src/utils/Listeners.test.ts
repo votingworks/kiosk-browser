@@ -1,4 +1,4 @@
-import Listeners, { Listener } from './Listeners'
+import Listeners from './Listeners'
 
 class TestListeners extends Listeners {}
 

@@ -13,7 +13,7 @@ export enum ChangeType {
 /**
  * Subscribe to add/remove USB device events.
  */
-export default function register(ipcMain: IpcMain) {
+export default function register(ipcMain: IpcMain): void {
   const subscribers = new Map<WebContents, Listener<[ChangeType, Device]>>()
 
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, subscribe: boolean) => {
@@ -24,7 +24,7 @@ export default function register(ipcMain: IpcMain) {
     listener?.remove()
 
     if (subscribe) {
-      const onDeviceChanged = (changeType: ChangeType, device: Device) =>
+      const onDeviceChanged = (changeType: ChangeType, device: Device): void =>
         webContents.send(deviceChangeChannel, changeType, device)
       const listener = onDeviceChange.add(onDeviceChanged)
 

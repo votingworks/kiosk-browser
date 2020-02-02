@@ -9,9 +9,21 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier/@typescript-eslint"
   ],
   "rules": {
-    "prettier/prettier": "error"
-  }
+    "prettier/prettier": "error",
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      { "functions": false }
+    ],
+    "no-extra-semi": "off"
+  },
+  "overrides": [
+    {
+      "files": "**/*.test.ts",
+      "rules": { "@typescript-eslint/unbound-method": "off" }
+    }
+  ]
 }

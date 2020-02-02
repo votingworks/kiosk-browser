@@ -1,6 +1,7 @@
 import register, {
   getPrinterInfo,
   channel as getPrinterInfoChannel,
+  PrinterInfo,
 } from './get-printer-info'
 import fakePrinter from '../../test/fakePrinter'
 import mockOf from '../../test/mockOf'
@@ -45,7 +46,7 @@ test('registers an IPC handler for getting printer info', async () => {
   let channel: string | undefined
   let listener: ((event: IpcMainInvokeEvent) => unknown) | undefined
 
-  function handle(ch: string, fn: () => void) {
+  function handle(ch: string, fn: () => void): void {
     channel = ch
     listener = fn
   }
@@ -60,7 +61,7 @@ test('registers an IPC handler for getting printer info', async () => {
   expect(
     await listener?.(({
       sender: {
-        getPrinters() {
+        getPrinters(): Electron.PrinterInfo[] {
           return [
             fakePrinter({
               options: {
