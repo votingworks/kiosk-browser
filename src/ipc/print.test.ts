@@ -42,7 +42,7 @@ test('registers a handler to trigger a print', async () => {
   )
 
   expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer' },
+    { silent: true, deviceName: 'main printer', printBackground: true},
     expect.any(Function),
   )
 })
@@ -76,7 +76,7 @@ test('uses the preferred printer if none is provided', async () => {
   } as unknown) as IpcMainInvokeEvent)
 
   expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer' },
+    { silent: true, deviceName: 'main printer', printBackground: true},
     expect.any(Function),
   )
 })

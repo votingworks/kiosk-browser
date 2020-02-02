@@ -28,6 +28,7 @@ export default function register(ipcMain: IpcMain): void {
           {
             silent: true,
             deviceName,
+	    printBackground: true,
           },
           (success, failureReason) => {
             if (success) {
