@@ -3,13 +3,17 @@ import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
 import getPreferredPrinter from '../utils/getPreferredPrinter'
 import mockOf from '../../test/mockOf'
 import fakePrinter from '../../test/fakePrinter'
+import exec from '../utils/exec'
 
 const getPreferredPrinterMock = mockOf(getPreferredPrinter)
+const execMock = mockOf(exec)
 
+jest.mock('../utils/exec')
 jest.mock('../utils/getPreferredPrinter', () => jest.fn())
 
 beforeEach(() => {
   getPreferredPrinterMock.mockReset()
+  execMock.mockReset()
 })
 
 test('registers a handler to trigger a print', async () => {
@@ -25,14 +29,14 @@ test('registers a handler to trigger a print', async () => {
 
   const sender = ({
     getPrinters: () => [],
-    print: jest.fn((options, callback) => {
-      callback(/* success = */ true)
-    }),
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   } as unknown) as WebContents
 
   register(({ handle } as unknown) as IpcMain)
 
   expect(channel).toEqual(printChannel)
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
   await listener?.(
     ({
@@ -41,10 +45,15 @@ test('registers a handler to trigger a print', async () => {
     'main printer',
   )
 
-  expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer', printBackground: true },
-    expect.any(Function),
-  )
+  expect(sender.printToPDF).toHaveBeenCalledWith({
+    printBackground: true,
+  })
+
+  expect(execMock).toHaveBeenCalledWith('lpr', [
+    '-P',
+    'main printer',
+    expect.any(String),
+  ])
 })
 
 test('uses the preferred printer if none is provided', async () => {
@@ -60,25 +69,30 @@ test('uses the preferred printer if none is provided', async () => {
 
   const sender = ({
     getPrinters: () => [],
-    print: jest.fn((options, callback) => {
-      callback(/* success = */ true)
-    }),
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   } as unknown) as WebContents
 
   register(({ handle } as unknown) as IpcMain)
 
   expect(channel).toEqual(printChannel)
 
-  getPreferredPrinterMock.mockReturnValue(fakePrinter({ name: 'main printer' }))
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
   await listener?.(({
     sender,
   } as unknown) as IpcMainInvokeEvent)
 
-  expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer', printBackground: true },
-    expect.any(Function),
-  )
+  expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true })
+
+  expect(execMock).toHaveBeenCalledWith('lpr', [
+    '-P',
+    'main printer',
+    expect.any(String),
+  ])
 })
 
 test('propagates errors', async () => {
@@ -94,9 +108,7 @@ test('propagates errors', async () => {
 
   const sender = ({
     getPrinters: () => [],
-    print: jest.fn((options, callback) => {
-      callback(/* success = */ false, new Error('PCLOADLETTER'))
-    }),
+    printToPDF: jest.fn().mockRejectedValueOnce(new Error('PCLOADLETTER')),
   } as unknown) as WebContents
 
   register(({ handle } as unknown) as IpcMain)
@@ -109,5 +121,5 @@ test('propagates errors', async () => {
     } as unknown) as IpcMainInvokeEvent),
   ).rejects.toThrowError('PCLOADLETTER')
 
-  expect(sender.print).toHaveBeenCalled()
+  expect(sender.printToPDF).toHaveBeenCalled()
 })
