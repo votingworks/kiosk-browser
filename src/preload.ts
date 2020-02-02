@@ -13,7 +13,7 @@ import { Device } from './utils/usb'
 import DeviceChangeListeners from './utils/DeviceChangeListeners'
 
 class Kiosk {
-  public async print(deviceName: string): Promise<void> {
+  public async print(deviceName: string, paperSource: string): Promise<void> {
     // NOTE: This check ensures we don't silently fail printing.
     //
     // This is here because we can't simply add `deviceName` as an argument
@@ -28,7 +28,9 @@ class Kiosk {
     // https://www.electronjs.org/docs/api/web-contents#contentsprintoptions-callback
     // https://github.com/chromium/chromium/blob/4189e014e00fc9a147c7162e0cac1f699d37f33f/printing/backend/print_backend_cups.cc#L301-L303
     //
-    if (typeof deviceName === 'string') {
+    if (typeof paperSource === 'string' && typeof deviceName === 'string') {
+      await ipcRenderer.invoke(printChannel, deviceName, paperSource)
+    } else if (typeof deviceName === 'string') {
       await ipcRenderer.invoke(printChannel, deviceName)
     } else {
       await ipcRenderer.invoke(printChannel)
