@@ -1,10 +1,10 @@
-import parseOptions from './options'
+import parseOptions, { Options } from './options'
 import { ok } from './assert'
 
 async function parseOptionsWithoutHelp(
   argv: typeof process.argv = [],
   env: typeof process.env = {},
-) {
+): Promise<Options> {
   const result = await parseOptions(argv, env)
   ok(!('help' in result))
   ok(!('error' in result))

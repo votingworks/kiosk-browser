@@ -18,7 +18,7 @@ test('registers a handler to trigger a print', async () => {
     | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
     | undefined
 
-  function handle(ch: string, fn: () => void) {
+  function handle(ch: string, fn: () => void): void {
     channel = ch
     listener = fn
   }
@@ -42,7 +42,7 @@ test('registers a handler to trigger a print', async () => {
   )
 
   expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer', printBackground: true},
+    { silent: true, deviceName: 'main printer', printBackground: true },
     expect.any(Function),
   )
 })
@@ -53,7 +53,7 @@ test('uses the preferred printer if none is provided', async () => {
     | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
     | undefined
 
-  function handle(ch: string, fn: () => void) {
+  function handle(ch: string, fn: () => void): void {
     channel = ch
     listener = fn
   }
@@ -76,7 +76,7 @@ test('uses the preferred printer if none is provided', async () => {
   } as unknown) as IpcMainInvokeEvent)
 
   expect(sender.print).toHaveBeenCalledWith(
-    { silent: true, deviceName: 'main printer', printBackground: true},
+    { silent: true, deviceName: 'main printer', printBackground: true },
     expect.any(Function),
   )
 })
@@ -87,7 +87,7 @@ test('propagates errors', async () => {
     | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
     | undefined
 
-  function handle(ch: string, fn: () => void) {
+  function handle(ch: string, fn: () => void): void {
     channel = ch
     listener = fn
   }
@@ -103,7 +103,7 @@ test('propagates errors', async () => {
 
   expect(channel).toEqual(printChannel)
 
-  expect(
+  await expect(
     listener?.(({
       sender,
     } as unknown) as IpcMainInvokeEvent),

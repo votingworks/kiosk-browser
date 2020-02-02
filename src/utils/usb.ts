@@ -32,13 +32,13 @@ class USBDeviceListeners extends Listeners<[ChangeType, Device]> {
     this.pause()
   }
 
-  private onDeviceAdded = (added: Device) => {
+  private onDeviceAdded = (added: Device): void => {
     debug('device added: %O', added)
     this.devices.add(added)
     this.trigger(ChangeType.Add, added)
   }
 
-  private onDeviceRemoved = (removed: Device) => {
+  private onDeviceRemoved = (removed: Device): void => {
     debug('device removed: %O')
     for (const existing of this.devices) {
       if (devicesEqual(removed, existing)) {
@@ -56,7 +56,7 @@ class USBDeviceListeners extends Listeners<[ChangeType, Device]> {
   protected async listenerAdded(
     callback: (changeType: ChangeType, device: Device) => void,
     count: number,
-  ) {
+  ): Promise<void> {
     debug('device listener added (count=%d)', count)
 
     if (count === 1) {
@@ -101,7 +101,7 @@ class USBDeviceListeners extends Listeners<[ChangeType, Device]> {
   protected async listenerRemoved(
     callback: (changeType: ChangeType, device: Device) => void,
     count: number,
-  ) {
+  ): Promise<void> {
     if (count === 0) {
       debug('last listener was removed, stop monitoring')
       await this.teardown()

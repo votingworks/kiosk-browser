@@ -46,7 +46,7 @@ export default async function parseOptions(
       debug(`got option for ${arg}: ${autoconfiurePrintConfigArg}`)
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg
-    } else if (arg[0] !== '-') {
+    } else if (!arg.startsWith('-')) {
       ok(!urlArg, `duplicate URL argument: ${arg}`)
       urlArg = arg
       debug(`got implicit URL argument: ${urlArg}`)
@@ -55,6 +55,7 @@ export default async function parseOptions(
       return { error: new Error(`unexpected option: ${arg}`) }
     }
 
+    // eslint-disable-next-line no-inner-declarations
     function getOptionValue(): string {
       if (i >= argv.length) {
         throw new Error(`expected value for option: ${arg}`)

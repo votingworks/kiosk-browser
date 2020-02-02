@@ -72,11 +72,10 @@ test('does not fire initial add callbacks for removed devices', async () => {
   await onDeviceChange.waitForMonitoring()
 
   // Remove all devices.
-  const [, onDeviceRemoved] = mockOf(usbDetection.on).mock.calls.find(
-    call => call[0] === 'remove',
-  )!
+  const [, onDeviceRemoved] =
+    mockOf(usbDetection.on).mock.calls.find(call => call[0] === 'remove') ?? []
   for (const device of devices) {
-    onDeviceRemoved(device)
+    onDeviceRemoved?.(device)
   }
 
   onDeviceChange.add(callback)

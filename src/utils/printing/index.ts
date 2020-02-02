@@ -41,7 +41,7 @@ export interface ModelPostScriptPrinterDefinition {
 }
 
 export function makeDeviceChangeHandler(config: PrintConfig) {
-  return async function(changeType: ChangeType, device: Device) {
+  return async function(changeType: ChangeType, device: Device): Promise<void> {
     if (changeType !== ChangeType.Add) {
       debug('ignoring device remove event: %O', device)
       return
@@ -78,5 +78,5 @@ export default function autoconfigurePrinter(
   config: PrintConfig,
   onDeviceChange: typeof import('../usb').onDeviceChange,
 ): Listener<[ChangeType, Device]> {
-  return onDeviceChange.add(makeDeviceChangeHandler(config))
+  return onDeviceChange.add(() => makeDeviceChangeHandler(config))
 }
