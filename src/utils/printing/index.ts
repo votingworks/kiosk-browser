@@ -5,7 +5,7 @@ import findDeviceURIMatchingPrinterConfig from './findDeviceURIMatchingPrinterCo
 import configurePrinter from './configurePrinter'
 import getConnectedDeviceURIs from './getConnectedDeviceURIs'
 import { Device } from '../usb'
-import { Listener } from '../Listeners'
+import Listeners, { Listener } from '../Listeners'
 
 export const debug = makeDebug('kiosk-browser:printing')
 
@@ -76,7 +76,9 @@ export function makeDeviceChangeHandler(config: PrintConfig) {
 
 export default function autoconfigurePrinter(
   config: PrintConfig,
-  onDeviceChange: typeof import('../usb').onDeviceChange,
+  onDeviceChange: Listeners<[ChangeType, Device]>,
 ): Listener<[ChangeType, Device]> {
-  return onDeviceChange.add(() => makeDeviceChangeHandler(config))
+  // TODO: Add tests for this.
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  return onDeviceChange.add(makeDeviceChangeHandler(config))
 }
