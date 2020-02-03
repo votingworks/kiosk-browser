@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   clearMocks: true,
   collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
-  testPathIgnorePatterns: ['/dist/', '/out/'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/out/'],
   coverageThreshold: {
     global: {
       statements: 100,
