@@ -19,7 +19,11 @@ beforeEach(() => {
 test('registers a handler to trigger a print', async () => {
   let channel: string | undefined
   let listener:
-    | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
+    | ((
+        event: IpcMainInvokeEvent,
+        deviceName?: string,
+        paperSource?: string,
+      ) => unknown)
     | undefined
 
   function handle(ch: string, fn: () => void): void {
@@ -42,7 +46,8 @@ test('registers a handler to trigger a print', async () => {
     ({
       sender,
     } as unknown) as IpcMainInvokeEvent,
-    'main printer',
+    'mainprinter',
+    'Tray3',
   )
 
   expect(sender.printToPDF).toHaveBeenCalledWith({
@@ -51,7 +56,9 @@ test('registers a handler to trigger a print', async () => {
 
   expect(execMock).toHaveBeenCalledWith('lpr', [
     '-P',
-    'main printer',
+    'mainprinter',
+    '-o',
+    'InputSlot=Tray3',
     expect.any(String),
   ])
 })

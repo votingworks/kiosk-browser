@@ -37,7 +37,7 @@ async function printFile({
     lprOptions.push('-P', deviceName)
   }
 
-  if (paperSource && paperSource in availablePaperSources) {
+  if (paperSource && availablePaperSources.includes(paperSource)) {
     lprOptions.push('-o', 'InputSlot=' + paperSource)
   }
 
