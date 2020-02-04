@@ -3,7 +3,6 @@ import mockOf from '../../../test/mockOf'
 
 import configurePrinter from './configurePrinter'
 import getConnectedDeviceURIs from './getConnectedDeviceURIs'
-import getPrinterDeviceURI from './getPrinterDeviceURI'
 import configurePrinterFromDevice from './configurePrinterFromDevice'
 
 jest.mock('./configurePrinter')
