@@ -1,10 +1,17 @@
 /**
  * Represents a registered listener.
  */
-export class Listener<
+export interface Listener {
+  remove(): void
+}
+
+/**
+ * Represents a registered listener.
+ */
+class ListenerEntry<
   A extends unknown[] = [],
   C extends Function = (...args: A) => void
-> {
+> implements Listener {
   public constructor(private listeners: Listeners<A, C>, private callback: C) {}
 
   public remove(): void {
@@ -20,15 +27,15 @@ export default class Listeners<
   C extends Function = (...args: A) => void
 > {
   private pendingTriggers?: A[]
-  private listenersByCallback = new Map<C, Listener<A, C>>()
+  private listenersByCallback = new Map<C, ListenerEntry<A, C>>()
 
   /**
    * Registers a callback to be called when the event is triggered. The callback
    * can be removed by calling `remove` with the same object, or by calling
    * `remove` on the returned `Listener` object.
    */
-  public add(callback: C): Listener<A, C> {
-    const listener = new Listener(this, callback)
+  public add(callback: C): Listener {
+    const listener = new ListenerEntry(this, callback)
     this.listenersByCallback.set(callback, listener)
     this.listenerAdded(callback, this.listenersByCallback.size)
     return listener
