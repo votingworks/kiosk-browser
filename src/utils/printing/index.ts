@@ -1,11 +1,4 @@
-import { ChangeType } from '../../ipc/manage-device-subscription'
 import makeDebug from 'debug'
-import getPrinterConfigForDevice from './getPrinterConfigForDevice'
-import findDeviceURIMatchingPrinterConfig from './findDeviceURIMatchingPrinterConfig'
-import configurePrinter from './configurePrinter'
-import getConnectedDeviceURIs from './getConnectedDeviceURIs'
-import { Device } from '../usb'
-import Listeners, { Listener } from '../Listeners'
 
 export const debug = makeDebug('kiosk-browser:printing')
 
@@ -38,47 +31,4 @@ export interface ModelPostScriptPrinterDefinition {
    * Name of a well-known printer definition.
    */
   model: string
-}
-
-export function makeDeviceChangeHandler(config: PrintConfig) {
-  return async function(changeType: ChangeType, device: Device): Promise<void> {
-    if (changeType !== ChangeType.Add) {
-      debug('ignoring device remove event: %O', device)
-      return
-    }
-
-    const printer = getPrinterConfigForDevice(config, device)
-
-    if (!printer) {
-      debug('USB device does not match a printer configuration: %O', device)
-      return
-    }
-
-    const deviceURIs = await getConnectedDeviceURIs(new Set(['usb']))
-    const deviceURI = findDeviceURIMatchingPrinterConfig(printer, deviceURIs)
-
-    if (!deviceURI) {
-      debug(
-        'Could not find device URI for printer matching config: %O',
-        printer,
-      )
-      return
-    }
-
-    await configurePrinter({
-      printerName: config.printerName,
-      ppd: printer.ppd,
-      deviceURI,
-      setDefault: true,
-    })
-  }
-}
-
-export default function autoconfigurePrinter(
-  config: PrintConfig,
-  onDeviceChange: Listeners<[ChangeType, Device]>,
-): Listener<[ChangeType, Device]> {
-  // TODO: Add tests for this.
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  return onDeviceChange.add(makeDeviceChangeHandler(config))
 }
