@@ -9,10 +9,12 @@ import {
   channel as getPrinterInfoChannel,
 } from './ipc/get-printer-info'
 import { channel as getDeviceListChannel } from './ipc/get-device-list'
+import { channel as quitChannel } from './ipc/quit'
 import { Device } from './utils/usb'
 import DeviceChangeListeners from './utils/DeviceChangeListeners'
+import { KioskBrowser } from '../types/kiosk-window'
 
-class Kiosk {
+class Kiosk implements KioskBrowser.Kiosk {
   public async print(deviceName: string, paperSource: string): Promise<void> {
     // NOTE: This check ensures we don't silently fail printing.
     //
@@ -50,6 +52,10 @@ class Kiosk {
   }
 
   public onDeviceChange = new DeviceChangeListeners(ipcRenderer)
+
+  public quit(): void {
+    ipcRenderer.invoke(quitChannel)
+  }
 }
 
-;(window as typeof window & { kiosk: Kiosk }).kiosk = new Kiosk()
+window.kiosk = new Kiosk()
