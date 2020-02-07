@@ -4,11 +4,12 @@ import { getMainScreen } from './utils/screen'
 import { onDeviceChange } from './utils/usb'
 import parseOptions, { printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
-import registerPrintHandler from './ipc/print'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
-import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerGetDeviceListHandler from './ipc/get-device-list'
-import registerManageDeviceSubscription from './ipc/manage-device-subscription'
+import registerGetPrinterInfoHandler from './ipc/get-printer-info'
+import registerManageDeviceSubscriptionHandler from './ipc/manage-device-subscription'
+import registerPrintHandler from './ipc/print'
+import registerQuitHandler from './ipc/quit'
 
 type RegisterIpcHandler = (ipcMain: IpcMain) => (() => void) | void
 
@@ -62,11 +63,12 @@ async function createWindow(): Promise<void> {
 
   // Register IPC handlers.
   const handlers: RegisterIpcHandler[] = [
-    registerPrintHandler,
     registerGetBatteryInfoHandler,
-    registerGetPrinterInfoHandler,
     registerGetDeviceListHandler,
-    registerManageDeviceSubscription,
+    registerGetPrinterInfoHandler,
+    registerManageDeviceSubscriptionHandler,
+    registerPrintHandler,
+    registerQuitHandler,
   ]
 
   const handlerCleanups = handlers
