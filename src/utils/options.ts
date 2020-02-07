@@ -1,7 +1,6 @@
 import { PrintConfig } from './printing'
 import { promises } from 'fs'
 import { isAbsolute, join } from 'path'
-import { ok } from './assert'
 import chalk from 'chalk'
 import makeDebug from 'debug'
 
@@ -10,6 +9,7 @@ const debug = makeDebug('kiosk-browser:options')
 export interface Options {
   url: URL
   autoconfigurePrintConfig?: PrintConfig
+  allowDevtools?: boolean
 }
 
 export interface Help {
@@ -32,6 +32,7 @@ export default async function parseOptions(
   let urlArg: string | undefined
   let autoconfiurePrintConfigArg: string | undefined
   let helpArg: string | undefined
+  let allowDevtoolsArg: boolean | undefined
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
@@ -39,19 +40,24 @@ export default async function parseOptions(
     if (arg === '--url' || arg === '-u') {
       i++
       urlArg = getOptionValue()
-      debug(`got option for ${arg}: ${urlArg}`)
+      debug('got option for %s: %s', arg, urlArg)
     } else if (arg === '--autoconfigure-print-config' || arg === '-p') {
       i++
       autoconfiurePrintConfigArg = getOptionValue()
-      debug(`got option for ${arg}: ${autoconfiurePrintConfigArg}`)
+      debug('got option for %s: %s', arg, autoconfiurePrintConfigArg)
+    } else if (arg === '--allow-devtools') {
+      allowDevtoolsArg = true
+      debug('got flag: %s', arg)
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg
     } else if (!arg.startsWith('-')) {
-      ok(!urlArg, `duplicate URL argument: ${arg}`)
+      if (urlArg) {
+        return { error: new Error(`duplicate URL argument: ${arg}`) }
+      }
       urlArg = arg
-      debug(`got implicit URL argument: ${urlArg}`)
+      debug('got implicit URL argument: %s', urlArg)
     } else {
-      debug(`unexpected option: ${arg}`)
+      debug('unexpected option: %s', arg)
       return { error: new Error(`unexpected option: ${arg}`) }
     }
 
@@ -75,6 +81,8 @@ export default async function parseOptions(
       autoconfiurePrintConfigArg ??
         env.KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG,
     ),
+    allowDevtools:
+      allowDevtoolsArg ?? env.KIOSK_BROWSER_ALLOW_DEVTOOLS === 'true',
   }
 
   debug('parsed options: %O', options)
@@ -118,6 +126,7 @@ kiosk-browser [OPTIONS] [URL]
 ${b('Options')}
   -u, --url URL                          Visit this URL on load.
   -p, --autoconfigure-print-config PATH  Automatically configures connected printers according to the given config.
+      --allow-devtools                   Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
 
 ${b('Auto-Configure Printers')}
 kiosk-browser can automatically discover and configure printers. To do so, you

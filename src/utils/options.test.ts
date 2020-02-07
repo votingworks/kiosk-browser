@@ -34,3 +34,25 @@ test('falls back to about:blank if nothing else is given', async () => {
   const options = await parseOptionsWithoutHelp()
   expect(options.url.href).toEqual('about:blank')
 })
+
+test('allow devtools', async () => {
+  expect(await parseOptionsWithoutHelp()).not.toEqual(
+    expect.objectContaining({
+      allowDevtools: true,
+    }),
+  )
+
+  expect(await parseOptionsWithoutHelp(['--allow-devtools'])).toEqual(
+    expect.objectContaining({
+      allowDevtools: true,
+    }),
+  )
+
+  expect(
+    await parseOptionsWithoutHelp([], { KIOSK_BROWSER_ALLOW_DEVTOOLS: 'true' }),
+  ).toEqual(
+    expect.objectContaining({
+      allowDevtools: true,
+    }),
+  )
+})
