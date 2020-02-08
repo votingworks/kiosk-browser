@@ -21,19 +21,6 @@ app.commandLine.appendSwitch('enable-speech-dispatcher')
 let mainWindow: Electron.BrowserWindow | undefined
 
 async function createWindow(): Promise<void> {
-  const mainScreen = await getMainScreen()
-
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: mainScreen?.width ?? 800,
-    height: mainScreen?.height ?? 600,
-    kiosk: true,
-    frame: false,
-    webPreferences: {
-      preload: join(__dirname, 'preload.js'),
-    },
-  })
-
   const options = await parseOptions(
     // https://github.com/electron/electron/issues/4690
     process.argv.slice(app.isPackaged ? 1 : 2),
@@ -50,6 +37,20 @@ async function createWindow(): Promise<void> {
     app.quit()
     return
   }
+
+  const mainScreen = await getMainScreen()
+
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: mainScreen?.width ?? 800,
+    height: mainScreen?.height ?? 600,
+    kiosk: true,
+    frame: false,
+    webPreferences: {
+      devTools: options.allowDevtools || !app.isPackaged,
+      preload: join(__dirname, 'preload.js'),
+    },
+  })
 
   const autoconfigurePrinterListener =
     options.autoconfigurePrintConfig &&
