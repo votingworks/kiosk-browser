@@ -30,13 +30,17 @@ async function createWindow(): Promise<void> {
   if ('error' in options) {
     console.log(`error: ${options.error.message}`)
     printHelp()
-    app.quit()
+    app.exit(1)
     return
   } else if ('help' in options) {
     printHelp()
-    app.quit()
+    app.exit()
     return
   }
+
+  const autoconfigurePrinterListener =
+    options.autoconfigurePrintConfig &&
+    autoconfigurePrint(options.autoconfigurePrintConfig, onDeviceChange)
 
   const mainScreen = await getMainScreen()
 
@@ -51,10 +55,6 @@ async function createWindow(): Promise<void> {
       preload: join(__dirname, 'preload.js'),
     },
   })
-
-  const autoconfigurePrinterListener =
-    options.autoconfigurePrintConfig &&
-    autoconfigurePrint(options.autoconfigurePrintConfig, onDeviceChange)
 
   // and load the initial page.
   mainWindow.loadURL(options.url.href)

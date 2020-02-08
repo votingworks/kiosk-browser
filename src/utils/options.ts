@@ -20,13 +20,10 @@ export interface Invalid {
   error: Error
 }
 
-/**
- * Gets the URL to navigate.
- */
-export default async function parseOptions(
-  argv: typeof process.argv = [],
-  env: typeof process.env = {},
-): Promise<Options | Help | Invalid> {
+const parseOptionsWithoutTryCatch: typeof parseOptions = async (
+  argv = [],
+  env = {},
+) => {
   debug('parsing options from argv=%o and env=%O', argv, env)
 
   let urlArg: string | undefined
@@ -58,7 +55,7 @@ export default async function parseOptions(
       debug('got implicit URL argument: %s', urlArg)
     } else {
       debug('unexpected option: %s', arg)
-      return { error: new Error(`unexpected option: ${arg}`) }
+      throw new Error(`unexpected option: ${arg}`)
     }
 
     // eslint-disable-next-line no-inner-declarations
@@ -90,6 +87,20 @@ export default async function parseOptions(
   return options
 }
 
+/**
+ * Gets the URL to navigate.
+ */
+export default async function parseOptions(
+  argv: typeof process.argv = [],
+  env: typeof process.env = {},
+): Promise<Options | Help | Invalid> {
+  try {
+    return await parseOptionsWithoutTryCatch(argv, env)
+  } catch (error) {
+    return { error }
+  }
+}
+
 export async function loadPrintConfig(
   printConfigPath?: string,
 ): Promise<PrintConfig | undefined> {
@@ -111,7 +122,9 @@ export async function loadPrintConfig(
   return printConfig
 }
 
-export function printHelp(out = process.stdout): void {
+export function printHelp(
+  out: { write(str: string): void } = process.stdout,
+): void {
   const b = chalk.bold.underline
   const i = chalk.italic.green
   const c = chalk.dim

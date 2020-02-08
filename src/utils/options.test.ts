@@ -1,4 +1,4 @@
-import parseOptions, { Options } from './options'
+import parseOptions, { Options, printHelp } from './options'
 import { ok } from './assert'
 
 async function parseOptionsWithoutHelp(
@@ -55,4 +55,27 @@ test('allow devtools', async () => {
       allowDevtools: true,
     }),
   )
+})
+
+class SimpleWriter {
+  private buffer = ''
+
+  write(str: string): void {
+    this.buffer += str
+  }
+
+  toString(): string {
+    return this.buffer
+  }
+}
+
+test('help', () => {
+  const out = new SimpleWriter()
+  printHelp(out)
+
+  const help = out.toString()
+  expect(help).toContain('kiosk-browser [OPTIONS] [URL]')
+  expect(help).toContain('-u, --url URL')
+  expect(help).toContain('-p, --autoconfigure-print-config PATH')
+  expect(help).toContain('Auto-Configure Printers')
 })
