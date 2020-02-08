@@ -17,7 +17,9 @@ jobs:
           node-version: '12.x'
 
       - name: Install Native Dependencies
-        run: sudo apt-get install libudev-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev
 
       - name: Get yarn cache
         id: yarn-cache
