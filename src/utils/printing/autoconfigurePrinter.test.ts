@@ -1,31 +1,20 @@
 import autoconfigurePrinter from './autoconfigurePrinter'
-import Listeners from '../Listeners'
-import { ChangeType } from '../../ipc/manage-device-subscription'
+import { Subject } from 'rxjs'
 import { Device } from '../usb'
 import fakeDevice from '../../../test/fakeDevice'
 import configurePrinterFromDevice from './configurePrinterFromDevice'
+import mockOf from '../../../test/mockOf'
+import deferred from '../deferred'
 
 jest.mock('./configurePrinterFromDevice')
 
-test('device remove events', () => {
-  const listeners = new Listeners<[ChangeType, Device]>()
-  const config = {
-    printerName: 'VxPrinter',
-    printers: [],
-  }
+test('configurable device added', async () => {
+  const configurePrinterDeferred = deferred<boolean>()
+  mockOf(configurePrinterFromDevice).mockReturnValueOnce(
+    configurePrinterDeferred.promise,
+  )
 
-  // Set up autoconfigure.
-  autoconfigurePrinter(config, listeners)
-
-  // Trigger remove.
-  listeners.trigger(ChangeType.Remove, fakeDevice())
-
-  // We do not try to configure it.
-  expect(configurePrinterFromDevice).not.toHaveBeenCalled()
-})
-
-test('device add calls to configure', () => {
-  const listeners = new Listeners<[ChangeType, Device]>()
+  const observable = new Subject<Iterable<Device>>()
   const config = {
     printerName: 'VxPrinter',
     printers: [],
@@ -33,11 +22,58 @@ test('device add calls to configure', () => {
   const addedDevice = fakeDevice()
 
   // Set up autoconfigure.
-  autoconfigurePrinter(config, listeners)
+  const autoconfigure = autoconfigurePrinter(config, observable)
+  const callback = jest.fn()
+  autoconfigure.subscribe({
+    next: callback,
+  })
 
   // Device added.
-  listeners.trigger(ChangeType.Add, addedDevice)
+  observable.next([addedDevice])
+  expect(callback).not.toHaveBeenCalled()
 
   // We try to configure it.
   expect(configurePrinterFromDevice).toHaveBeenCalledWith(config, addedDevice)
+
+  // Configuration succeeded.
+  configurePrinterDeferred.resolve(true)
+  await configurePrinterDeferred.promise
+
+  // Output observable yields on success.
+  expect(callback).toHaveBeenCalledTimes(1)
+})
+
+test('unconfigurable device added', async () => {
+  const configurePrinterDeferred = deferred<boolean>()
+  mockOf(configurePrinterFromDevice).mockReturnValueOnce(
+    configurePrinterDeferred.promise,
+  )
+
+  const observable = new Subject<Iterable<Device>>()
+  const config = {
+    printerName: 'VxPrinter',
+    printers: [],
+  }
+  const addedDevice = fakeDevice()
+
+  // Set up autoconfigure.
+  const autoconfigure = autoconfigurePrinter(config, observable)
+  const callback = jest.fn()
+  autoconfigure.subscribe({
+    next: callback,
+  })
+
+  // Device added.
+  observable.next([addedDevice])
+  expect(callback).not.toHaveBeenCalled()
+
+  // We try to configure it.
+  expect(configurePrinterFromDevice).toHaveBeenCalledWith(config, addedDevice)
+
+  // Configuration failed.
+  configurePrinterDeferred.resolve(false)
+  await configurePrinterDeferred.promise
+
+  // Output observable does not yield on failure.
+  expect(callback).not.toHaveBeenCalled()
 })

@@ -44,11 +44,11 @@ describe('getPrinterInfo', () => {
 
 test('registers an IPC handler for getting printer info', async () => {
   let channel: string | undefined
-  let listener: ((event: IpcMainInvokeEvent) => unknown) | undefined
+  let handler: ((event: IpcMainInvokeEvent) => unknown) | undefined
 
   function handle(ch: string, fn: () => void): void {
     channel = ch
-    listener = fn
+    handler = fn
   }
 
   register(({ handle } as unknown) as IpcMain)
@@ -59,7 +59,7 @@ test('registers an IPC handler for getting printer info', async () => {
   )
 
   expect(
-    await listener?.(({
+    await handler?.(({
       sender: {
         getPrinters(): Electron.PrinterInfo[] {
           return [

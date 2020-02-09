@@ -18,7 +18,7 @@ beforeEach(() => {
 
 test('registers a handler to trigger a print', async () => {
   let channel: string | undefined
-  let listener:
+  let handler:
     | ((
         event: IpcMainInvokeEvent,
         deviceName?: string,
@@ -28,7 +28,7 @@ test('registers a handler to trigger a print', async () => {
 
   function handle(ch: string, fn: () => void): void {
     channel = ch
-    listener = fn
+    handler = fn
   }
 
   const sender = ({
@@ -42,7 +42,7 @@ test('registers a handler to trigger a print', async () => {
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
-  await listener?.(
+  await handler?.(
     ({
       sender,
     } as unknown) as IpcMainInvokeEvent,
@@ -63,13 +63,13 @@ test('registers a handler to trigger a print', async () => {
 
 test('uses the preferred printer if none is provided', async () => {
   let channel: string | undefined
-  let listener:
+  let handler:
     | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
     | undefined
 
   function handle(ch: string, fn: () => void): void {
     channel = ch
-    listener = fn
+    handler = fn
   }
 
   const sender = ({
@@ -87,7 +87,7 @@ test('uses the preferred printer if none is provided', async () => {
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
-  await listener?.(({
+  await handler?.(({
     sender,
   } as unknown) as IpcMainInvokeEvent)
 
@@ -102,13 +102,13 @@ test('uses the preferred printer if none is provided', async () => {
 
 test('propagates errors', async () => {
   let channel: string | undefined
-  let listener:
+  let handler:
     | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
     | undefined
 
   function handle(ch: string, fn: () => void): void {
     channel = ch
-    listener = fn
+    handler = fn
   }
 
   const sender = ({
@@ -121,7 +121,7 @@ test('propagates errors', async () => {
   expect(channel).toEqual(printChannel)
 
   await expect(
-    listener?.(({
+    handler?.(({
       sender,
     } as unknown) as IpcMainInvokeEvent),
   ).rejects.toThrowError('PCLOADLETTER')

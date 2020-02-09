@@ -8,14 +8,21 @@ import {
   PrinterInfo,
   channel as getPrinterInfoChannel,
 } from './ipc/get-printer-info'
-import { channel as getDeviceListChannel } from './ipc/get-device-list'
 import { channel as quitChannel } from './ipc/quit'
-import { Device } from './utils/usb'
-import DeviceChangeListeners from './utils/DeviceChangeListeners'
+import buildDevicesObservable from './utils/buildDevicesObservable'
 import { KioskBrowser } from '../types/kiosk-window'
+import makeDebug from 'debug'
+
+const debug = makeDebug('kiosk-browser:client')
 
 class Kiosk implements KioskBrowser.Kiosk {
-  public async print(deviceName: string, paperSource: string): Promise<void> {
+  public async print(deviceName?: string, paperSource?: string): Promise<void> {
+    debug(
+      'forwarding `print(deviceName: %s, paperSource: %s)` to main process',
+      deviceName,
+      paperSource,
+    )
+
     // NOTE: This check ensures we don't silently fail printing.
     //
     // This is here because we can't simply add `deviceName` as an argument
@@ -40,22 +47,31 @@ class Kiosk implements KioskBrowser.Kiosk {
   }
 
   public async getBatteryInfo(): Promise<BatteryInfo> {
+    debug('forwarding `getBatteryInfo` to main process')
     return ipcRenderer.invoke(getBatteryInfoChannel)
   }
 
   public async getPrinterInfo(): Promise<PrinterInfo[]> {
+    debug('forwarding `getPrinterInfo` to main process')
     return ipcRenderer.invoke(getPrinterInfoChannel)
   }
 
-  public async getDeviceList(): Promise<Device[]> {
-    return ipcRenderer.invoke(getDeviceListChannel)
-  }
-
-  public onDeviceChange = new DeviceChangeListeners(ipcRenderer)
+  /**
+   * Gets an observable that yields the current set of connected USB devices as
+   * devices are added and removed.
+   *
+   * Given a set of initial devices (e.g. {mouse, keyboard}), a subscriber would
+   * receive the initial set. Once a new device is added (e.g. flash drive), that
+   * first subscriber receives a new set (e.g. {mouse, keyboard, flash drive}).
+   * New subscribers immediately receive the same current set.
+   */
+  public devices = buildDevicesObservable(ipcRenderer)
 
   public quit(): void {
+    debug('forwarding `quit` to main process')
     ipcRenderer.invoke(quitChannel)
   }
 }
 
+debug('setting up window.kiosk')
 window.kiosk = new Kiosk()

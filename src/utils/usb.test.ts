@@ -1,85 +1,80 @@
-import { onDeviceChange } from './usb'
-import usbDetection from 'usb-detection'
+import { buildDevicesObservable } from './usb'
+import usbDetection, { Device } from 'usb-detection'
 import mockOf from '../../test/mockOf'
 import fakeDevice from '../../test/fakeDevice'
-import { ChangeType } from '../ipc/manage-device-subscription'
+import deferred from './deferred'
+import single from './single'
+import { ImmutableSet } from './mergeChanges'
 
-afterEach(() => {
-  onDeviceChange.removeAll()
-})
-
-test('monitoring is off by default', () => {
-  expect(onDeviceChange.isPaused()).toBe(true)
-})
-
-test('monitoring is on once there is a listener', async () => {
-  onDeviceChange.add(jest.fn())
-  await onDeviceChange.waitForMonitoring()
+test('monitoring is on once there is a subscription', () => {
+  buildDevicesObservable().subscribe()
   expect(usbDetection.startMonitoring).toHaveBeenCalledTimes(1)
-  expect(onDeviceChange.isPaused()).toBe(false)
 })
 
-test('monitoring is off once an assertion is released', async () => {
-  const listener = onDeviceChange.add(jest.fn())
-  await onDeviceChange.waitForMonitoring()
-  expect(onDeviceChange.isPaused()).toBe(false)
-  listener.remove()
-  await onDeviceChange.waitForMonitoring()
-  expect(onDeviceChange.isPaused()).toBe(true)
+test('monitoring is off once an assertion is released', () => {
+  const subscription = buildDevicesObservable().subscribe()
+  subscription.unsubscribe()
   expect(usbDetection.stopMonitoring).toHaveBeenCalledTimes(1)
 })
 
-test('startMonitoring is only called once', async () => {
-  onDeviceChange.add(jest.fn())
-  onDeviceChange.add(jest.fn())
-  await onDeviceChange.waitForMonitoring()
+test('startMonitoring is only called once', () => {
+  const devices = buildDevicesObservable()
+  devices.subscribe()
+  devices.subscribe()
   expect(usbDetection.startMonitoring).toHaveBeenCalledTimes(1)
 })
 
-test('fires initial add callbacks with every existing device', async () => {
-  const callback = jest.fn()
-
+test('yields initial devices', async () => {
   mockOf(usbDetection.find).mockResolvedValueOnce([
     fakeDevice({ deviceName: 'Device #1' }),
     fakeDevice({ deviceName: 'Device #2' }),
   ])
-  onDeviceChange.add(callback)
-  await onDeviceChange.waitForMonitoring()
 
-  expect(callback).toHaveBeenNthCalledWith(
-    1,
-    ChangeType.Add,
+  const devices = buildDevicesObservable()
+  const defer = deferred<ImmutableSet<Device>>()
+  const subscriber = jest
+    .fn<void, [ImmutableSet<Device>]>()
+    .mockImplementation(defer.resolve)
+
+  devices.subscribe(subscriber)
+  await defer.promise
+
+  const args = single(subscriber.mock.calls)
+  const arg = single(args)
+
+  expect(Array.from(arg)).toEqual([
     expect.objectContaining({ deviceName: 'Device #1' }),
-  )
-  expect(callback).toHaveBeenNthCalledWith(
-    2,
-    ChangeType.Add,
     expect.objectContaining({ deviceName: 'Device #2' }),
-  )
+  ])
 })
 
-test('does not fire initial add callbacks for removed devices', async () => {
-  const callback = jest.fn()
-  const devices = [
+test('does not include removed devices in initial yield', async () => {
+  const devices = buildDevicesObservable()
+  const initialDevices = [
     fakeDevice({ deviceName: 'Device #1' }),
     fakeDevice({ deviceName: 'Device #2' }),
   ]
 
-  mockOf(usbDetection.find).mockResolvedValueOnce(devices)
+  mockOf(usbDetection.find).mockResolvedValueOnce(initialDevices)
 
   // Ensure device monitoring is on.
-  onDeviceChange.add(jest.fn())
-  await onDeviceChange.waitForMonitoring()
+  const defer = deferred<ImmutableSet<Device>>()
+  devices.subscribe(defer.resolve)
+  await defer.promise
 
   // Remove all devices.
   const [, onDeviceRemoved] =
     mockOf(usbDetection.on).mock.calls.find(call => call[0] === 'remove') ?? []
-  for (const device of devices) {
+  for (const device of initialDevices) {
     onDeviceRemoved?.(device)
   }
 
-  onDeviceChange.add(callback)
-  await onDeviceChange.waitForMonitoring()
+  const subscriber = jest.fn<void, [ImmutableSet<Device>]>()
 
-  expect(callback).not.toHaveBeenCalled()
+  devices.subscribe(subscriber)
+
+  const args = single(subscriber.mock.calls)
+  const arg = single(args)
+
+  expect(Array.from(arg)).toEqual([])
 })

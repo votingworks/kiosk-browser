@@ -44,6 +44,7 @@
   "dependencies": {
     "chalk": "^3.0.0",
     "debug": "^4.1.1",
+    "rxjs": "^6.5.4",
     "usb-detection": "^4.7.0",
     "xrandr-parse": "^1.0.0"
   },
