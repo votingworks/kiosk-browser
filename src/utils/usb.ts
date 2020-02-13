@@ -120,7 +120,7 @@ class USBDeviceListeners extends Listeners<[ChangeType, Device]> {
     debug('calling underlying stopMonitoring')
     usbDetection.stopMonitoring()
     usbDetection.off('add', this.onDeviceAdded)
-    usbDetection.off('removed', this.onDeviceRemoved)
+    usbDetection.off('remove', this.onDeviceRemoved)
 
     // Clear the cached device list.
     this.devices.clear()
