@@ -28,8 +28,8 @@ async function createWindow(): Promise<void> {
   )
 
   if ('error' in options) {
-    console.log(`error: ${options.error.message}`)
-    printHelp()
+    console.error(`error: ${options.error.message}`)
+    printHelp(process.stderr)
     app.exit(1)
     return
   } else if ('help' in options) {
