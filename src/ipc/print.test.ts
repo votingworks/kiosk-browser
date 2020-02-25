@@ -54,13 +54,11 @@ test('registers a handler to trigger a print', async () => {
     printBackground: true,
   })
 
-  expect(execMock).toHaveBeenCalledWith('lpr', [
-    '-P',
-    'mainprinter',
-    '-o',
-    'InputSlot=Tray3',
-    expect.any(String),
-  ])
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    ['-P', 'mainprinter', '-o', 'InputSlot=Tray3'],
+    expect.anything(),
+  )
 })
 
 test('uses the preferred printer if none is provided', async () => {
@@ -95,11 +93,11 @@ test('uses the preferred printer if none is provided', async () => {
 
   expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true })
 
-  expect(execMock).toHaveBeenCalledWith('lpr', [
-    '-P',
-    'main printer',
-    expect.any(String),
-  ])
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    ['-P', 'main printer'],
+    expect.anything(),
+  )
 })
 
 test('propagates errors', async () => {

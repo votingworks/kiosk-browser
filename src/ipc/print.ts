@@ -1,6 +1,4 @@
 import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
-import { file } from 'tmp-promise'
-import * as fs from 'fs'
 import exec from '../utils/exec'
 import { debug } from '../utils/printing'
 
@@ -20,18 +18,18 @@ function getPreferredPrinterName(printers: PrinterInfo[]): string | undefined {
 
 const availablePaperSources = ['Tray1', 'Tray2', 'Tray3']
 
-interface PrintFileParameters {
-  filePath: string
+interface PrintDataParameters {
+  data: Buffer
   deviceName: string
   paperSource: string
 }
 
-async function printFile({
-  filePath,
+async function printData({
+  data,
   deviceName,
   paperSource,
-}: PrintFileParameters): Promise<void> {
-  const lprOptions = []
+}: PrintDataParameters): Promise<void> {
+  const lprOptions: string[] = []
 
   if (deviceName) {
     lprOptions.push('-P', deviceName)
@@ -41,10 +39,9 @@ async function printFile({
     lprOptions.push('-o', 'InputSlot=' + paperSource)
   }
 
-  lprOptions.push(filePath)
-
   debug('printing via lpr with args=%o', lprOptions)
-  await exec('lpr', lprOptions)
+  const { stdout, stderr } = await exec('lpr', lprOptions, data)
+  debug('`lpr` succeeded with stdout=%s stderr=%s', stdout, stderr)
 }
 
 /**
@@ -64,20 +61,11 @@ export default function register(ipcMain: IpcMain): void {
       })
       debug('printed to PDF, size=%d', data.length)
 
-      const tmpFile = await file()
-      await fs.promises.writeFile(tmpFile.path, data)
-      debug('wrote PDF to temporary file: %s', tmpFile.path)
-
-      try {
-        await printFile({
-          deviceName,
-          paperSource,
-          filePath: tmpFile.path,
-        })
-      } finally {
-        debug('removing temporary PDF file: %s', tmpFile.path)
-        await tmpFile.cleanup()
-      }
+      await printData({
+        data,
+        deviceName,
+        paperSource,
+      })
     },
   )
 }
