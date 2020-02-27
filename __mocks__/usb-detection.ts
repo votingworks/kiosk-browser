@@ -1,6 +1,7 @@
 import mockOf from '../test/mockOf'
+import fakeDevice from '../test/fakeDevice'
 
-const find = jest.fn().mockResolvedValue([])
+const find = jest.fn().mockResolvedValue([fakeDevice()])
 const startMonitoring = jest.fn()
 const stopMonitoring = jest.fn()
 const addListener = jest.fn()

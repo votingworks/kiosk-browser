@@ -1,13 +1,12 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron'
 import { join } from 'path'
 import { getMainScreen } from './utils/screen'
-import { onDeviceChange } from './utils/usb'
+import { devices } from './utils/usb'
 import parseOptions, { printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
-import registerGetDeviceListHandler from './ipc/get-device-list'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
-import registerManageDeviceSubscriptionHandler from './ipc/manage-device-subscription'
+import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
 import registerPrintHandler from './ipc/print'
 import registerQuitHandler from './ipc/quit'
 
@@ -38,9 +37,9 @@ async function createWindow(): Promise<void> {
     return
   }
 
-  const autoconfigurePrinterListener =
+  const autoconfigurePrinterSubscription =
     options.autoconfigurePrintConfig &&
-    autoconfigurePrint(options.autoconfigurePrintConfig, onDeviceChange)
+    autoconfigurePrint(options.autoconfigurePrintConfig, devices).subscribe()
 
   const mainScreen = await getMainScreen()
 
@@ -65,7 +64,6 @@ async function createWindow(): Promise<void> {
   // Register IPC handlers.
   const handlers: RegisterIpcHandler[] = [
     registerGetBatteryInfoHandler,
-    registerGetDeviceListHandler,
     registerGetPrinterInfoHandler,
     registerManageDeviceSubscriptionHandler,
     registerPrintHandler,
@@ -88,7 +86,7 @@ async function createWindow(): Promise<void> {
     }
 
     // Stop printer autoconfigure.
-    autoconfigurePrinterListener?.remove()
+    autoconfigurePrinterSubscription?.unsubscribe()
 
     // Quit the app.
     app.quit()

@@ -41,3 +41,12 @@ test('different printer returned from `lpstat`', async () => {
   )
   expect(execMock).toHaveBeenCalledWith('lpstat', ['-v', 'a-printer'])
 })
+
+test('`lpstat` gibberish', async () => {
+  execMock.mockResolvedValueOnce({
+    stdout: 'abba gazabba',
+    stderr: '',
+  })
+
+  expect(await getPrinterDeviceURI('a-printer')).toBeUndefined()
+})

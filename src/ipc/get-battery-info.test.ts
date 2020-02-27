@@ -116,15 +116,15 @@ POWER_SUPPLY_STATUS=Discharging
 `)
 
   let channel: string | undefined
-  let listener: (() => unknown) | undefined
+  let handler: (() => unknown) | undefined
 
   function handle(ch: string, fn: () => void): void {
     channel = ch
-    listener = fn
+    handler = fn
   }
 
   register(({ handle } as unknown) as IpcMain)
 
   expect(channel).toEqual(getBatteryInfoChannel)
-  expect(await listener?.()).toEqual({ level: 0.2, discharging: true })
+  expect(await handler?.()).toEqual({ level: 0.2, discharging: true })
 })
