@@ -41,6 +41,14 @@ If something isn't working as you'd expect it to, try running with debug logging
 $ DEBUG=kiosk-browser:* kiosk-browser http://example.com/
 ```
 
+## Development
+
+If you're working on a bug fix or feature for `kiosk-browser`, here's how to build and run it in development:
+
+1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
+1. Install native package dependencies with `make install`.
+1. Run with `yarn start`. Changes will not automatically be picked up, so just Ctrl-C the `yarn start` and run it again.
+
 ## License
 
 GPL-3.0
