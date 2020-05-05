@@ -1,17 +1,18 @@
+import makeDebug from 'debug'
 import { ipcRenderer } from 'electron'
-import { channel as printChannel } from './ipc/print'
+import { KioskBrowser } from '../types/kiosk-window'
 import {
   BatteryInfo,
   channel as getBatteryInfoChannel,
 } from './ipc/get-battery-info'
 import {
-  PrinterInfo,
   channel as getPrinterInfoChannel,
+  PrinterInfo,
 } from './ipc/get-printer-info'
+import { channel as printChannel } from './ipc/print'
+import { channel as printToPDFChannel } from './ipc/printToPDF'
 import { channel as quitChannel } from './ipc/quit'
 import buildDevicesObservable from './utils/buildDevicesObservable'
-import { KioskBrowser } from '../types/kiosk-window'
-import makeDebug from 'debug'
 
 const debug = makeDebug('kiosk-browser:client')
 
@@ -44,6 +45,11 @@ class Kiosk implements KioskBrowser.Kiosk {
     } else {
       await ipcRenderer.invoke(printChannel)
     }
+  }
+
+  public async printToPDF(): Promise<Uint8Array> {
+    debug('forwarding `printToPDF()` to main process')
+    return await ipcRenderer.invoke(printToPDFChannel)
   }
 
   public async getBatteryInfo(): Promise<BatteryInfo> {
