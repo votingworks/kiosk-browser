@@ -1,10 +1,10 @@
-import register, {
-  parseBatteryInfo,
-  getBatteryInfo,
-  channel as getBatteryInfoChannel,
-} from './get-battery-info'
-import { IpcMain } from 'electron'
 import { promises as fs } from 'fs'
+import { fakeIpc } from '../../test/ipc'
+import register, {
+  channel as getBatteryInfoChannel,
+  getBatteryInfo,
+  parseBatteryInfo,
+} from './get-battery-info'
 
 afterEach(() => {
   jest.spyOn(fs, 'readFile').mockRestore()
@@ -115,16 +115,12 @@ POWER_SUPPLY_ENERGY_FULL=1000
 POWER_SUPPLY_STATUS=Discharging
 `)
 
-  let channel: string | undefined
-  let handler: (() => unknown) | undefined
+  const { ipcMain, ipcRenderer } = fakeIpc()
 
-  function handle(ch: string, fn: () => void): void {
-    channel = ch
-    handler = fn
-  }
+  register(ipcMain)
 
-  register(({ handle } as unknown) as IpcMain)
-
-  expect(channel).toEqual(getBatteryInfoChannel)
-  expect(await handler?.()).toEqual({ level: 0.2, discharging: true })
+  expect(await ipcRenderer.invoke(getBatteryInfoChannel)).toEqual({
+    level: 0.2,
+    discharging: true,
+  })
 })

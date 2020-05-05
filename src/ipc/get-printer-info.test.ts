@@ -1,12 +1,12 @@
-import register, {
-  getPrinterInfo,
-  channel as getPrinterInfoChannel,
-  PrinterInfo,
-} from './get-printer-info'
+import { WebContents } from 'electron'
 import fakePrinter from '../../test/fakePrinter'
+import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
 import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs'
+import register, {
+  channel as getPrinterInfoChannel,
+  getPrinterInfo,
+} from './get-printer-info'
 
 jest.mock('../utils/printing/getConnectedDeviceURIs')
 
@@ -43,34 +43,26 @@ describe('getPrinterInfo', () => {
 })
 
 test('registers an IPC handler for getting printer info', async () => {
-  let channel: string | undefined
-  let handler: ((event: IpcMainInvokeEvent) => unknown) | undefined
-
-  function handle(ch: string, fn: () => void): void {
-    channel = ch
-    handler = fn
+  const sender: Partial<WebContents> = {
+    getPrinters(): Electron.PrinterInfo[] {
+      return [
+        fakePrinter({
+          options: {
+            'device-uri': 'usb://HP/Color%20LaserJet?serial=1234',
+          },
+        }),
+      ]
+    },
   }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
 
-  register(({ handle } as unknown) as IpcMain)
-  expect(channel).toEqual(getPrinterInfoChannel)
+  register(ipcMain)
 
   mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
     new Set(['usb://HP/Color%20LaserJet?serial=1234']),
   )
 
-  expect(
-    await handler?.(({
-      sender: {
-        getPrinters(): Electron.PrinterInfo[] {
-          return [
-            fakePrinter({
-              options: {
-                'device-uri': 'usb://HP/Color%20LaserJet?serial=1234',
-              },
-            }),
-          ]
-        },
-      },
-    } as unknown) as IpcMainInvokeEvent),
-  ).toEqual([expect.objectContaining({ connected: true })])
+  expect(await ipcRenderer.invoke(getPrinterInfoChannel)).toEqual([
+    expect.objectContaining({ connected: true }),
+  ])
 })

@@ -1,9 +1,10 @@
-import register, { channel as printChannel } from './print'
-import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
-import getPreferredPrinter from '../utils/getPreferredPrinter'
-import mockOf from '../../test/mockOf'
+import { WebContents } from 'electron'
 import fakePrinter from '../../test/fakePrinter'
+import { fakeIpc } from '../../test/ipc'
+import mockOf from '../../test/mockOf'
 import exec from '../utils/exec'
+import getPreferredPrinter from '../utils/getPreferredPrinter'
+import register, { channel as printChannel } from './print'
 
 const getPreferredPrinterMock = mockOf(getPreferredPrinter)
 const execMock = mockOf(exec)
@@ -17,38 +18,17 @@ beforeEach(() => {
 })
 
 test('registers a handler to trigger a print', async () => {
-  let channel: string | undefined
-  let handler:
-    | ((
-        event: IpcMainInvokeEvent,
-        deviceName?: string,
-        paperSource?: string,
-      ) => unknown)
-    | undefined
-
-  function handle(ch: string, fn: () => void): void {
-    channel = ch
-    handler = fn
-  }
-
-  const sender = ({
+  const sender: Partial<WebContents> = {
     getPrinters: () => [],
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
-  } as unknown) as WebContents
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
 
-  register(({ handle } as unknown) as IpcMain)
-
-  expect(channel).toEqual(printChannel)
+  register(ipcMain)
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
-  await handler?.(
-    ({
-      sender,
-    } as unknown) as IpcMainInvokeEvent,
-    'mainprinter',
-    'Tray3',
-  )
+  await ipcRenderer.invoke(printChannel, 'mainprinter', 'Tray3')
 
   expect(sender.printToPDF).toHaveBeenCalledWith({
     printBackground: true,
@@ -62,24 +42,13 @@ test('registers a handler to trigger a print', async () => {
 })
 
 test('uses the preferred printer if none is provided', async () => {
-  let channel: string | undefined
-  let handler:
-    | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
-    | undefined
-
-  function handle(ch: string, fn: () => void): void {
-    channel = ch
-    handler = fn
-  }
-
-  const sender = ({
+  const sender: Partial<WebContents> = {
     getPrinters: () => [],
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
-  } as unknown) as WebContents
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
 
-  register(({ handle } as unknown) as IpcMain)
-
-  expect(channel).toEqual(printChannel)
+  register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
     fakePrinter({ name: 'main printer' }),
@@ -87,9 +56,7 @@ test('uses the preferred printer if none is provided', async () => {
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
-  await handler?.(({
-    sender,
-  } as unknown) as IpcMainInvokeEvent)
+  await ipcRenderer.invoke(printChannel)
 
   expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true })
 
@@ -101,30 +68,16 @@ test('uses the preferred printer if none is provided', async () => {
 })
 
 test('propagates errors', async () => {
-  let channel: string | undefined
-  let handler:
-    | ((event: IpcMainInvokeEvent, deviceName?: string) => unknown)
-    | undefined
-
-  function handle(ch: string, fn: () => void): void {
-    channel = ch
-    handler = fn
-  }
-
-  const sender = ({
+  const sender: Partial<WebContents> = {
     getPrinters: () => [],
     printToPDF: jest.fn().mockRejectedValueOnce(new Error('PCLOADLETTER')),
-  } as unknown) as WebContents
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
 
-  register(({ handle } as unknown) as IpcMain)
-
-  expect(channel).toEqual(printChannel)
-
-  await expect(
-    handler?.(({
-      sender,
-    } as unknown) as IpcMainInvokeEvent),
-  ).rejects.toThrowError('PCLOADLETTER')
+  register(ipcMain)
+  await expect(ipcRenderer.invoke(printChannel)).rejects.toThrowError(
+    'PCLOADLETTER',
+  )
 
   expect(sender.printToPDF).toHaveBeenCalled()
 })
