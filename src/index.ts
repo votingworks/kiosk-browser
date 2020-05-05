@@ -1,14 +1,15 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron'
 import { join } from 'path'
-import { getMainScreen } from './utils/screen'
-import { devices } from './utils/usb'
-import parseOptions, { printHelp } from './utils/options'
-import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
+import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
-import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
 import registerPrintHandler from './ipc/print'
+import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
+import parseOptions, { printHelp } from './utils/options'
+import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
+import { getMainScreen } from './utils/screen'
+import { devices } from './utils/usb'
 
 type RegisterIpcHandler = (ipcMain: IpcMain) => (() => void) | void
 
@@ -67,6 +68,7 @@ async function createWindow(): Promise<void> {
     registerGetPrinterInfoHandler,
     registerManageDeviceSubscriptionHandler,
     registerPrintHandler,
+    registerPrintToPDFHandler,
     registerQuitHandler,
   ]
 
