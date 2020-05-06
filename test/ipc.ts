@@ -1,4 +1,4 @@
-import { IpcMain, IpcRenderer, WebContents, IpcMainInvokeEvent } from 'electron'
+import { IpcMain, IpcMainInvokeEvent, IpcRenderer, WebContents } from 'electron'
 
 type Input =
   | string
@@ -43,7 +43,11 @@ type IpcMainListener = Parameters<IpcMain['handle']>[1]
  */
 export function fakeIpc(
   sender: Partial<WebContents> = {},
-): { ipcMain: IpcMain; ipcRenderer: IpcRenderer } {
+): {
+  ipcMain: IpcMain
+  ipcRenderer: IpcRenderer
+  setWebContents(sender: Partial<WebContents>): void
+} {
   const listeners = new Map<string, IpcMainListener>()
 
   const ipcMain: Partial<IpcMain> = {
@@ -68,7 +72,9 @@ export function fakeIpc(
 
       return roundTripData(
         await listener(
-          ({ sender } as unknown) as IpcMainInvokeEvent,
+          ({
+            sender: { getURL: (): string => 'https://example.com/', ...sender },
+          } as unknown) as IpcMainInvokeEvent,
           ...args.map(arg => roundTripData(arg as Input)),
         ),
       )
@@ -78,5 +84,8 @@ export function fakeIpc(
   return {
     ipcMain: (ipcMain as unknown) as IpcMain,
     ipcRenderer: (ipcRenderer as unknown) as IpcRenderer,
+    setWebContents(newSender): void {
+      sender = newSender
+    },
   }
 }

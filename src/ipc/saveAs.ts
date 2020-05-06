@@ -1,6 +1,8 @@
 import makeDebug from 'debug'
 import { dialog, IpcMain, IpcMainInvokeEvent, ipcRenderer } from 'electron'
-import { createWriteStream, WriteStream } from 'fs'
+import multimatch from 'multimatch'
+import { Options } from '../utils/options'
+import OpenFiles from '../utils/OpenFiles'
 
 const debug = makeDebug('kiosk-browser:saveAs')
 
@@ -47,12 +49,19 @@ export class Client {
   }
 }
 
+function matchesPatterns(value: string, patterns?: readonly string[]): boolean {
+  if (!patterns) {
+    return false
+  }
+
+  return multimatch(value, patterns as string[]).length > 0
+}
+
 /**
  * Allows opening a file for writing.
  */
-export default function register(ipcMain: IpcMain): void {
-  let fd = 0
-  const openFiles = new Map<number, WriteStream>()
+export default function register(ipcMain: IpcMain, options: Options): void {
+  const files = new OpenFiles()
 
   async function handler(
     event: IpcMainInvokeEvent,
@@ -64,24 +73,59 @@ export default function register(ipcMain: IpcMain): void {
     event: IpcMainInvokeEvent,
     input: PromptToSave | Write | End,
   ): Promise<PromptToSaveResult | void> {
+    const url = new URL(event.sender.getURL())
+    const hostname = url.hostname || url.toString()
+
+    if (!matchesPatterns(hostname, options.allowedSaveAsHostnamePatterns)) {
+      debug(
+        '%s: aborting because %s is not an allowed hostname (allowed patterns=%o)',
+        input.type,
+        hostname,
+        options.allowedSaveAsHostnamePatterns,
+      )
+      throw new Error(`${hostname ?? url} is not allowed to use 'saveAs'`)
+    }
+
     switch (input.type) {
       case 'PromptToSave': {
         const result = await dialog.showSaveDialog({})
         debug('%s: filePath=%s', input.type, result.filePath)
 
         if (!result.filePath) {
+          debug('%s: aborting because save dialog was canceled', input.type)
           return
         }
 
-        fd += 1
-        openFiles.set(fd, createWriteStream(result.filePath))
+        if (
+          !matchesPatterns(
+            result.filePath,
+            options.allowedSaveAsDestinationPatterns,
+          )
+        ) {
+          debug(
+            '%s: aborting because %s is not an allowed destination (allowed patterns=%o)',
+            input.type,
+            result.filePath,
+            options.allowedSaveAsDestinationPatterns,
+          )
+          return
+        }
+
+        const fd = files.open(hostname, result.filePath)
+        debug(
+          '%s: opened %s for writing as fd=%d',
+          input.type,
+          result.filePath,
+          fd,
+        )
         return { fd }
       }
 
       case 'Write': {
-        const openFile = openFiles.get(input.fd)
+        const openFile = files.get(hostname, input.fd)
 
         if (!openFile) {
+          debug('%s: no file with fd=%d in hostname=%s', input.fd, hostname)
           throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
         }
 
@@ -97,19 +141,16 @@ export default function register(ipcMain: IpcMain): void {
       }
 
       case 'End': {
-        const openFile = openFiles.get(input.fd)
+        const openFile = files.get(hostname, input.fd)
 
         if (!openFile) {
+          debug('%s: no file with fd=%d in hostname=%s', input.fd, hostname)
           throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
         }
 
         debug('%s: filePath=%s', input.type, openFile.path)
-        return new Promise(resolve => {
-          openFile.end(() => {
-            openFiles.delete(input.fd)
-            resolve()
-          })
-        })
+        await files.close(hostname, input.fd)
+        break
       }
 
       default:

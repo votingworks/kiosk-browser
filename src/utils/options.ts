@@ -1,8 +1,8 @@
-import { PrintConfig } from './printing'
-import { promises } from 'fs'
-import { isAbsolute, join } from 'path'
 import chalk from 'chalk'
 import makeDebug from 'debug'
+import { promises } from 'fs'
+import { isAbsolute, join } from 'path'
+import { PrintConfig } from './printing'
 
 const debug = makeDebug('kiosk-browser:options')
 
@@ -10,6 +10,8 @@ export interface Options {
   url: URL
   autoconfigurePrintConfig?: PrintConfig
   allowDevtools?: boolean
+  allowedSaveAsDestinationPatterns?: readonly string[]
+  allowedSaveAsHostnamePatterns?: readonly string[]
 }
 
 export interface Help {
@@ -30,6 +32,8 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
   let autoconfiurePrintConfigArg: string | undefined
   let helpArg: string | undefined
   let allowDevtoolsArg: boolean | undefined
+  let allowedSaveAsDestinationPatterns: string[] | undefined
+  let allowedSaveAsHostnamePatterns: string[] | undefined
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
@@ -45,6 +49,28 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
     } else if (arg === '--allow-devtools') {
       allowDevtoolsArg = true
       debug('got flag: %s', arg)
+    } else if (arg === '--allowed-save-as-destination-pattern') {
+      i++
+      const pattern = argv[i]
+      debug('got option for %s: %s', arg, pattern)
+      if (!pattern || pattern.startsWith('-')) {
+        return { error: new Error(`expected value for option: ${arg}`) }
+      }
+      if (!allowedSaveAsDestinationPatterns) {
+        allowedSaveAsDestinationPatterns = []
+      }
+      allowedSaveAsDestinationPatterns.push(pattern)
+    } else if (arg === '--allowed-save-as-hostname-pattern') {
+      i++
+      const pattern = argv[i]
+      debug('got option for %s: %s', arg, pattern)
+      if (!pattern || pattern.startsWith('-')) {
+        return { error: new Error(`expected value for option: ${arg}`) }
+      }
+      if (!allowedSaveAsHostnamePatterns) {
+        allowedSaveAsHostnamePatterns = []
+      }
+      allowedSaveAsHostnamePatterns.push(pattern)
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg
     } else if (!arg.startsWith('-')) {
@@ -80,6 +106,12 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
     ),
     allowDevtools:
       allowDevtoolsArg ?? env.KIOSK_BROWSER_ALLOW_DEVTOOLS === 'true',
+    allowedSaveAsDestinationPatterns:
+      allowedSaveAsDestinationPatterns ??
+      (env.KIOSK_BROWSER_ALLOWED_SAVE_AS_DESTINATION_PATTERNS ?? '').split(':'),
+    allowedSaveAsHostnamePatterns:
+      allowedSaveAsHostnamePatterns ??
+      (env.KIOSK_BROWSER_ALLOWED_SAVE_AS_HOSTNAME_PATTERNS ?? '').split(':'),
   }
 
   debug('parsed options: %O', options)
@@ -137,9 +169,11 @@ export function printHelp(
 kiosk-browser [OPTIONS] [URL]
 
 ${b('Options')}
-  -u, --url URL                          Visit this URL on load.
-  -p, --autoconfigure-print-config PATH  Automatically configures connected printers according to the given config.
-      --allow-devtools                   Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
+  -u, --url URL                                      Visit this URL on load.
+  -p, --autoconfigure-print-config PATH              Automatically configures connected printers according to the given config.
+      --allowed-save-as-hostname-pattern PATTERN     Hostnames that are allowed to use the 'saveAs' API, e.g. 'localhost' or '*.mydomain.com'.
+      --allowed-save-as-destination-pattern PATTERN  File paths that may be written to with the 'saveAs' API, e.g. '/media/**/*'.
+      --allow-devtools                               Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
 
 ${b('Auto-Configure Printers')}
 kiosk-browser can automatically discover and configure printers. To do so, you

@@ -16,7 +16,11 @@ jest.mock('fs')
 test('open, write, close', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
-  register(ipcMain)
+  register(ipcMain, {
+    url: new URL('https://example.com/'),
+    allowedSaveAsHostnamePatterns: ['*'],
+    allowedSaveAsDestinationPatterns: ['**/*'],
+  })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
 
@@ -64,4 +68,107 @@ test('open, write, close', async () => {
   // end it
   await client.end(fd)
   expect(mockWriteStream)
+})
+
+test('disallows hosts that are not explicitly listed', async () => {
+  const url = new URL('https://evil.com/')
+  const { ipcMain, ipcRenderer } = fakeIpc({
+    getURL() {
+      return url.toString()
+    },
+  })
+
+  register(ipcMain, {
+    url,
+    allowedSaveAsHostnamePatterns: [],
+  })
+
+  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+
+  expect(electron.dialog.showSaveDialog).not.toBeCalled()
+  await expect(client.promptToSave()).rejects.toThrowError(
+    `evil.com is not allowed to use 'saveAs'`,
+  )
+})
+
+test('disallows file destinations that are not explicitly listed', async () => {
+  const { ipcMain, ipcRenderer } = fakeIpc()
+
+  register(ipcMain, {
+    url: new URL('https://example.com/'),
+    allowedSaveAsHostnamePatterns: ['example.com'],
+    allowedSaveAsDestinationPatterns: ['/media/**/*'],
+  })
+
+  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+
+  mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
+    canceled: false,
+    filePath: '/etc/passwd',
+  })
+  expect(await client.promptToSave()).toBeUndefined()
+
+  mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
+    canceled: false,
+    filePath: '/media/allowed/path.txt',
+  })
+  expect(await client.promptToSave()).toBeDefined()
+})
+
+test('does not allow cross-site file access', async () => {
+  const { ipcMain, ipcRenderer, setWebContents } = fakeIpc()
+
+  register(ipcMain, {
+    url: new URL('https://example.com/'),
+    allowedSaveAsHostnamePatterns: ['*'],
+    allowedSaveAsDestinationPatterns: ['**/*'],
+  })
+
+  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+
+  setWebContents({
+    getURL() {
+      return 'https://example.com/'
+    },
+  })
+
+  mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
+    canceled: false,
+    filePath: '/tmp/test.log',
+  })
+  const mockWriteStream: Partial<fs.WriteStream> = {
+    write: jest.fn().mockImplementation((_data, cb) => cb()),
+    end: jest.fn().mockImplementation(cb => cb()),
+  }
+  mockOf(fs.createWriteStream).mockReturnValueOnce(
+    mockWriteStream as fs.WriteStream,
+  )
+
+  const promptResult = await client.promptToSave()
+  defined(promptResult)
+
+  // the domain that created it should be able to write to it
+  await client.write(promptResult.fd, 'example things')
+  expect(mockWriteStream.write).toHaveBeenNthCalledWith(
+    1,
+    'example things',
+    expect.any(Function),
+  )
+
+  setWebContents({
+    getURL() {
+      return 'https://evil.com/'
+    },
+  })
+
+  // but the bad guys should not
+  await expect(
+    client.write(promptResult.fd, 'evil things'),
+  ).rejects.toThrowError(
+    `ENOENT: no such file with descriptor '${promptResult.fd}'`,
+  )
+  expect(mockWriteStream.write).not.toHaveBeenCalledWith(
+    'evil things',
+    expect.any(Function),
+  )
 })

@@ -1,5 +1,5 @@
-import parseOptions, { Options, printHelp } from './options'
 import { ok } from './assert'
+import parseOptions, { Options, printHelp } from './options'
 
 async function parseOptionsWithoutHelp(
   argv: typeof process.argv = [],
@@ -55,6 +55,22 @@ test('allow devtools', async () => {
       allowDevtools: true,
     }),
   )
+})
+
+test('allowed saveAs destination patterns', async () => {
+  const options = await parseOptionsWithoutHelp([
+    '--allowed-save-as-destination-pattern',
+    '/media/**/*',
+  ])
+  expect(options.allowedSaveAsDestinationPatterns).toEqual(['/media/**/*'])
+})
+
+test('allowed saveAs hostname patterns', async () => {
+  const options = await parseOptionsWithoutHelp([
+    '--allowed-save-as-hostname-pattern',
+    'localhost',
+  ])
+  expect(options.allowedSaveAsHostnamePatterns).toEqual(['localhost'])
 })
 
 class SimpleWriter {
