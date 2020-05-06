@@ -6,6 +6,7 @@ import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerPrintHandler from './ipc/print'
 import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
+import registerSaveAsHandler from './ipc/saveAs'
 import parseOptions, { printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
@@ -70,6 +71,7 @@ async function createWindow(): Promise<void> {
     registerPrintHandler,
     registerPrintToPDFHandler,
     registerQuitHandler,
+    registerSaveAsHandler,
   ]
 
   const handlerCleanups = handlers

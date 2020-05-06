@@ -13,6 +13,7 @@ import { channel as printChannel } from './ipc/print'
 import { channel as printToPDFChannel } from './ipc/printToPDF'
 import { channel as quitChannel } from './ipc/quit'
 import buildDevicesObservable from './utils/buildDevicesObservable'
+import FileWriter from './utils/FileWriter'
 
 const debug = makeDebug('kiosk-browser:client')
 
@@ -72,6 +73,10 @@ class Kiosk implements KioskBrowser.Kiosk {
    * New subscribers immediately receive the same current set.
    */
   public devices = buildDevicesObservable(ipcRenderer)
+
+  public async saveAs(): Promise<FileWriter | undefined> {
+    return await FileWriter.fromPrompt()
+  }
 
   public quit(): void {
     debug('forwarding `quit` to main process')
