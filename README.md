@@ -23,6 +23,10 @@ Gets an object describing the current state of the battery, including level and 
 
 Prints the current page using the default printer. This is different from `window.print` in that it is silent; there are no dialogs or prompts. Resolves if printing succeeds, rejects otherwise.
 
+`kiosk.`**`saveAs`**`(): Promise<FileWriter>`
+
+Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting hostname must be allowed explicitly. For example, via `--allowed-save-as-hostname-pattern localhost`. Additionally, file write destination paths must be explicitly allowed. For example, `--allowed-save-as-destination-pattern /media/**/*`. To allow all hosts and paths, use `--allowed-save-as-hostname-pattern '*' --allowed-save-as-destination-pattern '**/*'`.
+
 ## Auto-Configure Printers
 
 If you need to print, `kiosk-browser` can automatically configure printers for you as they are detected. To do so, build a printer config file as described by `kiosk-browser --help`.

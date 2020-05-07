@@ -6,12 +6,16 @@ import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerPrintHandler from './ipc/print'
 import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
-import parseOptions, { printHelp } from './utils/options'
+import registerSaveAsHandler from './ipc/saveAs'
+import parseOptions, { printHelp, Options } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
 import { devices } from './utils/usb'
 
-type RegisterIpcHandler = (ipcMain: IpcMain) => (() => void) | void
+type RegisterIpcHandler = (
+  ipcMain: IpcMain,
+  options: Options,
+) => (() => void) | void
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher')
@@ -70,10 +74,11 @@ async function createWindow(): Promise<void> {
     registerPrintHandler,
     registerPrintToPDFHandler,
     registerQuitHandler,
+    registerSaveAsHandler,
   ]
 
   const handlerCleanups = handlers
-    .map(handler => handler(ipcMain))
+    .map(handler => handler(ipcMain, options))
     .filter(Boolean) as (() => void)[]
 
   function quit(): void {
