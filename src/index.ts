@@ -7,6 +7,9 @@ import registerPrintHandler from './ipc/print'
 import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
 import registerSaveAsHandler from './ipc/saveAs'
+import registerGetUsbDrives from './ipc/get-usb-drives'
+import registerMountUsbDrive from './ipc/mount-usb-drive'
+import registerUnmountUsbDrive from './ipc/unmount-usb-drive'
 import parseOptions, { printHelp, Options } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
@@ -75,6 +78,9 @@ async function createWindow(): Promise<void> {
     registerPrintToPDFHandler,
     registerQuitHandler,
     registerSaveAsHandler,
+    registerGetUsbDrives,
+    registerMountUsbDrive,
+    registerUnmountUsbDrive,
   ]
 
   const handlerCleanups = handlers
