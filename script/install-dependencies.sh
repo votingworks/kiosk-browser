@@ -9,7 +9,7 @@ if [ "$(id --user)" = 0 ]; then
 fi
 
 # Install native package build dependencies.
-$SUDO apt-get install -y build-essential libudev-dev unzip git python
+$SUDO apt-get install -y build-essential libudev-dev unzip git python pmount
 
 if ! command -v node >/dev/null 2>&1; then
   echo "node not found. please install it before continuing: https://nodejs.org/en/" >&2

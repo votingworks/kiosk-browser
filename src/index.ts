@@ -3,11 +3,14 @@ import { join } from 'path'
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
+import registerGetUsbDrivesHandler from './ipc/get-usb-drives'
+import registerMountUsbDriveHandler from './ipc/mount-usb-drive'
 import registerPrintHandler from './ipc/print'
 import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
 import registerSaveAsHandler from './ipc/saveAs'
-import parseOptions, { printHelp, Options } from './utils/options'
+import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
+import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
 import { devices } from './utils/usb'
@@ -75,6 +78,9 @@ async function createWindow(): Promise<void> {
     registerPrintToPDFHandler,
     registerQuitHandler,
     registerSaveAsHandler,
+    registerGetUsbDrivesHandler,
+    registerMountUsbDriveHandler,
+    registerUnmountUsbDriveHandler,
   ]
 
   const handlerCleanups = handlers
