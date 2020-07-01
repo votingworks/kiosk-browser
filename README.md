@@ -27,6 +27,10 @@ Prints the current page using the default printer. This is different from `windo
 
 Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting hostname must be allowed explicitly. For example, via `--allowed-save-as-hostname-pattern localhost`. Additionally, file write destination paths must be explicitly allowed. For example, `--allowed-save-as-destination-pattern /media/**/*`. To allow all hosts and paths, use `--allowed-save-as-hostname-pattern '*' --allowed-save-as-destination-pattern '**/*'`.
 
+`kiosk.`**`getUsbDrives`**`(): Promise<{ deviceName: string; mountPoint?: string }>`
+
+Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, pass its device name to `kiosk.mountUsbDrive` or `kiosk.unmountUsbDrive`.
+
 ## Auto-Configure Printers
 
 If you need to print, `kiosk-browser` can automatically configure printers for you as they are detected. To do so, build a printer config file as described by `kiosk-browser --help`.

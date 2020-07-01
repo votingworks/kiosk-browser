@@ -1,10 +1,19 @@
-import register, { channel } from './get-usb-drives'
 import { IpcMain } from 'electron'
-import exec from '../utils/exec'
+import { promises as fs } from 'fs'
 import mockOf from '../../test/mockOf'
+import exec from '../utils/exec'
+import register, { channel } from './get-usb-drives'
 
 const execMock = mockOf(exec)
+const readdirMock = (fs.readdir as unknown) as jest.Mock<Promise<string[]>>
+const readlinkMock = (fs.readlink as unknown) as jest.Mock<Promise<string>>
 
+jest.mock('fs', () => ({
+  promises: {
+    readdir: jest.fn(),
+    readlink: jest.fn(),
+  },
+}))
 jest.mock('../utils/exec')
 
 test('get-usb-drives', async () => {
@@ -15,18 +24,13 @@ test('get-usb-drives', async () => {
   // Things should be registered as expected.
   expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
 
-  execMock.mockResolvedValueOnce({
-    stdout: 'usb-foobar-part23\nnotausb-bazbar-part21\nusb-babar-part3\n',
-    stderr: '',
-  })
-  execMock.mockResolvedValueOnce({
-    stdout: 'sdb1',
-    stderr: '',
-  })
-  execMock.mockResolvedValueOnce({
-    stdout: 'sdc1',
-    stderr: '',
-  })
+  readdirMock.mockResolvedValueOnce([
+    'usb-foobar-part23',
+    'notausb-bazbar-part21',
+    'usb-babar-part3',
+  ])
+  readlinkMock.mockResolvedValueOnce('/dev/sdb1')
+  readlinkMock.mockResolvedValueOnce('/dev/sdc1')
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
@@ -66,6 +70,6 @@ test('get-usb-drives', async () => {
 
   expect(devices).toEqual([
     { deviceName: 'sdb1', mountPoint: '/media/usb-sdb1' },
-    { deviceName: 'sdc1', mountPoint: null },
+    { deviceName: 'sdc1' },
   ])
 })

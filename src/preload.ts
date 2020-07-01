@@ -71,12 +71,12 @@ class Kiosk implements KioskBrowser.Kiosk {
     return ipcRenderer.invoke(getUsbDrivesChannel)
   }
 
-  public async mountUsbDrive(device: string) {
+  public async mountUsbDrive(device: string): Promise<void> {
     debug('forwarding `mountUsbDrive` to main process')
     return ipcRenderer.invoke(mountUsbDriveChannel, device)
   }
 
-  public async unmountUsbDrive(device: string) {
+  public async unmountUsbDrive(device: string): Promise<void> {
     debug('forwarding `unmountUsbDrive` to main process')
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
   }
