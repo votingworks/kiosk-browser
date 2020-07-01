@@ -1,8 +1,5 @@
 import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
-//import exec from '../utils/exec'
-import { exec as realExec } from 'child_process'
-import { promisify } from 'util'
-const execAsync = promisify(realExec)
+import exec from '../utils/exec'
 
 export const channel = 'getUsbDrives'
 
@@ -20,31 +17,34 @@ interface RawDataReturn {
   blockdevices: BlockDevice[]
 }
 
-// stupid little function as I figure out why exec from Brian's utils is not working for me yet
-async function exec(cmd: string, params: string[]) {
-  return await execAsync(cmd + ' ' + params.join(' '))
-}
+const DEVICE_PATH_PREFIX = '/dev/disk/by-id/'
+const USB_REGEXP = RegExp('^usb(.+)part(.*)$')
 
 async function getUsbDrives(): Promise<UsbDrive[]> {
   try {
-    const { stdout, stderr } = await exec('ls', ['/dev/disk/by-id/usb*part*'])
-
-    console.log(stdout)
+    const { stdout, stderr } = await exec('ls', [DEVICE_PATH_PREFIX])
 
     if (stdout.trim() === '' || stderr != '') {
       return []
     }
 
-    const devicesById = stdout.trim().split('\n')
+    // only the USB partitions
+    const devicesById = stdout.split('\n').filter((d: string) => {
+      return USB_REGEXP.exec(d)
+    })
+
+    // follow the symlinks
     const devices = await Promise.all(
       devicesById.map(async (d: string) => {
-        const { stdout, stderr } = await exec('readlink', ['-f', d])
+        const { stdout, stderr } = await exec('readlink', [
+          '-f',
+          DEVICE_PATH_PREFIX + d,
+        ])
         return stdout.trim()
       }),
     )
 
-    console.log('Devices', devices)
-
+    // get the block device info, including mount point
     const usbDrives = await Promise.all(
       devices.map(async (d: string) => {
         const { stdout, stderr } = await exec('lsblk', ['-J', '-n', '-l', d])
@@ -59,7 +59,6 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
 
     return usbDrives
   } catch (e) {
-    console.log('oy', e.stack)
     return []
   }
 }
