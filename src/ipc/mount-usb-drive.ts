@@ -1,4 +1,5 @@
-import { IpcMainInvokeEvent, IpcMain } from 'electron'
+import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import { join } from 'path'
 import exec from '../utils/exec'
 
 export const channel = 'mountUsbDrive'
@@ -8,8 +9,8 @@ async function mountUsbDrive(device: string): Promise<void> {
     '-w',
     '-u',
     '000',
-    '/dev/' + device,
-    'usb-drive-' + device,
+    join('/dev', device),
+    `usb-drive-${device}`,
   ])
 }
 

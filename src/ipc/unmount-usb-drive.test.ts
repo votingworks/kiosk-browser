@@ -1,7 +1,7 @@
-import register, { channel } from './unmount-usb-drive'
 import { IpcMain } from 'electron'
-import exec from '../utils/exec'
 import mockOf from '../../test/mockOf'
+import exec from '../utils/exec'
+import register, { channel } from './unmount-usb-drive'
 
 const execMock = mockOf(exec)
 

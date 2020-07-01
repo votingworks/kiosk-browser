@@ -1,10 +1,11 @@
-import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
+import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import { join } from 'path'
 import exec from '../utils/exec'
 
 export const channel = 'unmountUsbDrive'
 
 async function unmountUsbDrive(device: string): Promise<void> {
-  await exec('pumount', ['/dev/' + device])
+  await exec('pumount', [join('/dev', device)])
 }
 
 export default function register(ipcMain: IpcMain): void {

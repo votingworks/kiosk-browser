@@ -1,16 +1,18 @@
 import { IpcMain } from 'electron'
+import { promises as fs } from 'fs'
 import exec from '../utils/exec'
+import { join } from 'path'
 
 export const channel = 'getUsbDrives'
 
 export interface UsbDrive {
   deviceName: string
-  mountPoint: string
+  mountPoint?: string
 }
 
 interface BlockDevice {
   name: string
-  mountpoint: string
+  mountpoint: string | null
 }
 
 interface RawDataReturn {
@@ -18,41 +20,31 @@ interface RawDataReturn {
 }
 
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/'
-const USB_REGEXP = RegExp('^usb(.+)part(.*)$')
+const USB_REGEXP = /^usb(.+)part(.*)$/
 
 async function getUsbDrives(): Promise<UsbDrive[]> {
   try {
-    const { stdout, stderr } = await exec('ls', [DEVICE_PATH_PREFIX])
-
-    if (stdout.trim() === '' || stderr != '') {
-      return []
-    }
-
     // only the USB partitions
-    const devicesById = stdout.split('\n').filter((d: string) => {
-      return USB_REGEXP.exec(d)
-    })
+    const devicesById = (await fs.readdir(DEVICE_PATH_PREFIX)).filter(name =>
+      USB_REGEXP.test(name),
+    )
 
     // follow the symlinks
     const devices = await Promise.all(
-      devicesById.map(async (d: string) => {
-        const { stdout } = await exec('readlink', [
-          '-f',
-          DEVICE_PATH_PREFIX + d,
-        ])
-        return stdout.trim()
-      }),
+      devicesById.map(deviceId =>
+        fs.readlink(join(DEVICE_PATH_PREFIX, deviceId)),
+      ),
     )
 
     // get the block device info, including mount point
     const usbDrives = await Promise.all(
-      devices.map(async (d: string) => {
-        const { stdout } = await exec('lsblk', ['-J', '-n', '-l', d])
+      devices.map(async device => {
+        const { stdout } = await exec('lsblk', ['-J', '-n', '-l', device])
 
         const rawData = JSON.parse(stdout) as RawDataReturn
         return {
           deviceName: rawData.blockdevices[0].name,
-          mountPoint: rawData.blockdevices[0].mountpoint,
+          mountPoint: rawData.blockdevices[0].mountpoint ?? undefined,
         }
       }),
     )
