@@ -1,5 +1,5 @@
 import register, { channel } from './unmount-usb-drive'
-import { IpcMain, app } from 'electron'
+import { IpcMain } from 'electron'
 import exec from '../utils/exec'
 import mockOf from '../../test/mockOf'
 

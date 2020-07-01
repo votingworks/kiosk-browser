@@ -1,10 +1,10 @@
-import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
+import { IpcMainInvokeEvent, IpcMain } from 'electron'
 import exec from '../utils/exec'
 
 export const channel = 'mountUsbDrive'
 
 async function mountUsbDrive(device: string): Promise<void> {
-  const { stdout, stderr } = await exec('pmount', [
+  await exec('pmount', [
     '-w',
     '-u',
     '000',

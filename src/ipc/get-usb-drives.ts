@@ -1,4 +1,4 @@
-import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
+import { IpcMain } from 'electron'
 import exec from '../utils/exec'
 
 export const channel = 'getUsbDrives'
@@ -36,7 +36,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
     // follow the symlinks
     const devices = await Promise.all(
       devicesById.map(async (d: string) => {
-        const { stdout, stderr } = await exec('readlink', [
+        const { stdout } = await exec('readlink', [
           '-f',
           DEVICE_PATH_PREFIX + d,
         ])
@@ -47,7 +47,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
     // get the block device info, including mount point
     const usbDrives = await Promise.all(
       devices.map(async (d: string) => {
-        const { stdout, stderr } = await exec('lsblk', ['-J', '-n', '-l', d])
+        const { stdout } = await exec('lsblk', ['-J', '-n', '-l', d])
 
         const rawData = JSON.parse(stdout) as RawDataReturn
         return {
