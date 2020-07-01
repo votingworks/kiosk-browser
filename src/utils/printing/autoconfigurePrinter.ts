@@ -14,7 +14,7 @@ export default function autoconfigurePrinter(
           .then(configured => {
             if (configured) {
               debug(
-                'yieldting printer configure event after configuring printer: %o',
+                'yielding printer configure event after configuring printer: %o',
                 device,
               )
               subscriber.next()
