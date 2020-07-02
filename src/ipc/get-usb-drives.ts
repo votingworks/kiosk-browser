@@ -31,8 +31,11 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
 
     // follow the symlinks
     const devices = await Promise.all(
-      devicesById.map(deviceId =>
-        fs.readlink(join(DEVICE_PATH_PREFIX, deviceId)),
+      devicesById.map(async deviceId =>
+        join(
+          DEVICE_PATH_PREFIX,
+          await fs.readlink(join(DEVICE_PATH_PREFIX, deviceId)),
+        ),
       ),
     )
 

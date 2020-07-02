@@ -29,8 +29,8 @@ test('get-usb-drives', async () => {
     'notausb-bazbar-part21',
     'usb-babar-part3',
   ])
-  readlinkMock.mockResolvedValueOnce('/dev/sdb1')
-  readlinkMock.mockResolvedValueOnce('/dev/sdc1')
+  readlinkMock.mockResolvedValueOnce('../../sdb1')
+  readlinkMock.mockResolvedValueOnce('../../sdc1')
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
