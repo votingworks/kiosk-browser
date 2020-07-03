@@ -40,6 +40,7 @@ async function printData({
   }
 
   debug('printing via lpr with args=%o', lprOptions)
+  debug('data length is %d', data.length)
   const { stdout, stderr } = await exec('lpr', lprOptions, data)
   debug('`lpr` succeeded with stdout=%s stderr=%s', stdout, stderr)
 }

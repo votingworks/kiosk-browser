@@ -132,3 +132,20 @@ test('failed command printing stderr', async () => {
   )
   expect(spawn).toHaveBeenCalledWith('ls', ['-x'])
 })
+
+test('command with stdin', async () => {
+  // Set up child process.
+  const child = fakeChildProcess()
+  mockOf(spawn).mockReturnValueOnce(child)
+  child.stdin.write = jest.fn()
+  child.stdin.end = jest.fn()
+
+  // Start and finish child process.
+  const execPromise = exec('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print')
+  child.emit('exit', 0, null)
+  await execPromise
+
+  // Check the results.
+  expect(child.stdin.write).toHaveBeenCalledWith('foobarbaz to print')
+  expect(child.stdin.end).toHaveBeenCalled()
+})
