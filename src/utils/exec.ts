@@ -31,6 +31,12 @@ export default async function exec(
     stderr += chunk
   })
 
+  if (stdin) {
+    debug('stdin passed to exec, feeding it in now.')
+    child.stdin.write(stdin)
+    child.stdin.end()
+  }
+
   return new Promise((resolve, reject) => {
     child.on('exit', (code, signal) => {
       debug(
