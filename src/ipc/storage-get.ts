@@ -7,12 +7,10 @@ const get = promisify(storage.get)
 
 export const channel = 'storageGet'
 
-interface StringObject {
-  value: string
-}
-
-async function storageGet(key: string): Promise<object> {
-  return get(key) as Promise<object>
+async function storageGet<T extends object>(
+  key: string,
+): Promise<T | undefined> {
+  return ((await get(key)) || undefined) as Promise<T | undefined>
 }
 
 export default function register(ipcMain: IpcMain): void {
