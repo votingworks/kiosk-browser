@@ -1,5 +1,4 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
-import { promises as fs } from 'fs'
 import { promisify } from 'util'
 
 import storage from 'electron-json-storage'
