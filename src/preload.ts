@@ -12,6 +12,10 @@ import {
 import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives'
 import { channel as mountUsbDriveChannel } from './ipc/mount-usb-drive'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
+import { channel as storageSetChannel } from './ipc/storage-set'
+import { channel as storageGetChannel } from './ipc/storage-get'
+import { channel as storageRemoveChannel } from './ipc/storage-remove'
+import { channel as storageClearChannel } from './ipc/storage-clear'
 import { channel as printChannel } from './ipc/print'
 import { channel as printToPDFChannel } from './ipc/printToPDF'
 import { channel as quitChannel } from './ipc/quit'
@@ -79,6 +83,26 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async unmountUsbDrive(device: string): Promise<void> {
     debug('forwarding `unmountUsbDrive` to main process')
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
+  }
+
+  public async storageSet(key: string, value: object): Promise<void> {
+    debug('forwarding `storageSet` to main process')
+    return ipcRenderer.invoke(storageSetChannel, key, value)
+  }
+
+  public async storageGet(key: string): Promise<object> {
+    debug('forwarding `storageGet` to main process')
+    return ipcRenderer.invoke(storageGetChannel, key)
+  }
+
+  public async storageRemove(key: string): Promise<void> {
+    debug('forwarding `storageRemove` to main process')
+    return ipcRenderer.invoke(storageRemoveChannel, key)
+  }
+
+  public async storageClear(): Promise<void> {
+    debug('forwarding `storageClear` to main process')
+    return ipcRenderer.invoke(storageClearChannel)
   }
 
   /**

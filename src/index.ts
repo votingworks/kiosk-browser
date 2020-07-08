@@ -10,6 +10,10 @@ import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
 import registerSaveAsHandler from './ipc/saveAs'
 import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
+import registerStorageSetHandler from './ipc/storage-set'
+import registerStorageGetHandler from './ipc/storage-get'
+import registerStorageRemoveHandler from './ipc/storage-remove'
+import registerStorageClearHandler from './ipc/storage-clear'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
@@ -81,6 +85,10 @@ async function createWindow(): Promise<void> {
     registerGetUsbDrivesHandler,
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,
+    registerStorageSetHandler,
+    registerStorageGetHandler,
+    registerStorageRemoveHandler,
+    registerStorageClearHandler,
   ]
 
   const handlerCleanups = handlers
