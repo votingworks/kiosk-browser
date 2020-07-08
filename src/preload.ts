@@ -85,24 +85,30 @@ class Kiosk implements KioskBrowser.Kiosk {
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
   }
 
-  public async storageSet(key: string, value: object): Promise<void> {
-    debug('forwarding `storageSet` to main process')
-    return ipcRenderer.invoke(storageSetChannel, key, value)
-  }
+  public storage = {
+    set: async (key: string, value: object): Promise<void> => {
+      debug('forwarding `storageSet` to main process')
+      return ipcRenderer.invoke(storageSetChannel, key, value)
+    },
+    get: async (key: string): Promise<object | undefined> => {
+      debug('forwarding `storageGet` to main process')
+      const result = await ipcRenderer.invoke(storageGetChannel, key)
 
-  public async storageGet(key: string): Promise<object> {
-    debug('forwarding `storageGet` to main process')
-    return ipcRenderer.invoke(storageGetChannel, key)
-  }
+      // a patch for undefined, not sure why we need this. FIXME
+      if (result && JSON.stringify(result) === '{}') {
+        return
+      }
 
-  public async storageRemove(key: string): Promise<void> {
-    debug('forwarding `storageRemove` to main process')
-    return ipcRenderer.invoke(storageRemoveChannel, key)
-  }
-
-  public async storageClear(): Promise<void> {
-    debug('forwarding `storageClear` to main process')
-    return ipcRenderer.invoke(storageClearChannel)
+      return result
+    },
+    remove: async (key: string): Promise<void> => {
+      debug('forwarding `storageRemove` to main process')
+      return ipcRenderer.invoke(storageRemoveChannel, key)
+    },
+    clear: (): Promise<void> => {
+      debug('forwarding `storageClear` to main process')
+      return ipcRenderer.invoke(storageClearChannel)
+    },
   }
 
   /**
