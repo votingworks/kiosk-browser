@@ -11,5 +11,5 @@ async function storageClear(): Promise<void> {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async (event: IpcMainInvokeEvent) => storageClear())
+  ipcMain.handle(channel, async () => storageClear())
 }
