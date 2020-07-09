@@ -1,13 +1,13 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import storage from 'electron-json-storage'
 import { promisify } from 'util'
 
-import storage from 'electron-json-storage'
 const remove = promisify(storage.remove)
 
 export const channel = 'storageRemove'
 
 async function storageRemove(key: string): Promise<void> {
-  return remove(key)
+  await remove(key)
 }
 
 export default function register(ipcMain: IpcMain): void {

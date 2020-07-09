@@ -1,18 +1,9 @@
+import storage from 'electron-json-storage'
+import { promisify } from 'util'
 import { fakeIpc } from '../../test/ipc'
 import register, { channel as storageSetChannel } from './storage-set'
 
-import storage from 'electron-json-storage'
-
-type Callback = (error: string) => void
-
-jest.mock('electron-json-storage', () => ({
-  __esModule: true,
-  default: {
-    set: jest.fn((key: string, value: string, callback: Callback) =>
-      callback(''),
-    ),
-  },
-}))
+const get = promisify(storage.get)
 
 test('storage-set works', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
@@ -20,6 +11,8 @@ test('storage-set works', async () => {
   register(ipcMain)
 
   await ipcRenderer.invoke(storageSetChannel, 'foo', { corona: 'virus' })
+
+  expect(await get('foo')).toEqual({ corona: 'virus' })
 
   expect(storage.set).toHaveBeenCalledWith(
     'foo',

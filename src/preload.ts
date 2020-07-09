@@ -86,26 +86,22 @@ class Kiosk implements KioskBrowser.Kiosk {
   }
 
   public storage = {
-    set: async (key: string, value: object): Promise<void> => {
+    async set(key: string, value: object): Promise<void> {
       debug('forwarding `storageSet` to main process')
       return ipcRenderer.invoke(storageSetChannel, key, value)
     },
-    get: async (key: string): Promise<object | undefined> => {
+
+    async get<T extends object>(key: string): Promise<T | undefined> {
       debug('forwarding `storageGet` to main process')
-      const result = await ipcRenderer.invoke(storageGetChannel, key)
-
-      // a patch for undefined, not sure why we need this. FIXME
-      if (result && JSON.stringify(result) === '{}') {
-        return
-      }
-
-      return result
+      return await ipcRenderer.invoke(storageGetChannel, key)
     },
-    remove: async (key: string): Promise<void> => {
+
+    async remove(key: string): Promise<void> {
       debug('forwarding `storageRemove` to main process')
       return ipcRenderer.invoke(storageRemoveChannel, key)
     },
-    clear: (): Promise<void> => {
+
+    async clear(): Promise<void> {
       debug('forwarding `storageClear` to main process')
       return ipcRenderer.invoke(storageClearChannel)
     },
