@@ -36,7 +36,7 @@ test('registers a handler to trigger a print', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'mainprinter', '-o', 'InputSlot=Tray3'],
+    ['-P', 'mainprinter', '-o', 'sides=two-sided-long-edge', 'InputSlot=Tray3'],
     expect.anything(),
   )
 })
@@ -62,7 +62,7 @@ test('uses the preferred printer if none is provided', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'main printer'],
+    ['-P', 'main printer', '-o', 'sides=two-sided-long-edge'],
     expect.anything(),
   )
 })

@@ -35,8 +35,12 @@ async function printData({
     lprOptions.push('-P', deviceName)
   }
 
+  // duplex
+  lprOptions.push('-o', 'sides=two-sided-long-edge')
+
+  // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
-    lprOptions.push('-o', 'InputSlot=' + paperSource)
+    lprOptions.push('InputSlot=' + paperSource)
   }
 
   debug('printing via lpr with args=%o', lprOptions)
