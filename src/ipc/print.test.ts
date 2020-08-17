@@ -28,7 +28,10 @@ test('registers a handler to trigger a print', async () => {
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
 
-  await ipcRenderer.invoke(printChannel, 'mainprinter', 'Tray3')
+  await ipcRenderer.invoke(printChannel, {
+    deviceName: 'mainprinter',
+    paperSource: 'Tray3',
+  })
 
   expect(sender.printToPDF).toHaveBeenCalledWith({
     printBackground: true,
@@ -80,4 +83,53 @@ test('propagates errors', async () => {
   )
 
   expect(sender.printToPDF).toHaveBeenCalled()
+})
+
+test('prints a specified number of copies', async () => {
+  const sender: Partial<WebContents> = {
+    getPrinters: () => [],
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
+
+  register(ipcMain)
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+  await ipcRenderer.invoke(printChannel, { copies: 123 })
+
+  expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true })
+
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    ['-P', 'main printer', '-o', 'sides=two-sided-long-edge', '-#', '123'],
+    expect.anything(),
+  )
+})
+
+test('does not allow fractional copies', async () => {
+  const sender: Partial<WebContents> = {
+    getPrinters: () => [],
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
+
+  register(ipcMain)
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+  await expect(
+    ipcRenderer.invoke(printChannel, { copies: 1.23 }),
+  ).rejects.toThrowError()
+
+  expect(sender.printToPDF).not.toHaveBeenCalled()
+  expect(execMock).not.toHaveBeenCalled()
 })

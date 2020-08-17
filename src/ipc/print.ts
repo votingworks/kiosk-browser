@@ -1,4 +1,6 @@
 import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
+import { inspect } from 'util'
+import * as z from 'zod'
 import exec from '../utils/exec'
 import { debug } from '../utils/printing'
 
@@ -18,16 +20,37 @@ function getPreferredPrinterName(printers: PrinterInfo[]): string | undefined {
 
 const availablePaperSources = ['Tray1', 'Tray2', 'Tray3']
 
-interface PrintDataParameters {
+interface PrintOptions {
+  deviceName?: string
+  paperSource?: string
+  copies?: number
+}
+
+const PrintOptionsSchema = z.object({
+  deviceName: z
+    .string()
+    .nonempty()
+    .optional(),
+  paperSource: z
+    .string()
+    .nonempty()
+    .optional(),
+  copies: z
+    .number()
+    .positive()
+    .int()
+    .optional(),
+})
+
+interface PrintDataParameters extends PrintOptions {
   data: Buffer
-  deviceName: string
-  paperSource: string
 }
 
 async function printData({
   data,
   deviceName,
   paperSource,
+  copies,
 }: PrintDataParameters): Promise<void> {
   const lprOptions: string[] = []
 
@@ -43,6 +66,10 @@ async function printData({
     lprOptions.push('InputSlot=' + paperSource)
   }
 
+  if (typeof copies !== 'undefined') {
+    lprOptions.push('-#', copies.toString())
+  }
+
   debug('printing via lpr with args=%o', lprOptions)
   debug('data length is %d', data.length)
   const { stdout, stderr } = await exec('lpr', lprOptions, data)
@@ -55,11 +82,11 @@ async function printData({
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
-    async (
-      event: IpcMainInvokeEvent,
-      deviceName = getPreferredPrinterName(event.sender.getPrinters()),
-      paperSource = '',
-    ) => {
+    async (event: IpcMainInvokeEvent, options: PrintOptions = {}) => {
+      const { deviceName, paperSource, copies } = PrintOptionsSchema.parse(
+        options,
+      )
+
       debug('printing to PDF')
       const data = await event.sender.printToPDF({
         printBackground: true,
@@ -68,8 +95,10 @@ export default function register(ipcMain: IpcMain): void {
 
       await printData({
         data,
-        deviceName,
+        deviceName:
+          deviceName ?? getPreferredPrinterName(event.sender.getPrinters()),
         paperSource,
+        copies,
       })
     },
   )

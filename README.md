@@ -19,9 +19,9 @@ Web pages loaded by `kiosk-browser` have an extra API accessible via the global 
 
 Gets an object describing the current state of the battery, including level and discharging status.
 
-`kiosk.`**`print`**`(): Promise<void>`
+`kiosk.`**`print`**`(options?: PrintOptions): Promise<void>`
 
-Prints the current page using the default printer. This is different from `window.print` in that it is silent; there are no dialogs or prompts. Resolves if printing succeeds, rejects otherwise.
+Prints the current page using the default printer. This is different from `window.print` in that it is silent; there are no dialogs or prompts. Resolves if printing succeeds, rejects otherwise. Optionally accepts `deviceName: string`, `paperSource: string`, and `copies: number` options.
 
 `kiosk.`**`saveAs`**`(): Promise<FileWriter>`
 
