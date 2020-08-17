@@ -1,5 +1,6 @@
 import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
 import { inspect } from 'util'
+import * as z from 'zod'
 import exec from '../utils/exec'
 import { debug } from '../utils/printing'
 
@@ -24,6 +25,22 @@ interface PrintOptions {
   paperSource?: string
   copies?: number
 }
+
+const PrintOptionsSchema = z.object({
+  deviceName: z
+    .string()
+    .nonempty()
+    .optional(),
+  paperSource: z
+    .string()
+    .nonempty()
+    .optional(),
+  copies: z
+    .number()
+    .positive()
+    .int()
+    .optional(),
+})
 
 interface PrintDataParameters extends PrintOptions {
   data: Buffer
@@ -65,30 +82,10 @@ async function printData({
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
-    async (
-      event: IpcMainInvokeEvent,
-      { deviceName, paperSource, copies }: PrintOptions = {},
-    ) => {
-      if (typeof deviceName !== 'undefined' && typeof deviceName !== 'string') {
-        throw new TypeError(
-          `deviceName expected to be a string, got: ${inspect(deviceName)}`,
-        )
-      }
-
-      if (
-        typeof paperSource !== 'undefined' &&
-        typeof paperSource !== 'string'
-      ) {
-        throw new TypeError(
-          `paperSource expected to be a string, got: ${inspect(paperSource)}`,
-        )
-      }
-
-      if (typeof copies !== 'undefined' && typeof copies !== 'number') {
-        throw new TypeError(
-          `copies expected to be a number, got: ${inspect(copies)}`,
-        )
-      }
+    async (event: IpcMainInvokeEvent, options: PrintOptions = {}) => {
+      const { deviceName, paperSource, copies } = PrintOptionsSchema.parse(
+        options,
+      )
 
       debug('printing to PDF')
       const data = await event.sender.printToPDF({

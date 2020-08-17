@@ -110,3 +110,26 @@ test('prints a specified number of copies', async () => {
     expect.anything(),
   )
 })
+
+test('does not allow fractional copies', async () => {
+  const sender: Partial<WebContents> = {
+    getPrinters: () => [],
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
+
+  register(ipcMain)
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+  await expect(
+    ipcRenderer.invoke(printChannel, { copies: 1.23 }),
+  ).rejects.toThrowError()
+
+  expect(sender.printToPDF).not.toHaveBeenCalled()
+  expect(execMock).not.toHaveBeenCalled()
+})

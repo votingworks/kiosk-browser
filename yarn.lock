@@ -6675,3 +6675,8 @@ yauzl@2.4.1:
   integrity sha1-lSj0QtqxsihOWLQ3m7GU4i4MQAU=
   dependencies:
     fd-slicer "~1.0.1"
+
+zod@^1.10.2:
+  version "1.10.2"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-1.10.2.tgz#fd2585bfcabc6a1dee267815ce0a036f184a5473"
+  integrity sha512-/T7CBnpJNf2hOlFburyOSP56nedBqrhwTgrwTKp3xPcZzfdRgRXORVHgDLMOIUQUVJyZbDrQqbS2RHuU/2XmHg==

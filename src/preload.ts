@@ -36,13 +36,14 @@ class Kiosk implements KioskBrowser.Kiosk {
     paperSource?: string,
     copies?: number,
   ): Promise<void> {
-    const options = (typeof deviceNameOrOptions === 'string'
-      ? {
-          deviceName: deviceNameOrOptions,
-          paperSource,
-          copies,
-        }
-      : deviceNameOrOptions) as KioskBrowser.PrintOptions
+    const options =
+      typeof deviceNameOrOptions === 'string'
+        ? {
+            deviceName: deviceNameOrOptions,
+            paperSource,
+            copies,
+          }
+        : deviceNameOrOptions ?? {}
     debug('forwarding `print(%o)` to main process', options)
 
     if (typeof options !== 'undefined' && typeof options !== 'object') {
