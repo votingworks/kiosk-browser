@@ -1,4 +1,5 @@
 import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
+import { inspect } from 'util'
 import exec from '../utils/exec'
 import { debug } from '../utils/printing'
 
@@ -18,16 +19,21 @@ function getPreferredPrinterName(printers: PrinterInfo[]): string | undefined {
 
 const availablePaperSources = ['Tray1', 'Tray2', 'Tray3']
 
-interface PrintDataParameters {
+interface PrintOptions {
+  deviceName?: string
+  paperSource?: string
+  copies?: number
+}
+
+interface PrintDataParameters extends PrintOptions {
   data: Buffer
-  deviceName: string
-  paperSource: string
 }
 
 async function printData({
   data,
   deviceName,
   paperSource,
+  copies,
 }: PrintDataParameters): Promise<void> {
   const lprOptions: string[] = []
 
@@ -41,6 +47,10 @@ async function printData({
   // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
     lprOptions.push('InputSlot=' + paperSource)
+  }
+
+  if (typeof copies !== 'undefined') {
+    lprOptions.push('-#', copies.toString())
   }
 
   debug('printing via lpr with args=%o', lprOptions)
@@ -57,9 +67,29 @@ export default function register(ipcMain: IpcMain): void {
     channel,
     async (
       event: IpcMainInvokeEvent,
-      deviceName = getPreferredPrinterName(event.sender.getPrinters()),
-      paperSource = '',
+      { deviceName, paperSource, copies }: PrintOptions = {},
     ) => {
+      if (typeof deviceName !== 'undefined' && typeof deviceName !== 'string') {
+        throw new TypeError(
+          `deviceName expected to be a string, got: ${inspect(deviceName)}`,
+        )
+      }
+
+      if (
+        typeof paperSource !== 'undefined' &&
+        typeof paperSource !== 'string'
+      ) {
+        throw new TypeError(
+          `paperSource expected to be a string, got: ${inspect(paperSource)}`,
+        )
+      }
+
+      if (typeof copies !== 'undefined' && typeof copies !== 'number') {
+        throw new TypeError(
+          `copies expected to be a number, got: ${inspect(copies)}`,
+        )
+      }
+
       debug('printing to PDF')
       const data = await event.sender.printToPDF({
         printBackground: true,
@@ -68,8 +98,10 @@ export default function register(ipcMain: IpcMain): void {
 
       await printData({
         data,
-        deviceName,
+        deviceName:
+          deviceName ?? getPreferredPrinterName(event.sender.getPrinters()),
         paperSource,
+        copies,
       })
     },
   )
