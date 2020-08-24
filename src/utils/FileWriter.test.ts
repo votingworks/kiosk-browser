@@ -16,13 +16,13 @@ function fakeClient(): jest.Mocked<Client> {
 test('creating from prompt fails', async () => {
   const client = fakeClient()
   client.promptToSave.mockResolvedValueOnce(undefined)
-  expect(await FileWriter.fromPrompt(client)).toEqual(undefined)
+  expect(await FileWriter.fromPrompt({}, client)).toEqual(undefined)
 })
 
 test('creating from prompt succeeds', async () => {
   const client = fakeClient()
   client.promptToSave.mockResolvedValueOnce({ fd: 42 })
-  expect(await FileWriter.fromPrompt(client)).toBeInstanceOf(FileWriter)
+  expect(await FileWriter.fromPrompt({}, client)).toBeInstanceOf(FileWriter)
 })
 
 test('write passes the file descriptor and data', async () => {

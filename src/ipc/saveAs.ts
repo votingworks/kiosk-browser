@@ -1,8 +1,14 @@
 import makeDebug from 'debug'
-import { dialog, IpcMain, IpcMainInvokeEvent, ipcRenderer } from 'electron'
+import {
+  dialog,
+  IpcMain,
+  IpcMainInvokeEvent,
+  ipcRenderer,
+  SaveDialogOptions,
+} from 'electron'
 import multimatch from 'multimatch'
-import { Options } from '../utils/options'
 import OpenFiles from '../utils/OpenFiles'
+import { Options } from '../utils/options'
 
 const debug = makeDebug('kiosk-browser:saveAs')
 
@@ -10,8 +16,13 @@ export const channel = 'saveAs'
 
 export interface PromptToSave {
   type: 'PromptToSave'
+  options?: PromptToSaveOptions
 }
 
+export type PromptToSaveOptions = Pick<
+  SaveDialogOptions,
+  'title' | 'defaultPath' | 'buttonLabel' | 'filters'
+>
 export type PromptToSaveResult = { fd: number } | undefined
 
 export interface Write {
@@ -33,8 +44,10 @@ export class Client {
     private readonly invoke = ipcRenderer.invoke.bind(ipcRenderer),
   ) {}
 
-  async promptToSave(): Promise<PromptToSaveResult> {
-    const input: PromptToSave = { type: 'PromptToSave' }
+  async promptToSave(
+    options?: PromptToSaveOptions,
+  ): Promise<PromptToSaveResult> {
+    const input: PromptToSave = { type: 'PromptToSave', options }
     return await this.invoke(channel, input)
   }
 
@@ -88,7 +101,7 @@ export default function register(ipcMain: IpcMain, options: Options): void {
 
     switch (input.type) {
       case 'PromptToSave': {
-        const result = await dialog.showSaveDialog({})
+        const result = await dialog.showSaveDialog(input.options ?? {})
         debug('%s: filePath=%s', input.type, result.filePath)
 
         if (!result.filePath) {

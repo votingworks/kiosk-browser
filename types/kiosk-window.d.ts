@@ -1,7 +1,9 @@
-import { Device } from 'usb-detection'
 import { Observable } from 'rxjs'
-import { PrinterInfo } from '../src/ipc/get-printer-info'
+import { Device } from 'usb-detection'
 import { BatteryInfo } from '../src/ipc/get-battery-info'
+import { PrinterInfo } from '../src/ipc/get-printer-info'
+import { PromptToSaveOptions } from '../src/ipc/saveAs'
+import FileWriter from '../src/utils/FileWriter'
 
 declare namespace KioskBrowser {
   interface PrintOptions {
@@ -20,6 +22,7 @@ declare namespace KioskBrowser {
       paperSource?: string,
       copies?: number,
     ): Promise<void>
+    saveAs(options?: PromptToSaveOptions): Promise<FileWriter | undefined>
     quit(): void
   }
 }

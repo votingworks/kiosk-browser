@@ -11,14 +11,15 @@ import {
 } from './ipc/get-printer-info'
 import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives'
 import { channel as mountUsbDriveChannel } from './ipc/mount-usb-drive'
-import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
-import { channel as storageSetChannel } from './ipc/storage-set'
-import { channel as storageGetChannel } from './ipc/storage-get'
-import { channel as storageRemoveChannel } from './ipc/storage-remove'
-import { channel as storageClearChannel } from './ipc/storage-clear'
 import { channel as printChannel } from './ipc/print'
 import { channel as printToPDFChannel } from './ipc/printToPDF'
 import { channel as quitChannel } from './ipc/quit'
+import { PromptToSaveOptions } from './ipc/saveAs'
+import { channel as storageClearChannel } from './ipc/storage-clear'
+import { channel as storageGetChannel } from './ipc/storage-get'
+import { channel as storageRemoveChannel } from './ipc/storage-remove'
+import { channel as storageSetChannel } from './ipc/storage-set'
+import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import FileWriter from './utils/FileWriter'
 
@@ -118,8 +119,10 @@ class Kiosk implements KioskBrowser.Kiosk {
    */
   public devices = buildDevicesObservable(ipcRenderer)
 
-  public async saveAs(): Promise<FileWriter | undefined> {
-    return await FileWriter.fromPrompt()
+  public async saveAs(
+    options?: PromptToSaveOptions,
+  ): Promise<FileWriter | undefined> {
+    return await FileWriter.fromPrompt(options)
   }
 
   public quit(): void {
