@@ -70,6 +70,79 @@ test('open, write, close', async () => {
   expect(mockWriteStream)
 })
 
+test('accepts options for the save dialog', async () => {
+  const { ipcMain, ipcRenderer } = fakeIpc()
+
+  register(ipcMain, {
+    url: new URL('https://example.com/'),
+    allowedSaveAsHostnamePatterns: ['*'],
+    allowedSaveAsDestinationPatterns: ['**/*'],
+  })
+
+  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+
+  // prepare to prompt
+  mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
+    canceled: false,
+    filePath: '/example/path.txt',
+  })
+  const mockWriteStream: Partial<fs.WriteStream> = {
+    write: jest.fn().mockImplementation((_data, cb) => cb()),
+    end: jest.fn().mockImplementation(cb => cb()),
+  }
+  mockOf(fs.createWriteStream).mockReturnValueOnce(
+    mockWriteStream as fs.WriteStream,
+  )
+
+  // do the prompt
+  const promptResult = await client.promptToSave({
+    buttonLabel: 'SAVE IT',
+    title: 'WHERE?!',
+    filters: [{ name: 'ZIP Files', extensions: ['.zip'] }],
+    defaultPath: '/media/usb-drive-sdb/file-path.zip',
+  })
+
+  // did it?
+  expect(ipcRenderer.invoke).toHaveBeenCalledWith(channel, {
+    type: 'PromptToSave',
+    options: {
+      buttonLabel: 'SAVE IT',
+      title: 'WHERE?!',
+      filters: [{ name: 'ZIP Files', extensions: ['.zip'] }],
+      defaultPath: '/media/usb-drive-sdb/file-path.zip',
+    },
+  })
+  expect(electron.dialog.showSaveDialog).toHaveBeenCalledWith({
+    buttonLabel: 'SAVE IT',
+    title: 'WHERE?!',
+    filters: [{ name: 'ZIP Files', extensions: ['.zip'] }],
+    defaultPath: '/media/usb-drive-sdb/file-path.zip',
+  })
+  expect(fs.createWriteStream).toHaveBeenCalledWith('/example/path.txt')
+
+  defined(promptResult)
+  const { fd } = promptResult
+
+  // do some writes
+  await client.write(fd, 'abc')
+  expect(mockWriteStream.write).toHaveBeenNthCalledWith(
+    1,
+    'abc',
+    expect.any(Function),
+  )
+
+  await client.write(fd, Buffer.of(1, 2, 3))
+  expect(mockWriteStream.write).toHaveBeenNthCalledWith(
+    2,
+    Uint8Array.of(1, 2, 3),
+    expect.any(Function),
+  )
+
+  // end it
+  await client.end(fd)
+  expect(mockWriteStream)
+})
+
 test('disallows hosts that are not explicitly listed', async () => {
   const url = new URL('https://evil.com/')
   const { ipcMain, ipcRenderer } = fakeIpc({

@@ -1,4 +1,4 @@
-import { Client, Write } from '../ipc/saveAs'
+import { Client, PromptToSaveOptions, Write } from '../ipc/saveAs'
 
 /**
  * Simple wrapper class to handle writing data to file from a save dialog.
@@ -24,9 +24,10 @@ export default class FileWriter {
    * Prompts the user to choose a file path to write a file to.
    */
   public static async fromPrompt(
+    options?: PromptToSaveOptions,
     client = new Client(),
   ): Promise<FileWriter | undefined> {
-    const output = await client.promptToSave()
+    const output = await client.promptToSave(options)
 
     if (!output) {
       return
