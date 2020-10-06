@@ -12,6 +12,11 @@ declare namespace KioskBrowser {
     copies?: number
   }
 
+  interface SetClockParams {
+    isoDatetime: string
+    IANAZone: string
+  }
+
   interface Kiosk {
     getBatteryInfo(): Promise<BatteryInfo>
     getPrinterInfo(): Promise<PrinterInfo[]>
@@ -23,6 +28,7 @@ declare namespace KioskBrowser {
       copies?: number,
     ): Promise<void>
     saveAs(options?: PromptToSaveOptions): Promise<FileWriter | undefined>
+    setClock(params: SetClockParams): Promise<void>
     quit(): void
   }
 }
