@@ -20,6 +20,7 @@ import { channel as storageGetChannel } from './ipc/storage-get'
 import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
+import { channel as setClock } from './ipc/clock'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import FileWriter from './utils/FileWriter'
 
@@ -106,6 +107,11 @@ class Kiosk implements KioskBrowser.Kiosk {
       debug('forwarding `storageClear` to main process')
       return ipcRenderer.invoke(storageClearChannel)
     },
+  }
+
+  public async setClock(params: KioskBrowser.SetClockParams): Promise<void> {
+    debug('forwarding `setClock` to main process')
+    return ipcRenderer.invoke(setClock, params)
   }
 
   /**

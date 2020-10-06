@@ -42,9 +42,11 @@
     }
   },
   "dependencies": {
+    "@types/luxon": "^1.25.0",
     "chalk": "^3.0.0",
     "debug": "^4.1.1",
     "electron-json-storage": "^4.1.8",
+    "luxon": "^1.25.0",
     "multimatch": "^4.0.0",
     "rxjs": "^6.5.4",
     "usb-detection": "^4.7.0",
