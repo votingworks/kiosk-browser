@@ -22,12 +22,14 @@ test('set datetime works in daylights savings', async () => {
   })
 
   expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+    '-n',
     '/usr/bin/timedatectl',
     'set-time',
     '2020-10-03 10:00:00',
   ])
 
   expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+    '-n',
     '/usr/bin/timedatectl',
     'set-timezone',
     'America/Chicago',
@@ -41,12 +43,14 @@ test('set datetime works in non- daylights savings', async () => {
   })
 
   expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+    '-n',
     '/usr/bin/timedatectl',
     'set-time',
     '2020-11-03 09:00:00',
   ])
 
   expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+    '-n',
     '/usr/bin/timedatectl',
     'set-timezone',
     'America/Chicago',
