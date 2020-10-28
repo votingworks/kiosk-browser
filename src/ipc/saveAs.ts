@@ -6,7 +6,7 @@ import {
   ipcRenderer,
   SaveDialogOptions,
 } from 'electron'
-import multimatch from 'multimatch'
+import { hasWriteAccess } from '../utils/access'
 import OpenFiles from '../utils/OpenFiles'
 import { Options } from '../utils/options'
 
@@ -23,7 +23,9 @@ export type PromptToSaveOptions = Pick<
   SaveDialogOptions,
   'title' | 'defaultPath' | 'buttonLabel' | 'filters'
 >
-export type PromptToSaveResult = { fd: number } | undefined
+export type PromptToSaveResult =
+  | { type: 'file'; fd: number }
+  | { type: 'cancel' }
 
 export interface Write {
   type: 'Write'
@@ -62,14 +64,6 @@ export class Client {
   }
 }
 
-function matchesPatterns(value: string, patterns?: readonly string[]): boolean {
-  if (!patterns) {
-    return false
-  }
-
-  return multimatch(value, patterns as string[]).length > 0
-}
-
 /**
  * Allows opening a file for writing.
  */
@@ -89,14 +83,14 @@ export default function register(ipcMain: IpcMain, options: Options): void {
     const url = new URL(event.sender.getURL())
     const hostname = url.hostname || url.toString()
 
-    if (!matchesPatterns(hostname, options.allowedSaveAsHostnamePatterns)) {
+    if (!hasWriteAccess(options.hostFilePermissions, hostname)) {
       debug(
-        '%s: aborting because %s is not an allowed hostname (allowed patterns=%o)',
+        '%s: aborting because %s is not allowed to write anywhere (permissions=%o)',
         input.type,
         hostname,
-        options.allowedSaveAsHostnamePatterns,
+        options.hostFilePermissions,
       )
-      throw new Error(`${hostname ?? url} is not allowed to use 'saveAs'`)
+      throw new Error(`${hostname ?? url} is not allowed to write to disk`)
     }
 
     switch (input.type) {
@@ -106,22 +100,26 @@ export default function register(ipcMain: IpcMain, options: Options): void {
 
         if (!result.filePath) {
           debug('%s: aborting because save dialog was canceled', input.type)
-          return
+          return { type: 'cancel' }
         }
 
         if (
-          !matchesPatterns(
+          !hasWriteAccess(
+            options.hostFilePermissions,
+            hostname,
             result.filePath,
-            options.allowedSaveAsDestinationPatterns,
           )
         ) {
           debug(
-            '%s: aborting because %s is not an allowed destination (allowed patterns=%o)',
+            '%s: aborting because %s is not allowed to write to %s (permissions=%o)',
             input.type,
+            hostname,
             result.filePath,
-            options.allowedSaveAsDestinationPatterns,
+            options.hostFilePermissions,
           )
-          return
+          throw new Error(
+            `${hostname ?? url} is not allowed to write to the chosen location`,
+          )
         }
 
         const fd = files.open(hostname, result.filePath)
@@ -131,7 +129,7 @@ export default function register(ipcMain: IpcMain, options: Options): void {
           result.filePath,
           fd,
         )
-        return { fd }
+        return { type: 'file', fd }
       }
 
       case 'Write': {

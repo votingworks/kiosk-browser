@@ -33,23 +33,24 @@ app.commandLine.appendSwitch('enable-speech-dispatcher')
 let mainWindow: Electron.BrowserWindow | undefined
 
 async function createWindow(): Promise<void> {
-  const options = await parseOptions(
+  const parseOptionsResult = await parseOptions(
     // https://github.com/electron/electron/issues/4690
     process.argv.slice(app.isPackaged ? 1 : 2),
     process.env,
   )
 
-  if ('error' in options) {
-    console.error(`error: ${options.error.message}`)
+  if ('error' in parseOptionsResult) {
+    console.error(`error: ${parseOptionsResult.error.message}`)
     printHelp(process.stderr)
     app.exit(1)
     return
-  } else if ('help' in options) {
+  } else if ('help' in parseOptionsResult) {
     printHelp()
     app.exit()
     return
   }
 
+  const { options } = parseOptionsResult
   const autoconfigurePrinterSubscription =
     options.autoconfigurePrintConfig &&
     autoconfigurePrint(options.autoconfigurePrintConfig, devices).subscribe()

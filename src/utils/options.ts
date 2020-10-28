@@ -2,16 +2,21 @@ import chalk from 'chalk'
 import makeDebug from 'debug'
 import { promises } from 'fs'
 import { isAbsolute, join } from 'path'
+import { AccessType, HostFilePermission } from './access'
 import { PrintConfig } from './printing'
 
 const debug = makeDebug('kiosk-browser:options')
+
+export type ParseOptionsResult =
+  | { options: Options; warnings?: string[] }
+  | { help: true; warnings?: string[] }
+  | { error: Error; warnings?: string[] }
 
 export interface Options {
   url: URL
   autoconfigurePrintConfig?: PrintConfig
   allowDevtools?: boolean
-  allowedSaveAsDestinationPatterns?: readonly string[]
-  allowedSaveAsHostnamePatterns?: readonly string[]
+  hostFilePermissions: HostFilePermission[]
 }
 
 export interface Help {
@@ -22,18 +27,18 @@ export interface Invalid {
   error: Error
 }
 
-const parseOptionsWithoutTryCatch: typeof parseOptions = async (
-  argv = [],
-  env = {},
-) => {
+async function parseOptionsWithoutTryCatch(
+  argv: typeof process.argv = [],
+  env: typeof process.env = {},
+): Promise<ParseOptionsResult> {
   debug('parsing options from argv=%o and env=%O', argv, env)
 
   let urlArg: string | undefined
-  let autoconfiurePrintConfigArg: string | undefined
+  let autoconfigurePrintConfigArg: string | undefined
   let helpArg: string | undefined
   let allowDevtoolsArg: boolean | undefined
-  let allowedSaveAsDestinationPatterns: string[] | undefined
-  let allowedSaveAsHostnamePatterns: string[] | undefined
+  let hostFilePermissions: HostFilePermission[] | undefined
+  const warnings: string[] = []
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
@@ -44,33 +49,22 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
       debug('got option for %s: %s', arg, urlArg)
     } else if (arg === '--autoconfigure-print-config' || arg === '-p') {
       i++
-      autoconfiurePrintConfigArg = getOptionValue()
-      debug('got option for %s: %s', arg, autoconfiurePrintConfigArg)
+      autoconfigurePrintConfigArg = getOptionValue()
+      debug('got option for %s: %s', arg, autoconfigurePrintConfigArg)
     } else if (arg === '--allow-devtools') {
       allowDevtoolsArg = true
       debug('got flag: %s', arg)
-    } else if (arg === '--allowed-save-as-destination-pattern') {
+    } else if (arg === '--add-file-perm') {
       i++
-      const pattern = argv[i]
-      debug('got option for %s: %s', arg, pattern)
-      if (!pattern || pattern.startsWith('-')) {
+      const value = argv[i]
+      debug('got option for %s: %s', arg, value)
+      if (!value || value.startsWith('-')) {
         return { error: new Error(`expected value for option: ${arg}`) }
       }
-      if (!allowedSaveAsDestinationPatterns) {
-        allowedSaveAsDestinationPatterns = []
-      }
-      allowedSaveAsDestinationPatterns.push(pattern)
-    } else if (arg === '--allowed-save-as-hostname-pattern') {
-      i++
-      const pattern = argv[i]
-      debug('got option for %s: %s', arg, pattern)
-      if (!pattern || pattern.startsWith('-')) {
-        return { error: new Error(`expected value for option: ${arg}`) }
-      }
-      if (!allowedSaveAsHostnamePatterns) {
-        allowedSaveAsHostnamePatterns = []
-      }
-      allowedSaveAsHostnamePatterns.push(pattern)
+      hostFilePermissions = [
+        ...(hostFilePermissions ?? []),
+        parseHostFilePermissionString(value),
+      ]
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg
     } else if (!arg.startsWith('-')) {
@@ -95,28 +89,64 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
   }
 
   if (helpArg ?? env.KIOSK_BROWSER_HELP) {
-    return { help: true }
+    return { help: true, warnings }
   }
 
-  const options = {
+  const options: Options = {
     url: new URL(urlArg ?? env.KIOSK_BROWSER_URL ?? 'about:blank'),
     autoconfigurePrintConfig: await loadPrintConfig(
-      autoconfiurePrintConfigArg ??
+      autoconfigurePrintConfigArg ??
         env.KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG,
     ),
     allowDevtools:
       allowDevtoolsArg ?? env.KIOSK_BROWSER_ALLOW_DEVTOOLS === 'true',
-    allowedSaveAsDestinationPatterns:
-      allowedSaveAsDestinationPatterns ??
-      (env.KIOSK_BROWSER_ALLOWED_SAVE_AS_DESTINATION_PATTERNS ?? '').split(':'),
-    allowedSaveAsHostnamePatterns:
-      allowedSaveAsHostnamePatterns ??
-      (env.KIOSK_BROWSER_ALLOWED_SAVE_AS_HOSTNAME_PATTERNS ?? '').split(':'),
+    hostFilePermissions:
+      hostFilePermissions ??
+      env.KIOSK_BROWSER_HOST_FILE_PERMISSIONS?.split(',')?.map(
+        parseHostFilePermissionString,
+      ) ??
+      [],
   }
 
   debug('parsed options: %O', options)
 
-  return options
+  return { options, warnings }
+}
+
+function isAccessType(value: string): value is AccessType {
+  return value === 'ro' || value === 'wo' || value === 'rw'
+}
+
+function parseHostFilePermissionString(value: string): HostFilePermission {
+  const parts = value.split(':', 3)
+  const defaultHostnames = '*'
+  const defaultAccess: AccessType = 'rw'
+
+  if (parts.length === 1) {
+    const paths = parts[0]
+    return {
+      hostnames: defaultHostnames,
+      paths,
+      access: defaultAccess,
+    }
+  } else if (parts.length === 2) {
+    const [first, second] = parts
+    if (isAccessType(second)) {
+      return { hostnames: defaultHostnames, paths: first, access: second }
+    } else {
+      return { hostnames: first, paths: second, access: defaultAccess }
+    }
+  } else if (parts.length === 3) {
+    const [hostnames, paths, access] = parts
+
+    if (!isAccessType(access)) {
+      throw new Error(`unexpected permission value: ${access}`)
+    }
+
+    return { hostnames, paths, access }
+  } else {
+    throw new Error(`unknown host file permission format: ${value}`)
+  }
 }
 
 /**
@@ -125,7 +155,7 @@ const parseOptionsWithoutTryCatch: typeof parseOptions = async (
 export default async function parseOptions(
   argv: typeof process.argv = [],
   env: typeof process.env = {},
-): Promise<Options | Help | Invalid> {
+): Promise<ParseOptionsResult> {
   try {
     return await parseOptionsWithoutTryCatch(argv, env)
   } catch (error) {
@@ -169,11 +199,20 @@ export function printHelp(
 kiosk-browser [OPTIONS] [URL]
 
 ${b('Options')}
-  -u, --url URL                                      Visit this URL on load.
-  -p, --autoconfigure-print-config PATH              Automatically configures connected printers according to the given config.
-      --allowed-save-as-hostname-pattern PATTERN     Hostnames that are allowed to use the 'saveAs' API, e.g. 'localhost' or '*.mydomain.com'.
-      --allowed-save-as-destination-pattern PATTERN  File paths that may be written to with the 'saveAs' API, e.g. '/media/**/*'.
-      --allow-devtools                               Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
+   -u, --url URL                           Visit this URL on load.
+   -p, --autoconfigure-print-config PATH   Automatically configures connected printers according to the given config.
+   -v, --add-file-perm [HOST:]PATH[:PERM]  Adds a permission for a host to read or write certain paths.
+       --allow-devtools                    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
+
+${b('Examples')}
+${c('# Allow localhost to read and write all files.')}
+$ kiosk-browser -v ${jS('localhost:**/*:rw')} http://localhost:3000/
+
+${c('# Allow localhost to read–not write–all files.')}
+$ kiosk-browser -v ${jS('localhost:**/*:ro')} http://localhost:3000/
+
+${c('# Allow any host to write to a drop box.')}
+$ kiosk-browser -v ${jS('/dropbox:wo')} http://localhost:3000/
 
 ${b('Auto-Configure Printers')}
 kiosk-browser can automatically discover and configure printers. To do so, you

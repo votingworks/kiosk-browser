@@ -2,7 +2,7 @@ import * as electron from 'electron'
 import * as fs from 'fs'
 import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
-import { defined } from '../utils/assert'
+import { ok } from '../utils/assert'
 import register, { channel, Client } from './saveAs'
 
 jest.mock('electron', () => ({
@@ -18,8 +18,7 @@ test('open, write, close', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    allowedSaveAsHostnamePatterns: ['*'],
-    allowedSaveAsDestinationPatterns: ['**/*'],
+    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
@@ -47,7 +46,7 @@ test('open, write, close', async () => {
   expect(electron.dialog.showSaveDialog).toHaveBeenCalled()
   expect(fs.createWriteStream).toHaveBeenCalledWith('/example/path.txt')
 
-  defined(promptResult)
+  ok(promptResult.type === 'file')
   const { fd } = promptResult
 
   // do some writes
@@ -75,8 +74,7 @@ test('accepts options for the save dialog', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    allowedSaveAsHostnamePatterns: ['*'],
-    allowedSaveAsDestinationPatterns: ['**/*'],
+    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
@@ -120,7 +118,7 @@ test('accepts options for the save dialog', async () => {
   })
   expect(fs.createWriteStream).toHaveBeenCalledWith('/example/path.txt')
 
-  defined(promptResult)
+  ok(promptResult.type === 'file')
   const { fd } = promptResult
 
   // do some writes
@@ -153,14 +151,14 @@ test('disallows hosts that are not explicitly listed', async () => {
 
   register(ipcMain, {
     url,
-    allowedSaveAsHostnamePatterns: [],
+    hostFilePermissions: [],
   })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
 
   expect(electron.dialog.showSaveDialog).not.toBeCalled()
   await expect(client.promptToSave()).rejects.toThrowError(
-    `evil.com is not allowed to use 'saveAs'`,
+    `evil.com is not allowed to write to disk`,
   )
 })
 
@@ -169,8 +167,9 @@ test('disallows file destinations that are not explicitly listed', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    allowedSaveAsHostnamePatterns: ['example.com'],
-    allowedSaveAsDestinationPatterns: ['/media/**/*'],
+    hostFilePermissions: [
+      { hostnames: 'example.com', paths: '/media/**/*', access: 'rw' },
+    ],
   })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
@@ -179,7 +178,7 @@ test('disallows file destinations that are not explicitly listed', async () => {
     canceled: false,
     filePath: '/etc/passwd',
   })
-  expect(await client.promptToSave()).toBeUndefined()
+  await expect(client.promptToSave()).rejects.toThrowError()
 
   mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
     canceled: false,
@@ -193,8 +192,7 @@ test('does not allow cross-site file access', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    allowedSaveAsHostnamePatterns: ['*'],
-    allowedSaveAsDestinationPatterns: ['**/*'],
+    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
@@ -218,7 +216,7 @@ test('does not allow cross-site file access', async () => {
   )
 
   const promptResult = await client.promptToSave()
-  defined(promptResult)
+  ok(promptResult.type === 'file')
 
   // the domain that created it should be able to write to it
   await client.write(promptResult.fd, 'example things')
