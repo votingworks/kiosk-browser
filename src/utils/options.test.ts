@@ -7,8 +7,8 @@ async function parseOptionsWithoutHelp(
 ): Promise<Options> {
   const result = await parseOptions(argv, env)
   ok(!('help' in result))
-  ok(!('error' in result))
-  return result
+  ok(!('error' in result), 'error' in result ? result.error.message : undefined)
+  return result.options
 }
 
 test('returns the first argument URL if it can be parsed as a URL', async () => {
@@ -57,20 +57,34 @@ test('allow devtools', async () => {
   )
 })
 
-test('allowed saveAs destination patterns', async () => {
+test('file permission with default hostname and access', async () => {
   const options = await parseOptionsWithoutHelp([
-    '--allowed-save-as-destination-pattern',
+    '--add-file-perm',
     '/media/**/*',
   ])
-  expect(options.allowedSaveAsDestinationPatterns).toEqual(['/media/**/*'])
+  expect(options.hostFilePermissions).toEqual([
+    { hostnames: '*', paths: '/media/**/*', access: 'rw' },
+  ])
 })
 
-test('allowed saveAs hostname patterns', async () => {
+test('file permission with default access', async () => {
   const options = await parseOptionsWithoutHelp([
-    '--allowed-save-as-hostname-pattern',
-    'localhost',
+    '--add-file-perm',
+    'localhost:/media/**/*',
   ])
-  expect(options.allowedSaveAsHostnamePatterns).toEqual(['localhost'])
+  expect(options.hostFilePermissions).toEqual([
+    { hostnames: 'localhost', paths: '/media/**/*', access: 'rw' },
+  ])
+})
+
+test('file permission', async () => {
+  const options = await parseOptionsWithoutHelp([
+    '--add-file-perm',
+    'localhost:/media/**/*:ro',
+  ])
+  expect(options.hostFilePermissions).toEqual([
+    { hostnames: 'localhost', paths: '/media/**/*', access: 'ro' },
+  ])
 })
 
 class SimpleWriter {

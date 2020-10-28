@@ -23,13 +23,17 @@ Gets an object describing the current state of the battery, including level and 
 
 Prints the current page using the default printer. This is different from `window.print` in that it is silent; there are no dialogs or prompts. Resolves if printing succeeds, rejects otherwise. Optionally accepts `deviceName: string`, `paperSource: string`, and `copies: number` options.
 
-`kiosk.`**`saveAs`**`(): Promise<FileWriter>`
+`kiosk.`**`saveAs`**`(): Promise<FileWriter | undefined>`
 
-Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting hostname must be allowed explicitly. For example, via `--allowed-save-as-hostname-pattern localhost`. Additionally, file write destination paths must be explicitly allowed. For example, `--allowed-save-as-destination-pattern /media/**/*`. To allow all hosts and paths, use `--allowed-save-as-hostname-pattern '*' --allowed-save-as-destination-pattern '**/*'`.
+Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting hostname must be allowed to write to disk.
 
 `kiosk.`**`getUsbDrives`**`(): Promise<{ deviceName: string; mountPoint?: string }>`
 
 Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, pass its device name to `kiosk.mountUsbDrive` or `kiosk.unmountUsbDrive`.
+
+## File Access APIs
+
+To access the file system, a host must be granted access with `--add-file-perm [HOST:]PATH[:ACCESS]`. For example, `--add-file-perm localhost:**/*:rw` grants localhost read-write access anywhere. Access modifiers: `rw` (default, read-write), `ro` (read-only), and `wo` (write-only). Note that the order permissions are added is important. If you add a permission that says access to `/media/**/*` is read-only first, then another that says `/media/usb-stick/**/*` is read-write, access to `/media/usb-stick/file.txt` will be read-only because the first permission matches the path. To fix this, reverse the order.
 
 ## Auto-Configure Printers
 

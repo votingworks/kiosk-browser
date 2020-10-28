@@ -29,7 +29,7 @@ export default class FileWriter {
   ): Promise<FileWriter | undefined> {
     const output = await client.promptToSave(options)
 
-    if (!output) {
+    if (output.type === 'cancel') {
       return
     }
 
