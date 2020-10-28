@@ -43,6 +43,19 @@ export function hasReadAccess(
 }
 
 /**
+ * Asserts that a host has read access, optionally to a specific path.
+ */
+export function assertHasReadAccess(
+  permissions: readonly HostFilePermission[],
+  hostname: string,
+  path?: string,
+): void {
+  if (!hasReadAccess(permissions, hostname, path)) {
+    throw new Error(`${hostname} is not allowed to read ${path ?? 'anything'}`)
+  }
+}
+
+/**
  * Determines whether a host write access granted by a list of permissions,
  * optionally considering a specific path.
  */
@@ -52,6 +65,19 @@ export function hasWriteAccess(
   path?: string,
 ): boolean {
   return hasAccess(permissions, hostname, path, 'wo', 'rw')
+}
+
+/**
+ * Asserts that a host has write access, optionally to a specific path.
+ */
+export function assertHasWriteAccess(
+  permissions: readonly HostFilePermission[],
+  hostname: string,
+  path?: string,
+): void {
+  if (!hasWriteAccess(permissions, hostname, path)) {
+    throw new Error(`${hostname} is not allowed to write to ${path ?? 'disk'}`)
+  }
 }
 
 function matchesPatterns(value: string, pattern: string): boolean {

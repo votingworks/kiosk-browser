@@ -4,7 +4,7 @@ import FileWriter from './FileWriter'
 
 function fakeClient(): jest.Mocked<Client> {
   const { ipcRenderer } = fakeIpc()
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   jest.spyOn(client, 'promptToSave').mockResolvedValue({ type: 'cancel' })
   jest.spyOn(client, 'write').mockResolvedValue(undefined)

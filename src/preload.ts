@@ -1,6 +1,12 @@
 import makeDebug from 'debug'
 import { ipcRenderer } from 'electron'
 import { KioskBrowser } from '../types/kiosk-window'
+import { channel as setClock } from './ipc/clock'
+import {
+  channel as fileSystemGetEntriesChannel,
+  FileSystemEntry,
+} from './ipc/file-system-get-entries'
+import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file'
 import {
   BatteryInfo,
   channel as getBatteryInfoChannel,
@@ -20,7 +26,6 @@ import { channel as storageGetChannel } from './ipc/storage-get'
 import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
-import { channel as setClock } from './ipc/clock'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import FileWriter from './utils/FileWriter'
 
@@ -85,6 +90,47 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async unmountUsbDrive(device: string): Promise<void> {
     debug('forwarding `unmountUsbDrive` to main process')
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
+  }
+
+  public async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
+    debug('forwarding `getFileSystemEntries` to main process')
+    const result: FileSystemEntry[] = await ipcRenderer.invoke(
+      fileSystemGetEntriesChannel,
+      path,
+    )
+    return result.map(entry => ({
+      ...entry,
+      mtime:
+        typeof entry.mtime === 'string' ? new Date(entry.mtime) : entry.mtime,
+      atime:
+        typeof entry.atime === 'string' ? new Date(entry.atime) : entry.atime,
+      ctime:
+        typeof entry.ctime === 'string' ? new Date(entry.ctime) : entry.ctime,
+    }))
+  }
+
+  public async readFile(path: string): Promise<Buffer>
+  public async readFile(path: string, encoding: string): Promise<string>
+  public async readFile(...args: unknown[]): Promise<Buffer | string> {
+    debug('forwarding `readFile` to main process')
+    return ipcRenderer.invoke(fileSystemReadFileChannel, ...args)
+  }
+
+  public async writeFile(path: string): Promise<FileWriter>
+  public async writeFile(path: string, content: Buffer | string): Promise<void>
+  public async writeFile(
+    path: string,
+    content?: Buffer | string,
+  ): Promise<FileWriter | void> {
+    debug('forwarding `writeFile` to main process')
+    const writer = await FileWriter.fromPath(path)
+
+    if (typeof content !== 'undefined') {
+      await writer.write(content)
+      await writer.end()
+    } else {
+      return writer
+    }
   }
 
   public storage = {

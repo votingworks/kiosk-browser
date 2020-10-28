@@ -21,7 +21,7 @@ test('open, write, close', async () => {
     hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   // prepare to prompt
   mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
@@ -77,7 +77,7 @@ test('accepts options for the save dialog', async () => {
     hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   // prepare to prompt
   mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
@@ -154,7 +154,7 @@ test('disallows hosts that are not explicitly listed', async () => {
     hostFilePermissions: [],
   })
 
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   expect(electron.dialog.showSaveDialog).not.toBeCalled()
   await expect(client.promptToSave()).rejects.toThrowError(
@@ -172,7 +172,7 @@ test('disallows file destinations that are not explicitly listed', async () => {
     ],
   })
 
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   mockOf(electron.dialog.showSaveDialog).mockResolvedValueOnce({
     canceled: false,
@@ -195,7 +195,7 @@ test('does not allow cross-site file access', async () => {
     hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
   })
 
-  const client = new Client(ipcRenderer.invoke.bind(ipcRenderer))
+  const client = new Client(ipcRenderer)
 
   setWebContents({
     getURL() {
