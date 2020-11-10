@@ -1,6 +1,6 @@
 import makeDebug from 'debug'
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
-import { promises as fs } from 'fs'
+import { Dirent, promises as fs } from 'fs'
 import { isAbsolute, join } from 'path'
 import { assertHasReadAccess, HostFilePermission } from '../utils/access'
 import { Options } from '../utils/options'
@@ -9,15 +9,35 @@ const debug = makeDebug('kiosk-browser:file-system-get-entries')
 
 export const channel = 'file-system-get-entries'
 
+export enum DirentType {
+  File = 1, // UV_DIRENT_FILE
+  Directory = 2, // UV_DIRENT_DIR
+  SymbolicLink = 3, // UV_DIRENT_LINK
+  FIFO = 4, // UV_DIRENT_FIFO
+  Socket = 5, // UV_DIRENT_SOCKET
+  CharacterDevice = 6, // UV_DIRENT_CHAR
+  BlockDevice = 7, // UV_DIRENT_BLOCK
+}
+
 export interface FileSystemEntry {
   readonly name: string
   readonly path: string
-  readonly isDirectory: boolean
-  readonly isFile: boolean
+  readonly type: DirentType
   readonly size: number
   readonly mtime: Date
   readonly atime: Date
   readonly ctime: Date
+}
+
+function getDirentType(dirent: Dirent): DirentType {
+  if (dirent.isFile()) return DirentType.File
+  if (dirent.isDirectory()) return DirentType.Directory
+  if (dirent.isSymbolicLink()) return DirentType.SymbolicLink
+  if (dirent.isFIFO()) return DirentType.FIFO
+  if (dirent.isSocket()) return DirentType.Socket
+  if (dirent.isCharacterDevice()) return DirentType.CharacterDevice
+  if (dirent.isBlockDevice()) return DirentType.BlockDevice
+  throw new TypeError('dirent is not of a known type')
 }
 
 /**
@@ -34,23 +54,24 @@ export async function getEntries(
   }
   assertHasReadAccess(permissions, hostname, path)
 
-  const names = await fs.readdir(path)
+  const entries = await fs.readdir(path, { withFileTypes: true })
   return await Promise.all(
-    names.map(async name => {
-      const entryPath = join(path, name)
-      const stat = await fs.stat(entryPath)
+    entries
+      .filter(entry => entry.isFile() || entry.isDirectory())
+      .map(async entry => {
+        const entryPath = join(path, entry.name)
+        const stat = await fs.lstat(entryPath)
 
-      return {
-        name,
-        path: entryPath,
-        size: stat.size,
-        isDirectory: stat.isDirectory(),
-        isFile: stat.isFile(),
-        mtime: stat.mtime,
-        atime: stat.atime,
-        ctime: stat.ctime,
-      }
-    }),
+        return {
+          name: entry.name,
+          path: entryPath,
+          size: stat.size,
+          type: getDirentType(entry),
+          mtime: stat.mtime,
+          atime: stat.atime,
+          ctime: stat.ctime,
+        }
+      }),
   )
 }
 

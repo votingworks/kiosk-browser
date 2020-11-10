@@ -1,65 +1,40 @@
-import { promises as fs, Stats } from 'fs'
+import { Dirent, promises as fs, Stats } from 'fs'
+import { basename } from 'path'
 import { fakeIpc } from '../../test/ipc'
 import register, {
   channel as fileSystemGetEntriesChannel,
+  DirentType,
   getEntries,
 } from './file-system-get-entries'
 
-jest.mock('fs', () => ({
-  promises: {
-    readdir: jest
-      .fn()
-      .mockRejectedValue(new Error('ENOENT no mock value provided')),
-    stat: jest
-      .fn()
-      .mockRejectedValue(new Error('ENOENT no mock value provided')),
-  },
-}))
+// Dirent types treat the constructor as private.
+const ConstructableDirent = (Dirent as unknown) as new (
+  name: string,
+  type: DirentType,
+) => Dirent
+
+const file = (name: string): Dirent =>
+  new ConstructableDirent(name, DirentType.File)
 
 test('gets entries with stat info', async () => {
-  jest
-    .spyOn(fs, 'readdir')
-    .mockResolvedValueOnce(['a.txt', 'b.json', 'c.csv', 'd.png'] as never)
+  const entries = [file('a.txt'), file('b.json'), file('c.csv'), file('d.png')]
+  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries)
 
-  // a.txt
-  jest.spyOn(fs, 'stat').mockResolvedValueOnce({
-    size: 1,
-    isDirectory: () => false,
-    isFile: () => true,
-    mtime: new Date(0),
-    atime: new Date(0),
-    ctime: new Date(0),
-  } as Stats)
+  jest.spyOn(fs, 'lstat').mockImplementation(path => {
+    const base = basename(path as string)
+    for (const [i, entry] of entries.entries()) {
+      if (entry.name === base) {
+        return Promise.resolve({
+          size: i + 1,
+          mtime: new Date(0),
+          atime: new Date(0),
+          ctime: new Date(0),
+        } as Stats)
+      }
+    }
 
-  // b.json
-  jest.spyOn(fs, 'stat').mockResolvedValueOnce({
-    size: 2,
-    isDirectory: () => false,
-    isFile: () => true,
-    mtime: new Date(0),
-    atime: new Date(0),
-    ctime: new Date(0),
-  } as Stats)
-
-  // c.csv
-  jest.spyOn(fs, 'stat').mockResolvedValueOnce({
-    size: 3,
-    isDirectory: () => false,
-    isFile: () => true,
-    mtime: new Date(0),
-    atime: new Date(0),
-    ctime: new Date(0),
-  } as Stats)
-
-  // d.png
-  jest.spyOn(fs, 'stat').mockResolvedValueOnce({
-    size: 4,
-    isDirectory: () => false,
-    isFile: () => true,
-    mtime: new Date(0),
-    atime: new Date(0),
-    ctime: new Date(0),
-  } as Stats)
+    throw new Error(`unexpected path: ${path}`)
+  })
 
   expect(
     await getEntries(
@@ -72,8 +47,7 @@ test('gets entries with stat info', async () => {
       name: 'a.txt',
       path: '/a/path/a.txt',
       size: 1,
-      isDirectory: false,
-      isFile: true,
+      type: DirentType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -82,8 +56,7 @@ test('gets entries with stat info', async () => {
       name: 'b.json',
       path: '/a/path/b.json',
       size: 2,
-      isDirectory: false,
-      isFile: true,
+      type: DirentType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -92,8 +65,7 @@ test('gets entries with stat info', async () => {
       name: 'c.csv',
       path: '/a/path/c.csv',
       size: 3,
-      isDirectory: false,
-      isFile: true,
+      type: DirentType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -102,8 +74,7 @@ test('gets entries with stat info', async () => {
       name: 'd.png',
       path: '/a/path/d.png',
       size: 4,
-      isDirectory: false,
-      isFile: true,
+      type: DirentType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -131,5 +102,5 @@ test('registers a handler to get directory entries', async () => {
     await ipcRenderer.invoke(fileSystemGetEntriesChannel, '/a/path'),
   ).toEqual([])
 
-  expect(fs.readdir).toHaveBeenCalledWith('/a/path')
+  expect(fs.readdir).toHaveBeenCalledWith('/a/path', { withFileTypes: true })
 })
