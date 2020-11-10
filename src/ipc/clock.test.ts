@@ -1,7 +1,6 @@
-import { promisify } from 'util'
 import { fakeIpc } from '../../test/ipc'
-import exec from '../utils/exec'
 import mockOf from '../../test/mockOf'
+import exec from '../utils/exec'
 import register, { channel as setClockChannel } from './clock'
 
 const execMock = mockOf(exec)

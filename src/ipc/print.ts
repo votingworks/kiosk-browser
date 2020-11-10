@@ -1,10 +1,8 @@
-import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
-import { inspect } from 'util'
+import { IpcMain, IpcMainInvokeEvent, PrinterInfo } from 'electron'
 import * as z from 'zod'
 import exec from '../utils/exec'
-import { debug } from '../utils/printing'
-
 import getPreferredPrinter from '../utils/getPreferredPrinter'
+import { debug } from '../utils/printing'
 
 export const channel = 'print'
 
