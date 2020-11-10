@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import { fakeIpc } from '../../test/ipc'
 import { Client } from '../ipc/saveAs'
 import { create, fromPrompt } from './FileWriter'
@@ -21,7 +22,7 @@ test('creating from prompt fails', async () => {
 
 test('creating from prompt succeeds', async () => {
   const client = fakeClient()
-  client.promptToSave.mockResolvedValueOnce({ type: 'file', fd: 42 })
+  client.promptToSave.mockResolvedValueOnce({ type: 'file', fd: uuid() })
   expect(await fromPrompt({}, client)).toEqual({
     write: expect.any(Function),
     end: expect.any(Function),
@@ -29,15 +30,17 @@ test('creating from prompt succeeds', async () => {
 })
 
 test('write passes the file descriptor and data', async () => {
+  const fd = uuid()
   const client = fakeClient()
-  const writer = create(21, client)
+  const writer = create(fd, client)
   await writer.write('abcdefg')
-  expect(client.write).toHaveBeenCalledWith(21, 'abcdefg')
+  expect(client.write).toHaveBeenCalledWith(fd, 'abcdefg')
 })
 
 test('end passes the file descriptor', async () => {
+  const fd = uuid()
   const client = fakeClient()
-  const writer = create(21, client)
+  const writer = create(fd, client)
   await writer.end()
-  expect(client.end).toHaveBeenCalledWith(21)
+  expect(client.end).toHaveBeenCalledWith(fd)
 })

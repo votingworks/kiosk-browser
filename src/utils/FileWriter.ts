@@ -12,7 +12,7 @@ export interface FileWriter {
 /**
  * Create a file writer from the given file descriptor and client.
  */
-export function create(fd: number, client = new FileWriteClient()): FileWriter {
+export function create(fd: string, client = new FileWriteClient()): FileWriter {
   return {
     write: (data): Promise<void> => client.write(fd, data),
     end: (): Promise<void> => client.end(fd),

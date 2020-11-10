@@ -31,7 +31,7 @@ export type PromptToSaveOptions = Pick<
   'title' | 'defaultPath' | 'buttonLabel' | 'filters'
 >
 export type PromptToSaveResult =
-  | { type: 'file'; fd: number }
+  | { type: 'file'; fd: string }
   | { type: 'cancel' }
 
 /**
@@ -67,7 +67,7 @@ async function handlePromptToSave(
   assertHasWriteAccess(permissions, origin, result.filePath)
 
   const fd = files.open(origin, result.filePath)
-  debug('%s: opened %s for writing as fd=%d', input.type, result.filePath, fd)
+  debug('%s: opened %s for writing as fd=%s', input.type, result.filePath, fd)
   return { type: 'file', fd }
 }
 

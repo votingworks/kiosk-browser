@@ -1,4 +1,5 @@
 import { promises as fs, WriteStream } from 'fs'
+import { v4 as uuid } from 'uuid'
 import { fakeIpc } from '../../test/ipc'
 import { OriginFilePermission } from '../utils/access'
 import OpenFiles from '../utils/OpenFiles'
@@ -52,7 +53,7 @@ test('fails when the file has no write permission', () => {
 
 test('open file for writing', () => {
   const files = new OpenFiles()
-  const fd = 1
+  const fd = uuid()
   jest.spyOn(files, 'open').mockReturnValueOnce(fd)
 
   expect(
@@ -75,7 +76,7 @@ test('open and write to a file', async () => {
   const permissions: readonly OriginFilePermission[] = [
     { origins: 'https://example.com', paths: '/a/path/**/*', access: 'rw' },
   ]
-  const fd = 1
+  const fd = uuid()
   const writeMock = jest
     .fn()
     .mockImplementation((_data: unknown, callback: () => void) => callback())

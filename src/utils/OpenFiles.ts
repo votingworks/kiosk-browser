@@ -1,13 +1,13 @@
 import { WriteStream, createWriteStream } from 'fs'
+import { v4 as uuid } from 'uuid'
 
 /**
  * Manages files opened on behalf of various origins.
  */
 export default class OpenFiles {
-  private nextFileDescriptorByOrigin = new Map<string, number>()
   private streamsByFileDescriptorByOrigin = new Map<
     string,
-    Map<number, WriteStream>
+    Map<string, WriteStream>
   >()
 
   /**
@@ -15,9 +15,8 @@ export default class OpenFiles {
    *
    * @returns a file descriptor to be given to `get` and `close`
    */
-  public open(origin: string, filePath: string): number {
-    const fd = this.nextFileDescriptorByOrigin.get(origin) ?? 1
-    this.nextFileDescriptorByOrigin.set(origin, fd + 1)
+  public open(origin: string, filePath: string): string {
+    const fd = uuid()
     const stream = createWriteStream(filePath)
     let streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
       origin,
@@ -33,7 +32,7 @@ export default class OpenFiles {
   /**
    * Gets a stream for an already-opened file by origin and file descriptor.
    */
-  public get(origin: string, fd: number): WriteStream | undefined {
+  public get(origin: string, fd: string): WriteStream | undefined {
     const streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
       origin,
     )
@@ -48,7 +47,7 @@ export default class OpenFiles {
   /**
    * Closes a stream for an already-opened file, resolves when it's closed.
    */
-  public async close(origin: string, fd: number): Promise<boolean> {
+  public async close(origin: string, fd: string): Promise<boolean> {
     const streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
       origin,
     )

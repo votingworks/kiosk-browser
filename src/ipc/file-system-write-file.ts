@@ -17,17 +17,17 @@ export interface Open {
 
 export interface Write {
   type: 'Write'
-  fd: number
+  fd: string
   data: Buffer | Uint8Array | string
 }
 
 export interface End {
   type: 'End'
-  fd: number
+  fd: string
 }
 
 export interface OpenResult {
-  fd: number
+  fd: string
 }
 
 /**
@@ -73,7 +73,7 @@ export function open(
   assertHasWriteAccess(permissions, origin, input.path)
   const fd = files.open(origin, input.path)
   debug(
-    '%s: %s opened %s for writing as fd=%d',
+    '%s: %s opened %s for writing as fd=%s',
     input.type,
     origin,
     input.path,
@@ -92,7 +92,7 @@ export async function write(
   const openFile = files.get(origin, input.fd)
 
   if (!openFile) {
-    debug('%s: %s has no open file with fd=%d', input.type, origin, input.fd)
+    debug('%s: %s has no open file with fd=%s', input.type, origin, input.fd)
     throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
   }
 
@@ -117,7 +117,7 @@ export async function end(
   const openFile = files.get(origin, input.fd)
 
   if (!openFile) {
-    debug('%s: %s has no open file with fd=%d', input.type, origin, input.fd)
+    debug('%s: %s has no open file with fd=%s', input.type, origin, input.fd)
     throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
   }
 
