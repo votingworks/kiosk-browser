@@ -1,6 +1,6 @@
-import { IpcMainInvokeEvent, IpcMain, PrinterInfo } from 'electron'
-import { KioskBrowser } from '../../types/kiosk-window'
+import { IpcMain, IpcMainInvokeEvent } from 'electron'
 import { DateTime } from 'luxon'
+import { KioskBrowser } from '../../types/kiosk-window'
 import exec from '../utils/exec'
 
 export const channel = 'setClock'

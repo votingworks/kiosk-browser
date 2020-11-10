@@ -1,7 +1,7 @@
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import { IpcMain } from 'electron'
+import storage from 'electron-json-storage'
 import { promisify } from 'util'
 
-import storage from 'electron-json-storage'
 const clear = promisify(storage.clear)
 
 export const channel = 'storageClear'
