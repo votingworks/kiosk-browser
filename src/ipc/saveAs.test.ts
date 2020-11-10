@@ -18,7 +18,7 @@ test('open, write, close', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
+    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer)
@@ -74,7 +74,7 @@ test('accepts options for the save dialog', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
+    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer)
@@ -142,7 +142,7 @@ test('accepts options for the save dialog', async () => {
 })
 
 test('disallows hosts that are not explicitly listed', async () => {
-  const url = new URL('https://evil.com/')
+  const url = new URL('http://evil.com/')
   const { ipcMain, ipcRenderer } = fakeIpc({
     getURL() {
       return url.toString()
@@ -151,7 +151,7 @@ test('disallows hosts that are not explicitly listed', async () => {
 
   register(ipcMain, {
     url,
-    hostFilePermissions: [],
+    originFilePermissions: [],
   })
 
   const client = new Client(ipcRenderer)
@@ -167,8 +167,8 @@ test('disallows file destinations that are not explicitly listed', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    hostFilePermissions: [
-      { hostnames: 'example.com', paths: '/media/**/*', access: 'rw' },
+    originFilePermissions: [
+      { origins: 'https://example.com', paths: '/media/**/*', access: 'rw' },
     ],
   })
 
@@ -192,7 +192,7 @@ test('does not allow cross-site file access', async () => {
 
   register(ipcMain, {
     url: new URL('https://example.com/'),
-    hostFilePermissions: [{ hostnames: '*', paths: '**/*', access: 'rw' }],
+    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
   })
 
   const client = new Client(ipcRenderer)
@@ -228,7 +228,7 @@ test('does not allow cross-site file access', async () => {
 
   setWebContents({
     getURL() {
-      return 'https://evil.com/'
+      return 'http://evil.com/'
     },
   })
 

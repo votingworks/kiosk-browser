@@ -2,25 +2,25 @@ import multimatch from 'multimatch'
 
 export type AccessType = 'ro' | 'wo' | 'rw'
 
-export interface HostFilePermission {
+export interface OriginFilePermission {
   readonly paths: string
-  readonly hostnames: string
+  readonly origins: string
   readonly access: AccessType
 }
 
 /**
- * Determines whether a host has one of the access types granted by a list of
+ * Determines whether an origin has one of the access types granted by a list of
  * permissions, optionally considering a specific path.
  */
 export function hasAccess(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path?: string,
   ...accesses: AccessType[]
 ): boolean {
-  for (const { hostnames, paths, access } of permissions) {
+  for (const { origins, paths, access } of permissions) {
     if (
-      matchesPatterns(hostname, hostnames) &&
+      matchesPatterns(origin, origins) &&
       (!path || matchesPatterns(path, paths))
     ) {
       return accesses.includes(access)
@@ -31,52 +31,52 @@ export function hasAccess(
 }
 
 /**
- * Determines whether a host read access granted by a list of permissions,
- * optionally considering a specific path.
+ * Determines whether an origin has read access granted by a list of
+ * permissions, optionally considering a specific path.
  */
 export function hasReadAccess(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path?: string,
 ): boolean {
-  return hasAccess(permissions, hostname, path, 'ro', 'rw')
+  return hasAccess(permissions, origin, path, 'ro', 'rw')
 }
 
 /**
- * Asserts that a host has read access, optionally to a specific path.
+ * Asserts that an origin has read access, optionally to a specific path.
  */
 export function assertHasReadAccess(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path?: string,
 ): void {
-  if (!hasReadAccess(permissions, hostname, path)) {
-    throw new Error(`${hostname} is not allowed to read ${path ?? 'anything'}`)
+  if (!hasReadAccess(permissions, origin, path)) {
+    throw new Error(`${origin} is not allowed to read ${path ?? 'anything'}`)
   }
 }
 
 /**
- * Determines whether a host write access granted by a list of permissions,
- * optionally considering a specific path.
+ * Determines whether an origin has write access granted by a list of
+ * permissions, optionally considering a specific path.
  */
 export function hasWriteAccess(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path?: string,
 ): boolean {
-  return hasAccess(permissions, hostname, path, 'wo', 'rw')
+  return hasAccess(permissions, origin, path, 'wo', 'rw')
 }
 
 /**
- * Asserts that a host has write access, optionally to a specific path.
+ * Asserts that an origin has write access, optionally to a specific path.
  */
 export function assertHasWriteAccess(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path?: string,
 ): void {
-  if (!hasWriteAccess(permissions, hostname, path)) {
-    throw new Error(`${hostname} is not allowed to write to ${path ?? 'disk'}`)
+  if (!hasWriteAccess(permissions, origin, path)) {
+    throw new Error(`${origin} is not allowed to write to ${path ?? 'disk'}`)
   }
 }
 

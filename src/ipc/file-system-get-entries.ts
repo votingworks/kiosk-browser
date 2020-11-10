@@ -2,7 +2,7 @@ import makeDebug from 'debug'
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
 import { Dirent, promises as fs } from 'fs'
 import { isAbsolute, join } from 'path'
-import { assertHasReadAccess, HostFilePermission } from '../utils/access'
+import { assertHasReadAccess, OriginFilePermission } from '../utils/access'
 import { Options } from '../utils/options'
 
 const debug = makeDebug('kiosk-browser:file-system-get-entries')
@@ -44,15 +44,15 @@ function getDirentType(dirent: Dirent): DirentType {
  * Get entries for a directory, includes stat information for each entry.
  */
 export async function getEntries(
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   path: string,
 ): Promise<FileSystemEntry[] | undefined> {
   if (!isAbsolute(path)) {
     debug('aborting request because it is not an absolute path')
     throw new Error(`requested path is not absolute: ${path}`)
   }
-  assertHasReadAccess(permissions, hostname, path)
+  assertHasReadAccess(permissions, origin, path)
 
   const entries = await fs.readdir(path, { withFileTypes: true })
   return await Promise.all(
@@ -78,7 +78,6 @@ export async function getEntries(
 export default function register(ipcMain: IpcMain, options: Options): void {
   ipcMain.handle(channel, async (event: IpcMainInvokeEvent, path: string) => {
     const url = new URL(event.sender.getURL())
-    const hostname = url.hostname || url.toString()
-    return await getEntries(options.hostFilePermissions, hostname, path)
+    return await getEntries(options.originFilePermissions, url.origin, path)
   })
 }

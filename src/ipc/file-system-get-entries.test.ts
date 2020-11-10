@@ -38,8 +38,8 @@ test('gets entries with stat info', async () => {
 
   expect(
     await getEntries(
-      [{ hostnames: 'example.com', paths: '**/*', access: 'ro' }],
-      'example.com',
+      [{ origins: 'https://example.com', paths: '**/*', access: 'ro' }],
+      'https://example.com',
       '/a/path',
     ),
   ).toEqual([
@@ -86,14 +86,14 @@ test('registers a handler to get directory entries', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    hostFilePermissions: [
+    originFilePermissions: [
       {
-        hostnames: 'example.com',
+        origins: 'https://example.com',
         paths: '**/*',
         access: 'ro',
       },
     ],
-    url: new URL('http://example.com/'),
+    url: new URL('https://example.com/'),
   })
 
   jest.spyOn(fs, 'readdir').mockResolvedValueOnce([])

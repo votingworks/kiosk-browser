@@ -1,6 +1,6 @@
 import { promises as fs, WriteStream } from 'fs'
 import { fakeIpc } from '../../test/ipc'
-import { HostFilePermission } from '../utils/access'
+import { OriginFilePermission } from '../utils/access'
 import OpenFiles from '../utils/OpenFiles'
 import register, {
   channel as fileSystemWriteFileChannel,
@@ -12,14 +12,16 @@ import register, {
 test('fails when write permission is not present', () => {
   const files = new OpenFiles()
   expect(() =>
-    open(files, [], 'example.com', { type: 'Open', path: '/a/path' }),
-  ).toThrowError(new Error('example.com is not allowed to write to disk'))
+    open(files, [], 'https://example.com', { type: 'Open', path: '/a/path' }),
+  ).toThrowError(
+    new Error('https://example.com is not allowed to write to disk'),
+  )
 })
 
 test('fails when the file path is not absolute', () => {
   const files = new OpenFiles()
   expect(() =>
-    open(files, [], 'example.com', {
+    open(files, [], 'https://example.com', {
       type: 'Open',
       path: 'some/relative/path',
     }),
@@ -36,19 +38,22 @@ test('open file for writing', () => {
   expect(
     open(
       files,
-      [{ hostnames: 'example.com', paths: '/a/path/**/*', access: 'rw' }],
-      'example.com',
+      [{ origins: 'https://example.com', paths: '/a/path/**/*', access: 'rw' }],
+      'https://example.com',
       { type: 'Open', path: '/a/path/to/file.txt' },
     ),
   ).toEqual({ fd })
 
-  expect(files.open).toHaveBeenCalledWith('example.com', '/a/path/to/file.txt')
+  expect(files.open).toHaveBeenCalledWith(
+    'https://example.com',
+    '/a/path/to/file.txt',
+  )
 })
 
 test('open and write to a file', async () => {
   const files = new OpenFiles()
-  const permissions: readonly HostFilePermission[] = [
-    { hostnames: 'example.com', paths: '/a/path/**/*', access: 'rw' },
+  const permissions: readonly OriginFilePermission[] = [
+    { origins: 'https://example.com', paths: '/a/path/**/*', access: 'rw' },
   ]
   const fd = 1
   const writeMock = jest
@@ -60,22 +65,22 @@ test('open and write to a file', async () => {
     .mockReturnValue(({ write: writeMock } as unknown) as WriteStream)
   jest.spyOn(files, 'close').mockResolvedValueOnce(true)
 
-  open(files, permissions, 'example.com', {
+  open(files, permissions, 'https://example.com', {
     type: 'Open',
     path: '/a/path/to/file.txt',
   })
 
-  await write(files, permissions, 'example.com', {
+  await write(files, permissions, 'https://example.com', {
     type: 'Write',
     fd,
     data: 'hello ',
   })
-  await write(files, permissions, 'example.com', {
+  await write(files, permissions, 'https://example.com', {
     type: 'Write',
     fd,
     data: Buffer.of(0x20),
   })
-  await end(files, permissions, 'example.com', { type: 'End', fd })
+  await end(files, permissions, 'https://example.com', { type: 'End', fd })
 
   expect(writeMock).toHaveBeenNthCalledWith(1, 'hello ', expect.any(Function))
   expect(writeMock).toHaveBeenNthCalledWith(
@@ -83,21 +88,21 @@ test('open and write to a file', async () => {
     Buffer.of(0x20),
     expect.any(Function),
   )
-  expect(files.close).toHaveBeenCalledWith('example.com', fd)
+  expect(files.close).toHaveBeenCalledWith('https://example.com', fd)
 })
 
 test('registers a handler to write files', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    hostFilePermissions: [
+    originFilePermissions: [
       {
-        hostnames: 'example.com',
+        origins: 'https://example.com',
         paths: '**/*',
         access: 'rw',
       },
     ],
-    url: new URL('http://example.com/'),
+    url: new URL('https://example.com/'),
   })
 
   const path = '/tmp/kiosk-browser-write-file-test-file'

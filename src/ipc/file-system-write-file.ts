@@ -2,7 +2,7 @@ import makeDebug from 'debug'
 import * as electron from 'electron'
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
 import { isAbsolute } from 'path'
-import { assertHasWriteAccess, HostFilePermission } from '../utils/access'
+import { assertHasWriteAccess, OriginFilePermission } from '../utils/access'
 import OpenFiles from '../utils/OpenFiles'
 import { Options } from '../utils/options'
 
@@ -61,8 +61,8 @@ export class Client {
 
 export function open(
   files: OpenFiles,
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   input: Open,
 ): OpenResult {
   if (!isAbsolute(input.path)) {
@@ -70,12 +70,12 @@ export function open(
     throw new Error(`requested path is not absolute: ${input.path}`)
   }
 
-  assertHasWriteAccess(permissions, hostname)
-  const fd = files.open(hostname, input.path)
+  assertHasWriteAccess(permissions, origin)
+  const fd = files.open(origin, input.path)
   debug(
     '%s: %s opened %s for writing as fd=%d',
     input.type,
-    hostname,
+    origin,
     input.path,
     fd,
   )
@@ -84,15 +84,15 @@ export function open(
 
 export async function write(
   files: OpenFiles,
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   input: Write,
 ): Promise<void> {
-  assertHasWriteAccess(permissions, hostname)
-  const openFile = files.get(hostname, input.fd)
+  assertHasWriteAccess(permissions, origin)
+  const openFile = files.get(origin, input.fd)
 
   if (!openFile) {
-    debug('%s: %s has no open file with fd=%d', input.type, hostname, input.fd)
+    debug('%s: %s has no open file with fd=%d', input.type, origin, input.fd)
     throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
   }
 
@@ -109,20 +109,20 @@ export async function write(
 
 export async function end(
   files: OpenFiles,
-  permissions: readonly HostFilePermission[],
-  hostname: string,
+  permissions: readonly OriginFilePermission[],
+  origin: string,
   input: End,
 ): Promise<void> {
-  assertHasWriteAccess(permissions, hostname)
-  const openFile = files.get(hostname, input.fd)
+  assertHasWriteAccess(permissions, origin)
+  const openFile = files.get(origin, input.fd)
 
   if (!openFile) {
-    debug('%s: %s has no open file with fd=%d', input.type, hostname, input.fd)
+    debug('%s: %s has no open file with fd=%d', input.type, origin, input.fd)
     throw new Error(`ENOENT: no such file with descriptor '${input.fd}'`)
   }
 
   debug('%s: filePath=%s', input.type, openFile.path)
-  await files.close(hostname, input.fd)
+  await files.close(origin, input.fd)
 }
 
 export default function register(ipcMain: IpcMain, options: Options): void {
@@ -139,17 +139,17 @@ export default function register(ipcMain: IpcMain, options: Options): void {
     input: Open | Write | End,
   ): Promise<OpenResult | void> {
     const url = new URL(event.sender.getURL())
-    const hostname = url.hostname || url.toString()
+    const origin = url.origin
 
     switch (input.type) {
       case 'Open':
-        return open(files, options.hostFilePermissions, hostname, input)
+        return open(files, options.originFilePermissions, origin, input)
 
       case 'Write':
-        return await write(files, options.hostFilePermissions, hostname, input)
+        return await write(files, options.originFilePermissions, origin, input)
 
       case 'End':
-        return await end(files, options.hostFilePermissions, hostname, input)
+        return await end(files, options.originFilePermissions, origin, input)
     }
   }
 

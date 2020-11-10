@@ -6,7 +6,7 @@ import {
   IpcRenderer,
   SaveDialogOptions,
 } from 'electron'
-import { assertHasWriteAccess, HostFilePermission } from '../utils/access'
+import { assertHasWriteAccess, OriginFilePermission } from '../utils/access'
 import OpenFiles from '../utils/OpenFiles'
 import { Options } from '../utils/options'
 import {
@@ -52,8 +52,8 @@ export class Client extends WriteFileClient {
 
 async function handlePromptToSave(
   files: OpenFiles,
-  hostname: string,
-  permissions: readonly HostFilePermission[],
+  origin: string,
+  permissions: readonly OriginFilePermission[],
   input: PromptToSave,
 ): Promise<PromptToSaveResult> {
   const result = await dialog.showSaveDialog(input.options ?? {})
@@ -64,9 +64,9 @@ async function handlePromptToSave(
     return { type: 'cancel' }
   }
 
-  assertHasWriteAccess(permissions, hostname, result.filePath)
+  assertHasWriteAccess(permissions, origin, result.filePath)
 
-  const fd = files.open(hostname, result.filePath)
+  const fd = files.open(origin, result.filePath)
   debug('%s: opened %s for writing as fd=%d', input.type, result.filePath, fd)
   return { type: 'file', fd }
 }
@@ -88,23 +88,23 @@ export default function register(ipcMain: IpcMain, options: Options): void {
     input: PromptToSave | Write | End,
   ): Promise<PromptToSaveResult | void> {
     const url = new URL(event.sender.getURL())
-    const hostname = url.hostname || url.toString()
-    assertHasWriteAccess(options.hostFilePermissions, hostname)
+    const origin = url.origin
+    assertHasWriteAccess(options.originFilePermissions, origin)
 
     switch (input.type) {
       case 'PromptToSave':
         return await handlePromptToSave(
           files,
-          hostname,
-          options.hostFilePermissions,
+          origin,
+          options.originFilePermissions,
           input,
         )
 
       case 'Write':
-        return await write(files, options.hostFilePermissions, hostname, input)
+        return await write(files, options.originFilePermissions, origin, input)
 
       case 'End':
-        return await end(files, options.hostFilePermissions, hostname, input)
+        return await end(files, options.originFilePermissions, origin, input)
 
       default:
         throw new Error(`unknown action type: '${input['type']}'`)
