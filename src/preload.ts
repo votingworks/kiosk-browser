@@ -31,6 +31,12 @@ import FileWriter from './utils/FileWriter'
 
 const debug = makeDebug('kiosk-browser:client')
 
+function toDate(dateOrString: Date | string): Date {
+  return typeof dateOrString === 'string'
+    ? new Date(dateOrString)
+    : dateOrString
+}
+
 class Kiosk implements KioskBrowser.Kiosk {
   public async print(options?: KioskBrowser.PrintOptions): Promise<void>
   public async print(
@@ -100,12 +106,9 @@ class Kiosk implements KioskBrowser.Kiosk {
     )
     return result.map(entry => ({
       ...entry,
-      mtime:
-        typeof entry.mtime === 'string' ? new Date(entry.mtime) : entry.mtime,
-      atime:
-        typeof entry.atime === 'string' ? new Date(entry.atime) : entry.atime,
-      ctime:
-        typeof entry.ctime === 'string' ? new Date(entry.ctime) : entry.ctime,
+      mtime: toDate(entry.mtime),
+      atime: toDate(entry.atime),
+      ctime: toDate(entry.ctime),
     }))
   }
 
