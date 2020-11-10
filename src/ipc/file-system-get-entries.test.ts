@@ -4,6 +4,7 @@ import { fakeIpc } from '../../test/ipc'
 import register, {
   channel as fileSystemGetEntriesChannel,
   DirentType,
+  getDirentType,
   getEntries,
 } from './file-system-get-entries'
 
@@ -103,4 +104,26 @@ test('registers a handler to get directory entries', async () => {
   ).toEqual([])
 
   expect(fs.readdir).toHaveBeenCalledWith('/a/path', { withFileTypes: true })
+})
+
+test('getDirentType maps dirent to type properly', () => {
+  for (const type of [
+    DirentType.File,
+    DirentType.Directory,
+    DirentType.SymbolicLink,
+    DirentType.FIFO,
+    DirentType.Socket,
+    DirentType.CharacterDevice,
+    DirentType.BlockDevice,
+  ]) {
+    expect(getDirentType(new ConstructableDirent('foo', type))).toEqual(type)
+  }
+})
+
+test('getDirentType throws given something bogus', () => {
+  const unknownDirent = file('foo')
+  jest.spyOn(unknownDirent, 'isFile').mockReturnValue(false)
+  expect(() => getDirentType(unknownDirent)).toThrowError(
+    'dirent is not of a known type',
+  )
 })

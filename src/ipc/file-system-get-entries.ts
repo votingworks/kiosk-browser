@@ -29,7 +29,7 @@ export interface FileSystemEntry {
   readonly ctime: Date
 }
 
-function getDirentType(dirent: Dirent): DirentType {
+export function getDirentType(dirent: Dirent): DirentType {
   if (dirent.isFile()) return DirentType.File
   if (dirent.isDirectory()) return DirentType.Directory
   if (dirent.isSymbolicLink()) return DirentType.SymbolicLink

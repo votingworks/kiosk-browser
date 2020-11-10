@@ -3,7 +3,7 @@ import { Device } from 'usb-detection'
 import { BatteryInfo } from '../src/ipc/get-battery-info'
 import { PrinterInfo } from '../src/ipc/get-printer-info'
 import { PromptToSaveOptions } from '../src/ipc/saveAs'
-import FileWriter from '../src/utils/FileWriter'
+import { FileWriter } from '../src/utils/FileWriter'
 
 declare namespace KioskBrowser {
   interface PrintOptions {

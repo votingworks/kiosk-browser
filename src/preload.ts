@@ -27,7 +27,7 @@ import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
 import buildDevicesObservable from './utils/buildDevicesObservable'
-import FileWriter from './utils/FileWriter'
+import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
 
 const debug = makeDebug('kiosk-browser:client')
 
@@ -126,7 +126,7 @@ class Kiosk implements KioskBrowser.Kiosk {
     content?: Buffer | string,
   ): Promise<FileWriter | void> {
     debug('forwarding `writeFile` to main process')
-    const writer = await FileWriter.fromPath(path)
+    const writer = await fromPath(path)
 
     if (typeof content !== 'undefined') {
       await writer.write(content)
@@ -177,7 +177,7 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async saveAs(
     options?: PromptToSaveOptions,
   ): Promise<FileWriter | undefined> {
-    return await FileWriter.fromPrompt(options)
+    return await fromPrompt(options)
   }
 
   public quit(): void {
