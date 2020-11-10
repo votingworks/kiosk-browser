@@ -14,7 +14,7 @@ test('fails when write permission is not present', () => {
   expect(() =>
     open(files, [], 'https://example.com', { type: 'Open', path: '/a/path' }),
   ).toThrowError(
-    new Error('https://example.com is not allowed to write to disk'),
+    new Error('https://example.com is not allowed to write to /a/path'),
   )
 })
 
@@ -27,6 +27,26 @@ test('fails when the file path is not absolute', () => {
     }),
   ).toThrowError(
     new Error('requested path is not absolute: some/relative/path'),
+  )
+})
+
+test('fails when the file has no write permission', () => {
+  const files = new OpenFiles()
+  expect(() =>
+    open(
+      files,
+      [
+        { origins: 'https://example.com', paths: '/a/**/*', access: 'ro' },
+        { origins: 'https://example.com', paths: '/b/**/*', access: 'wo' },
+      ],
+      'https://example.com',
+      {
+        type: 'Open',
+        path: '/a/path',
+      },
+    ),
+  ).toThrowError(
+    new Error('https://example.com is not allowed to write to /a/path'),
   )
 })
 

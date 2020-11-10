@@ -1,4 +1,7 @@
 import multimatch from 'multimatch'
+import makeDebug from 'debug'
+
+const debug = makeDebug('kiosk-browser:access')
 
 export type AccessType = 'ro' | 'wo' | 'rw'
 
@@ -18,16 +21,28 @@ export function hasAccess(
   path?: string,
   ...accesses: AccessType[]
 ): boolean {
+  let result = false
+
   for (const { origins, paths, access } of permissions) {
     if (
       matchesPatterns(origin, origins) &&
       (!path || matchesPatterns(path, paths))
     ) {
-      return accesses.includes(access)
+      result = accesses.includes(access)
+      break
     }
   }
 
-  return false
+  debug(
+    'ACCESS %s: origin=%s, path=%s, accesses=%o, permissions=%o',
+    result ? 'ALLOWED' : 'DENIED',
+    origin,
+    path,
+    accesses,
+    permissions,
+  )
+
+  return result
 }
 
 /**

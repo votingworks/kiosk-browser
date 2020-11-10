@@ -70,7 +70,7 @@ export function open(
     throw new Error(`requested path is not absolute: ${input.path}`)
   }
 
-  assertHasWriteAccess(permissions, origin)
+  assertHasWriteAccess(permissions, origin, input.path)
   const fd = files.open(origin, input.path)
   debug(
     '%s: %s opened %s for writing as fd=%d',
