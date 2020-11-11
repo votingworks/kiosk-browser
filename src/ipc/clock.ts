@@ -20,7 +20,15 @@ export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
     async (event: IpcMainInvokeEvent, params: KioskBrowser.SetClockParams) => {
-      await clockSet(params)
+      try {
+        await clockSet(params)
+      } catch (error) {
+        if ('stderr' in error) {
+          throw new Error(error.stderr)
+        } else {
+          throw error
+        }
+      }
     },
   )
 }

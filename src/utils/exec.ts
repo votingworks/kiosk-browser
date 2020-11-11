@@ -57,7 +57,7 @@ export default async function exec(
             signal,
             stdout,
             stderr,
-            cmd: file,
+            cmd: `${file} ${args.join(' ')}`,
           }),
         )
       }
@@ -83,7 +83,7 @@ export function makeExecError({
   cmd = '',
 }: Partial<ExecError> = {}): ExecError & Error {
   const error = (new Error(
-    `Error: Command failed: ${cmd}`,
+    `Error: Command failed: ${cmd} (stdout=${stdout} stderr=${stderr})`,
   ) as unknown) as ExecError & Error
 
   Object.defineProperties(error, {
