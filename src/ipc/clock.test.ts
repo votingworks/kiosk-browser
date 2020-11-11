@@ -55,3 +55,18 @@ test('set datetime works in non- daylights savings', async () => {
     'America/Chicago',
   ])
 })
+
+test('set datetime fails when NTP is enabled', async () => {
+  execMock.mockRejectedValueOnce(
+    new Error('Failed to set time: Automatic time synchronization is enabled'),
+  )
+
+  await expect(
+    ipcRenderer.invoke(setClockChannel, {
+      isoDatetime: '2020-11-03T15:00Z',
+      IANAZone: 'America/Chicago',
+    }),
+  ).rejects.toThrowError(
+    'Failed to set time: Automatic time synchronization is enabled',
+  )
+})
