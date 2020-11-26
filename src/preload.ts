@@ -1,11 +1,13 @@
 import makeDebug from 'debug'
 import { ipcRenderer } from 'electron'
+import { MakeDirectoryOptions } from 'fs'
 import { KioskBrowser } from '../types/kiosk-window'
 import { channel as setClock } from './ipc/clock'
 import {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntry,
 } from './ipc/file-system-get-entries'
+import { channel as fileSystemMakeDirectory } from './ipc/file-system-make-directory'
 import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file'
 import {
   BatteryInfo,
@@ -134,6 +136,14 @@ class Kiosk implements KioskBrowser.Kiosk {
     } else {
       return writer
     }
+  }
+
+  public async makeDirectory(
+    path: string,
+    options: MakeDirectoryOptions = {},
+  ): Promise<void> {
+    debug('forwarding `makeDirectory` to main process')
+    return ipcRenderer.invoke(fileSystemMakeDirectory, path, options)
   }
 
   public storage = {
