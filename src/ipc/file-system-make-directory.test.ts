@@ -1,5 +1,10 @@
-import { makeDirectory } from './file-system-make-directory'
+import register, {
+  makeDirectory,
+  channel as fileSystemMakeDirectoryChannel,
+} from './file-system-make-directory'
 import { promises as fs } from 'fs'
+import { fakeIpc } from '../../test/ipc'
+import { basename, dirname } from 'path'
 
 jest.mock('fs', () => ({
   promises: { mkdir: jest.fn() },
@@ -63,4 +68,25 @@ test('makes a directory recursively if requested', async () => {
   )
 
   expect(mkdirMock).toHaveBeenCalledWith('/path/to/dir', { recursive: true })
+})
+
+test('registers a handler to write files', async () => {
+  const { ipcMain, ipcRenderer } = fakeIpc()
+
+  register(ipcMain, {
+    originFilePermissions: [
+      {
+        origins: 'https://example.com',
+        paths: '**/*',
+        access: 'rw',
+      },
+    ],
+    url: new URL('https://example.com/'),
+  })
+
+  const path = '/tmp/kiosk-browser-make-directory-test-directory'
+  await ipcRenderer.invoke(fileSystemMakeDirectoryChannel, path, {
+    recursive: false,
+  })
+  expect(fs.mkdir).toHaveBeenCalledWith(path, { recursive: false })
 })

@@ -17,6 +17,9 @@ const ConstructableDirent = (Dirent as unknown) as new (
 const file = (name: string): Dirent =>
   new ConstructableDirent(name, DirentType.File)
 
+const symlink = (name: string): Dirent =>
+  new ConstructableDirent(name, DirentType.SymbolicLink)
+
 test('gets entries with stat info', async () => {
   const entries = [file('a.txt'), file('b.json'), file('c.csv'), file('d.png')]
   jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries)
@@ -83,6 +86,45 @@ test('gets entries with stat info', async () => {
   ])
 })
 
+test('filters out symlinks', async () => {
+  const entries = [file('a.txt'), symlink('b.json')]
+  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries)
+
+  jest.spyOn(fs, 'lstat').mockImplementation(path => {
+    const base = basename(path as string)
+    for (const [i, entry] of entries.entries()) {
+      if (entry.name === base) {
+        return Promise.resolve({
+          size: i + 1,
+          mtime: new Date(0),
+          atime: new Date(0),
+          ctime: new Date(0),
+        } as Stats)
+      }
+    }
+
+    throw new Error(`unexpected path: ${path}`)
+  })
+
+  expect(
+    await getEntries(
+      [{ origins: 'https://example.com', paths: '**/*', access: 'ro' }],
+      'https://example.com',
+      '/a/path',
+    ),
+  ).toEqual([
+    {
+      name: 'a.txt',
+      path: '/a/path/a.txt',
+      size: 1,
+      type: DirentType.File,
+      mtime: new Date(0),
+      atime: new Date(0),
+      ctime: new Date(0),
+    },
+  ])
+})
+
 test('registers a handler to get directory entries', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
@@ -125,5 +167,13 @@ test('getDirentType throws given something bogus', () => {
   jest.spyOn(unknownDirent, 'isFile').mockReturnValue(false)
   expect(() => getDirentType(unknownDirent)).toThrowError(
     'dirent is not of a known type',
+  )
+})
+
+test('fails when the file path is not absolute', async () => {
+  await expect(
+    getEntries([], 'https://example.com', 'some/relative/path'),
+  ).rejects.toThrowError(
+    new Error('requested path is not absolute: some/relative/path'),
   )
 })
