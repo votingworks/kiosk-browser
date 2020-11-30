@@ -3,7 +3,7 @@ import { basename } from 'path'
 import { fakeIpc } from '../../test/ipc'
 import register, {
   channel as fileSystemGetEntriesChannel,
-  DirentType,
+  FileSystemEntryType,
   getDirentType,
   getEntries,
 } from './file-system-get-entries'
@@ -11,14 +11,14 @@ import register, {
 // Dirent types treat the constructor as private.
 const ConstructableDirent = (Dirent as unknown) as new (
   name: string,
-  type: DirentType,
+  type: FileSystemEntryType,
 ) => Dirent
 
 const file = (name: string): Dirent =>
-  new ConstructableDirent(name, DirentType.File)
+  new ConstructableDirent(name, FileSystemEntryType.File)
 
 const symlink = (name: string): Dirent =>
-  new ConstructableDirent(name, DirentType.SymbolicLink)
+  new ConstructableDirent(name, FileSystemEntryType.SymbolicLink)
 
 test('gets entries with stat info', async () => {
   const entries = [file('a.txt'), file('b.json'), file('c.csv'), file('d.png')]
@@ -51,7 +51,7 @@ test('gets entries with stat info', async () => {
       name: 'a.txt',
       path: '/a/path/a.txt',
       size: 1,
-      type: DirentType.File,
+      type: FileSystemEntryType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -60,7 +60,7 @@ test('gets entries with stat info', async () => {
       name: 'b.json',
       path: '/a/path/b.json',
       size: 2,
-      type: DirentType.File,
+      type: FileSystemEntryType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -69,7 +69,7 @@ test('gets entries with stat info', async () => {
       name: 'c.csv',
       path: '/a/path/c.csv',
       size: 3,
-      type: DirentType.File,
+      type: FileSystemEntryType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -78,7 +78,7 @@ test('gets entries with stat info', async () => {
       name: 'd.png',
       path: '/a/path/d.png',
       size: 4,
-      type: DirentType.File,
+      type: FileSystemEntryType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -117,7 +117,7 @@ test('filters out symlinks', async () => {
       name: 'a.txt',
       path: '/a/path/a.txt',
       size: 1,
-      type: DirentType.File,
+      type: FileSystemEntryType.File,
       mtime: new Date(0),
       atime: new Date(0),
       ctime: new Date(0),
@@ -150,13 +150,13 @@ test('registers a handler to get directory entries', async () => {
 
 test('getDirentType maps dirent to type properly', () => {
   for (const type of [
-    DirentType.File,
-    DirentType.Directory,
-    DirentType.SymbolicLink,
-    DirentType.FIFO,
-    DirentType.Socket,
-    DirentType.CharacterDevice,
-    DirentType.BlockDevice,
+    FileSystemEntryType.File,
+    FileSystemEntryType.Directory,
+    FileSystemEntryType.SymbolicLink,
+    FileSystemEntryType.FIFO,
+    FileSystemEntryType.Socket,
+    FileSystemEntryType.CharacterDevice,
+    FileSystemEntryType.BlockDevice,
   ]) {
     expect(getDirentType(new ConstructableDirent('foo', type))).toEqual(type)
   }

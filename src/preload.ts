@@ -6,6 +6,7 @@ import { channel as setClock } from './ipc/clock'
 import {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntry,
+  FileSystemEntryType,
 } from './ipc/file-system-get-entries'
 import { channel as fileSystemMakeDirectory } from './ipc/file-system-make-directory'
 import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file'
@@ -99,6 +100,8 @@ class Kiosk implements KioskBrowser.Kiosk {
     debug('forwarding `unmountUsbDrive` to main process')
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
   }
+
+  public FileSystemEntryType = FileSystemEntryType
 
   public async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
     debug('forwarding `getFileSystemEntries` to main process')

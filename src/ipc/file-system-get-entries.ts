@@ -9,7 +9,7 @@ const debug = makeDebug('kiosk-browser:file-system-get-entries')
 
 export const channel = 'file-system-get-entries'
 
-export enum DirentType {
+export enum FileSystemEntryType {
   File = 1, // UV_DIRENT_FILE
   Directory = 2, // UV_DIRENT_DIR
   SymbolicLink = 3, // UV_DIRENT_LINK
@@ -22,21 +22,21 @@ export enum DirentType {
 export interface FileSystemEntry {
   readonly name: string
   readonly path: string
-  readonly type: DirentType
+  readonly type: FileSystemEntryType
   readonly size: number
   readonly mtime: Date
   readonly atime: Date
   readonly ctime: Date
 }
 
-export function getDirentType(dirent: Dirent): DirentType {
-  if (dirent.isFile()) return DirentType.File
-  if (dirent.isDirectory()) return DirentType.Directory
-  if (dirent.isSymbolicLink()) return DirentType.SymbolicLink
-  if (dirent.isFIFO()) return DirentType.FIFO
-  if (dirent.isSocket()) return DirentType.Socket
-  if (dirent.isCharacterDevice()) return DirentType.CharacterDevice
-  if (dirent.isBlockDevice()) return DirentType.BlockDevice
+export function getDirentType(dirent: Dirent): FileSystemEntryType {
+  if (dirent.isFile()) return FileSystemEntryType.File
+  if (dirent.isDirectory()) return FileSystemEntryType.Directory
+  if (dirent.isSymbolicLink()) return FileSystemEntryType.SymbolicLink
+  if (dirent.isFIFO()) return FileSystemEntryType.FIFO
+  if (dirent.isSocket()) return FileSystemEntryType.Socket
+  if (dirent.isCharacterDevice()) return FileSystemEntryType.CharacterDevice
+  if (dirent.isBlockDevice()) return FileSystemEntryType.BlockDevice
   throw new TypeError('dirent is not of a known type')
 }
 
