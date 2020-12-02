@@ -20,12 +20,13 @@ interface RawDataReturn {
 }
 
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/'
+const USB_REGEXP = /^usb(.+)part(.*)$/
 
-export async function getUsbDrives(): Promise<UsbDrive[]> {
+async function getUsbDrives(): Promise<UsbDrive[]> {
   try {
     // only the USB partitions
     const devicesById = (await fs.readdir(DEVICE_PATH_PREFIX)).filter(name =>
-      name.startsWith('usb-'),
+      USB_REGEXP.test(name),
     )
 
     // follow the symlinks
