@@ -13,7 +13,7 @@ module.exports = {
     // TODO: ratchet these up to 100 over time
     global: {
       statements: 90,
-      branches: 81,
+      branches: 80,
       functions: 90,
       lines: 90,
     },
