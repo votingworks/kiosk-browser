@@ -9,7 +9,7 @@ Generic kiosk-mode browser.
 1. Build a Debian/Ubuntu package with `make build`.
 1. Copy `out/make/deb/x64/kiosk-browser_*_amd64.deb` wherever you want to install it (note wildcard).
 1. Install it with `sudo dpkg -i kiosk-browser_*_amd64.deb` (note wildcard).
-1. Run with the URL you want to visit as a CLI argument (e.g. `kiosk-browser http://example.com/`) or with an environment variable (e.g. `KIOSK_BROWSER_URL=http://example.com/ kiosk-browser`).
+1. Run with the URL you want to visit as a CLI argument (e.g. `kiosk-browser https://example.com/`) or with an environment variable (e.g. `KIOSK_BROWSER_URL=https://example.com/ kiosk-browser`).
 
 ## Kiosk Page API
 
@@ -25,7 +25,7 @@ Prints the current page using the default printer. This is different from `windo
 
 `kiosk.`**`saveAs`**`(): Promise<FileWriter | undefined>`
 
-Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting hostname must be allowed to write to disk.
+Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting origin must be allowed to write to disk.
 
 `kiosk.`**`getUsbDrives`**`(): Promise<{ deviceName: string; mountPoint?: string }>`
 
@@ -50,7 +50,7 @@ $ kiosk-browser --help
 If something isn't working as you'd expect it to, try running with debug logging:
 
 ```
-$ DEBUG=kiosk-browser:* kiosk-browser http://example.com/
+$ DEBUG=kiosk-browser:* kiosk-browser https://example.com/
 ```
 
 ## Development

@@ -1,6 +1,15 @@
 import makeDebug from 'debug'
 import { ipcRenderer } from 'electron'
+import { MakeDirectoryOptions } from 'fs'
 import { KioskBrowser } from '../types/kiosk-window'
+import { channel as setClock } from './ipc/clock'
+import {
+  channel as fileSystemGetEntriesChannel,
+  FileSystemEntry,
+  FileSystemEntryType,
+} from './ipc/file-system-get-entries'
+import { channel as fileSystemMakeDirectory } from './ipc/file-system-make-directory'
+import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file'
 import {
   BatteryInfo,
   channel as getBatteryInfoChannel,
@@ -20,11 +29,16 @@ import { channel as storageGetChannel } from './ipc/storage-get'
 import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
-import { channel as setClock } from './ipc/clock'
 import buildDevicesObservable from './utils/buildDevicesObservable'
-import FileWriter from './utils/FileWriter'
+import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
 
 const debug = makeDebug('kiosk-browser:client')
+
+function toDate(dateOrString: Date | string): Date {
+  return typeof dateOrString === 'string'
+    ? new Date(dateOrString)
+    : dateOrString
+}
 
 class Kiosk implements KioskBrowser.Kiosk {
   public async print(options?: KioskBrowser.PrintOptions): Promise<void>
@@ -87,6 +101,54 @@ class Kiosk implements KioskBrowser.Kiosk {
     return ipcRenderer.invoke(unmountUsbDriveChannel, device)
   }
 
+  public FileSystemEntryType = FileSystemEntryType
+
+  public async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
+    debug('forwarding `getFileSystemEntries` to main process')
+    const result: FileSystemEntry[] = await ipcRenderer.invoke(
+      fileSystemGetEntriesChannel,
+      path,
+    )
+    return result.map(entry => ({
+      ...entry,
+      mtime: toDate(entry.mtime),
+      atime: toDate(entry.atime),
+      ctime: toDate(entry.ctime),
+    }))
+  }
+
+  public async readFile(path: string): Promise<Buffer>
+  public async readFile(path: string, encoding: string): Promise<string>
+  public async readFile(...args: unknown[]): Promise<Buffer | string> {
+    debug('forwarding `readFile` to main process')
+    return ipcRenderer.invoke(fileSystemReadFileChannel, ...args)
+  }
+
+  public async writeFile(path: string): Promise<FileWriter>
+  public async writeFile(path: string, content: Buffer | string): Promise<void>
+  public async writeFile(
+    path: string,
+    content?: Buffer | string,
+  ): Promise<FileWriter | void> {
+    debug('forwarding `writeFile` to main process')
+    const writer = await fromPath(path)
+
+    if (typeof content !== 'undefined') {
+      await writer.write(content)
+      await writer.end()
+    } else {
+      return writer
+    }
+  }
+
+  public async makeDirectory(
+    path: string,
+    options: MakeDirectoryOptions = {},
+  ): Promise<void> {
+    debug('forwarding `makeDirectory` to main process')
+    return ipcRenderer.invoke(fileSystemMakeDirectory, path, options)
+  }
+
   public storage = {
     async set(key: string, value: object): Promise<void> {
       debug('forwarding `storageSet` to main process')
@@ -128,7 +190,7 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async saveAs(
     options?: PromptToSaveOptions,
   ): Promise<FileWriter | undefined> {
-    return await FileWriter.fromPrompt(options)
+    return await fromPrompt(options)
   }
 
   public quit(): void {

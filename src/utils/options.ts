@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import makeDebug from 'debug'
 import { promises } from 'fs'
 import { isAbsolute, join } from 'path'
-import { AccessType, HostFilePermission } from './access'
+import { AccessType, OriginFilePermission } from './access'
 import { PrintConfig } from './printing'
 
 const debug = makeDebug('kiosk-browser:options')
@@ -16,7 +16,7 @@ export interface Options {
   url: URL
   autoconfigurePrintConfig?: PrintConfig
   allowDevtools?: boolean
-  hostFilePermissions: HostFilePermission[]
+  originFilePermissions: OriginFilePermission[]
 }
 
 export interface Help {
@@ -37,7 +37,7 @@ async function parseOptionsWithoutTryCatch(
   let autoconfigurePrintConfigArg: string | undefined
   let helpArg: string | undefined
   let allowDevtoolsArg: boolean | undefined
-  let hostFilePermissions: HostFilePermission[] | undefined
+  let originFilePermissions: OriginFilePermission[] | undefined
   const warnings: string[] = []
 
   for (let i = 0; i < argv.length; i++) {
@@ -61,9 +61,9 @@ async function parseOptionsWithoutTryCatch(
       if (!value || value.startsWith('-')) {
         return { error: new Error(`expected value for option: ${arg}`) }
       }
-      hostFilePermissions = [
-        ...(hostFilePermissions ?? []),
-        parseHostFilePermissionString(value),
+      originFilePermissions = [
+        ...(originFilePermissions ?? []),
+        parseOriginFilePermissionString(value),
       ]
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg
@@ -100,10 +100,10 @@ async function parseOptionsWithoutTryCatch(
     ),
     allowDevtools:
       allowDevtoolsArg ?? env.KIOSK_BROWSER_ALLOW_DEVTOOLS === 'true',
-    hostFilePermissions:
-      hostFilePermissions ??
-      env.KIOSK_BROWSER_HOST_FILE_PERMISSIONS?.split(',')?.map(
-        parseHostFilePermissionString,
+    originFilePermissions:
+      originFilePermissions ??
+      env.KIOSK_BROWSER_FILE_PERMISSIONS?.split(';')?.map(
+        parseOriginFilePermissionString,
       ) ??
       [],
   }
@@ -117,36 +117,28 @@ function isAccessType(value: string): value is AccessType {
   return value === 'ro' || value === 'wo' || value === 'rw'
 }
 
-function parseHostFilePermissionString(value: string): HostFilePermission {
-  const parts = value.split(':', 3)
-  const defaultHostnames = '*'
-  const defaultAccess: AccessType = 'rw'
+function parseOriginFilePermissionString(value: string): OriginFilePermission {
+  let origins = '**/*'
+  let paths: string | undefined
+  let access: AccessType = 'rw'
 
-  if (parts.length === 1) {
-    const paths = parts[0]
-    return {
-      hostnames: defaultHostnames,
-      paths,
-      access: defaultAccess,
-    }
-  } else if (parts.length === 2) {
-    const [first, second] = parts
-    if (isAccessType(second)) {
-      return { hostnames: defaultHostnames, paths: first, access: second }
+  for (const part of value.split(',', 3)) {
+    if (part.startsWith('o=')) {
+      origins = part.slice('o='.length)
+    } else if (part.startsWith('p=')) {
+      paths = part.slice('p='.length)
+    } else if (isAccessType(part)) {
+      access = part
     } else {
-      return { hostnames: first, paths: second, access: defaultAccess }
+      throw new Error(`unknown file permission format '${value}'`)
     }
-  } else if (parts.length === 3) {
-    const [hostnames, paths, access] = parts
-
-    if (!isAccessType(access)) {
-      throw new Error(`unexpected permission value: ${access}`)
-    }
-
-    return { hostnames, paths, access }
-  } else {
-    throw new Error(`unknown host file permission format: ${value}`)
   }
+
+  if (!paths) {
+    throw new Error(`paths missing in file permissions: '${value}'`)
+  }
+
+  return { access, origins, paths }
 }
 
 /**
@@ -201,18 +193,22 @@ kiosk-browser [OPTIONS] [URL]
 ${b('Options')}
    -u, --url URL                           Visit this URL on load.
    -p, --autoconfigure-print-config PATH   Automatically configures connected printers according to the given config.
-   -v, --add-file-perm [HOST:]PATH[:PERM]  Adds a permission for a host to read or write certain paths.
+   -v, --add-file-perm PERM                Adds a permission for an origin to read or write certain paths.
        --allow-devtools                    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
 
 ${b('Examples')}
 ${c('# Allow localhost to read and write all files.')}
-$ kiosk-browser -v ${jS('localhost:**/*:rw')} http://localhost:3000/
+$ kiosk-browser -v ${jS(
+    'o=http://localhost:*,p=**/*,rw',
+  )} http://localhost:3000/
 
 ${c('# Allow localhost to read–not write–all files.')}
-$ kiosk-browser -v ${jS('localhost:**/*:ro')} http://localhost:3000/
+$ kiosk-browser -v ${jS(
+    'o=http://localhost:*,p=**/*,ro',
+  )} http://localhost:3000/
 
-${c('# Allow any host to write to a drop box.')}
-$ kiosk-browser -v ${jS('/dropbox:wo')} http://localhost:3000/
+${c('# Allow any origin to write to a drop box.')}
+$ kiosk-browser -v ${jS('o=**/*,p=/dropbox,wo')} http://localhost:3000/
 
 ${b('Auto-Configure Printers')}
 kiosk-browser can automatically discover and configure printers. To do so, you

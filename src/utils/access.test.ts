@@ -1,57 +1,63 @@
-import { hasReadAccess, hasWriteAccess, HostFilePermission } from './access'
+import { hasReadAccess, hasWriteAccess, OriginFilePermission } from './access'
 
 test('no permissions', () => {
-  const permissions: HostFilePermission[] = []
-  expect(hasReadAccess(permissions, 'localhost')).toBe(false)
-  expect(hasWriteAccess(permissions, 'localhost')).toBe(false)
+  const permissions: OriginFilePermission[] = []
+  expect(hasReadAccess(permissions, 'http://localhost:*')).toBe(false)
+  expect(hasWriteAccess(permissions, 'http://localhost:*')).toBe(false)
 })
 
 test('read-only permissions', () => {
-  const permissions: HostFilePermission[] = [
-    { hostnames: 'localhost', paths: '**/*', access: 'ro' },
+  const permissions: OriginFilePermission[] = [
+    { origins: 'http://localhost:*', paths: '**/*', access: 'ro' },
   ]
 
-  // matching hostname
-  expect(hasReadAccess(permissions, 'localhost')).toBe(true)
-  expect(hasWriteAccess(permissions, 'localhost')).toBe(false)
+  // matching origin
+  expect(hasReadAccess(permissions, 'http://localhost:*')).toBe(true)
+  expect(hasWriteAccess(permissions, 'http://localhost:*')).toBe(false)
 
-  // mismatching hostname
+  // mismatching origin
   expect(hasReadAccess(permissions, 'evil.com')).toBe(false)
   expect(hasWriteAccess(permissions, 'evil.com')).toBe(false)
 })
 
 test('write-only permissions', () => {
-  const permissions: HostFilePermission[] = [
-    { hostnames: 'localhost', paths: '**/*', access: 'wo' },
+  const permissions: OriginFilePermission[] = [
+    { origins: 'http://localhost:*', paths: '**/*', access: 'wo' },
   ]
 
-  // matching hostname
-  expect(hasReadAccess(permissions, 'localhost')).toBe(false)
-  expect(hasWriteAccess(permissions, 'localhost')).toBe(true)
+  // matching origin
+  expect(hasReadAccess(permissions, 'http://localhost:*')).toBe(false)
+  expect(hasWriteAccess(permissions, 'http://localhost:*')).toBe(true)
 
-  // mismatching hostname
-  expect(hasReadAccess(permissions, 'evil.com')).toBe(false)
-  expect(hasWriteAccess(permissions, 'evil.com')).toBe(false)
+  // mismatching origin
+  expect(hasReadAccess(permissions, 'http://evil.com')).toBe(false)
+  expect(hasWriteAccess(permissions, 'http://evil.com')).toBe(false)
 })
 
 test('read-write permissions', () => {
-  const permissions: HostFilePermission[] = [
-    { hostnames: 'localhost', paths: '**/*', access: 'rw' },
+  const permissions: OriginFilePermission[] = [
+    { origins: 'http://localhost:*', paths: '**/*', access: 'rw' },
   ]
 
-  // matching hostname
-  expect(hasReadAccess(permissions, 'localhost')).toBe(true)
-  expect(hasWriteAccess(permissions, 'localhost')).toBe(true)
+  // matching origin
+  expect(hasReadAccess(permissions, 'http://localhost:3000')).toBe(true)
+  expect(hasWriteAccess(permissions, 'http://localhost:3000')).toBe(true)
+  expect(hasReadAccess(permissions, 'http://localhost:3001')).toBe(true)
+  expect(hasWriteAccess(permissions, 'http://localhost:3001')).toBe(true)
 
   // mismatching hostname
-  expect(hasReadAccess(permissions, 'evil.com')).toBe(false)
-  expect(hasWriteAccess(permissions, 'evil.com')).toBe(false)
+  expect(hasReadAccess(permissions, 'http://evil.com')).toBe(false)
+  expect(hasWriteAccess(permissions, 'http://evil.com')).toBe(false)
+
+  // mismatching scheme
+  expect(hasReadAccess(permissions, 'https://localhost:3000')).toBe(false)
+  expect(hasWriteAccess(permissions, 'https://localhost:3000')).toBe(false)
 })
 
 test('permission order', () => {
-  const permissions: HostFilePermission[] = [
-    { hostnames: 'localhost', paths: '/media/**/*', access: 'ro' },
-    { hostnames: 'localhost', paths: '/media/usb-stick/**/*', access: 'rw' },
+  const permissions: OriginFilePermission[] = [
+    { origins: 'localhost', paths: '/media/**/*', access: 'ro' },
+    { origins: 'localhost', paths: '/media/usb-stick/**/*', access: 'rw' },
   ]
 
   // Both permissions grant read access, so this is clear.

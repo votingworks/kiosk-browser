@@ -1,44 +1,40 @@
 import { WriteStream, createWriteStream } from 'fs'
+import { v4 as uuid } from 'uuid'
 
 /**
- * Manages files opened on behalf of various hosts.
+ * Manages files opened on behalf of various origins.
  */
 export default class OpenFiles {
-  private nextFileDescriptorByHostname = new Map<string, number>()
-  private streamsByFileDescriptorByHostname = new Map<
+  private streamsByFileDescriptorByOrigin = new Map<
     string,
-    Map<number, WriteStream>
+    Map<string, WriteStream>
   >()
 
   /**
-   * Opens a file on behalf of `hostname` at `filePath`.
+   * Opens a file on behalf of `origin` at `filePath`.
    *
    * @returns a file descriptor to be given to `get` and `close`
    */
-  public open(hostname: string, filePath: string): number {
-    const fd = this.nextFileDescriptorByHostname.get(hostname) ?? 1
-    this.nextFileDescriptorByHostname.set(hostname, fd + 1)
+  public open(origin: string, filePath: string): string {
+    const fd = uuid()
     const stream = createWriteStream(filePath)
-    let streamsByFileDescriptor = this.streamsByFileDescriptorByHostname.get(
-      hostname,
+    let streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
+      origin,
     )
     if (!streamsByFileDescriptor) {
       streamsByFileDescriptor = new Map()
-      this.streamsByFileDescriptorByHostname.set(
-        hostname,
-        streamsByFileDescriptor,
-      )
+      this.streamsByFileDescriptorByOrigin.set(origin, streamsByFileDescriptor)
     }
     streamsByFileDescriptor.set(fd, stream)
     return fd
   }
 
   /**
-   * Gets a stream for an already-opened file by hostname and file descriptor.
+   * Gets a stream for an already-opened file by origin and file descriptor.
    */
-  public get(hostname: string, fd: number): WriteStream | undefined {
-    const streamsByFileDescriptor = this.streamsByFileDescriptorByHostname.get(
-      hostname,
+  public get(origin: string, fd: string): WriteStream | undefined {
+    const streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
+      origin,
     )
 
     if (!streamsByFileDescriptor) {
@@ -51,9 +47,9 @@ export default class OpenFiles {
   /**
    * Closes a stream for an already-opened file, resolves when it's closed.
    */
-  public async close(hostname: string, fd: number): Promise<boolean> {
-    const streamsByFileDescriptor = this.streamsByFileDescriptorByHostname.get(
-      hostname,
+  public async close(origin: string, fd: string): Promise<boolean> {
+    const streamsByFileDescriptor = this.streamsByFileDescriptorByOrigin.get(
+      origin,
     )
 
     if (!streamsByFileDescriptor) {

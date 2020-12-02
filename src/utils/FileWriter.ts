@@ -1,38 +1,47 @@
-import { Client, PromptToSaveOptions, Write } from '../ipc/saveAs'
+import { Client as FileWriteClient, Write } from '../ipc/file-system-write-file'
+import { Client as SaveAsClient, PromptToSaveOptions } from '../ipc/saveAs'
 
 /**
- * Simple wrapper class to handle writing data to file from a save dialog.
+ * Handles writing data to files.
  */
-export default class FileWriter {
-  public constructor(private fd: number, private client = new Client()) {}
+export interface FileWriter {
+  write(data: Write['data']): Promise<void>
+  end(): Promise<void>
+}
 
-  /**
-   * Write data to the file.
-   */
-  public async write(data: Write['data']): Promise<void> {
-    return await this.client.write(this.fd, data)
+/**
+ * Create a file writer from the given file descriptor and client.
+ */
+export function create(fd: string, client = new FileWriteClient()): FileWriter {
+  return {
+    write: (data): Promise<void> => client.write(fd, data),
+    end: (): Promise<void> => client.end(fd),
+  }
+}
+
+/**
+ * Opens a file with the given path and returns a writer for it.
+ */
+export async function fromPath(
+  path: string,
+  client = new FileWriteClient(),
+): Promise<FileWriter> {
+  const { fd } = await client.open(path)
+  return create(fd, client)
+}
+
+/**
+ * Prompts the user to choose a file path to write a file to.
+ */
+export async function fromPrompt(
+  options?: PromptToSaveOptions,
+  client = new SaveAsClient(),
+): Promise<FileWriter | undefined> {
+  const output = await client.promptToSave(options)
+
+  if (output.type === 'cancel') {
+    return
   }
 
-  /**
-   * Ends writing and closes the file.
-   */
-  public async end(): Promise<void> {
-    return await this.client.end(this.fd)
-  }
-
-  /**
-   * Prompts the user to choose a file path to write a file to.
-   */
-  public static async fromPrompt(
-    options?: PromptToSaveOptions,
-    client = new Client(),
-  ): Promise<FileWriter | undefined> {
-    const output = await client.promptToSave(options)
-
-    if (output.type === 'cancel') {
-      return
-    }
-
-    return new FileWriter(output.fd, client)
-  }
+  return create(output.fd, client)
 }

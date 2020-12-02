@@ -3,6 +3,10 @@ import { join } from 'path'
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
 import registerGetBatteryInfoHandler from './ipc/get-battery-info'
 import registerGetPrinterInfoHandler from './ipc/get-printer-info'
+import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries'
+import registerFileSystemMakeDirectoryHandler from './ipc/file-system-make-directory'
+import registerFileSystemReadFileHandler from './ipc/file-system-read-file'
+import registerFileSystemWriteFileHandler from './ipc/file-system-write-file'
 import registerGetUsbDrivesHandler from './ipc/get-usb-drives'
 import registerMountUsbDriveHandler from './ipc/mount-usb-drive'
 import registerPrintHandler from './ipc/print'
@@ -84,6 +88,10 @@ async function createWindow(): Promise<void> {
     registerPrintToPDFHandler,
     registerQuitHandler,
     registerSaveAsHandler,
+    registerFileSystemGetEntriesHandler,
+    registerFileSystemMakeDirectoryHandler,
+    registerFileSystemReadFileHandler,
+    registerFileSystemWriteFileHandler,
     registerGetUsbDrivesHandler,
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,

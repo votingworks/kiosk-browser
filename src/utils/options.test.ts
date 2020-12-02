@@ -12,22 +12,22 @@ async function parseOptionsWithoutHelp(
 }
 
 test('returns the first argument URL if it can be parsed as a URL', async () => {
-  const options = await parseOptionsWithoutHelp(['http://example.com/'])
-  expect(options.url.href).toEqual('http://example.com/')
+  const options = await parseOptionsWithoutHelp(['https://example.com/'])
+  expect(options.url.href).toEqual('https://example.com/')
 })
 
 test('returns the value of KIOSK_BROWSER_URL if it can be parsed as a URL', async () => {
   const options = await parseOptionsWithoutHelp([], {
-    KIOSK_BROWSER_URL: 'http://example.com/',
+    KIOSK_BROWSER_URL: 'https://example.com/',
   })
-  expect(options.url.href).toEqual('http://example.com/')
+  expect(options.url.href).toEqual('https://example.com/')
 })
 
 test('prefers the argument URL to the environment URL', async () => {
-  const options = await parseOptionsWithoutHelp(['http://example.com/argv'], {
-    KIOSK_BROWSER_URL: 'http://example.com/env',
+  const options = await parseOptionsWithoutHelp(['https://example.com/argv'], {
+    KIOSK_BROWSER_URL: 'https://example.com/env',
   })
-  expect(options.url.href).toEqual('http://example.com/argv')
+  expect(options.url.href).toEqual('https://example.com/argv')
 })
 
 test('falls back to about:blank if nothing else is given', async () => {
@@ -57,33 +57,33 @@ test('allow devtools', async () => {
   )
 })
 
-test('file permission with default hostname and access', async () => {
+test('file permission with default origin and access', async () => {
   const options = await parseOptionsWithoutHelp([
     '--add-file-perm',
-    '/media/**/*',
+    'p=/media/**/*',
   ])
-  expect(options.hostFilePermissions).toEqual([
-    { hostnames: '*', paths: '/media/**/*', access: 'rw' },
+  expect(options.originFilePermissions).toEqual([
+    { origins: '**/*', paths: '/media/**/*', access: 'rw' },
   ])
 })
 
 test('file permission with default access', async () => {
   const options = await parseOptionsWithoutHelp([
     '--add-file-perm',
-    'localhost:/media/**/*',
+    'o=http://localhost,p=/media/**/*',
   ])
-  expect(options.hostFilePermissions).toEqual([
-    { hostnames: 'localhost', paths: '/media/**/*', access: 'rw' },
+  expect(options.originFilePermissions).toEqual([
+    { origins: 'http://localhost', paths: '/media/**/*', access: 'rw' },
   ])
 })
 
 test('file permission', async () => {
   const options = await parseOptionsWithoutHelp([
     '--add-file-perm',
-    'localhost:/media/**/*:ro',
+    'o=http://localhost:*,p=/media/**/*,ro',
   ])
-  expect(options.hostFilePermissions).toEqual([
-    { hostnames: 'localhost', paths: '/media/**/*', access: 'ro' },
+  expect(options.originFilePermissions).toEqual([
+    { origins: 'http://localhost:*', paths: '/media/**/*', access: 'ro' },
   ])
 })
 
