@@ -50,6 +50,7 @@
     "multimatch": "^4.0.0",
     "rxjs": "^6.5.4",
     "usb-detection": "^4.7.0",
+    "uuid": "^8.3.1",
     "xrandr-parse": "^1.0.0",
     "zod": "^1.10.2"
   },
