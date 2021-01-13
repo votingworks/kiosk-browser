@@ -1,5 +1,6 @@
 import { Client as FileWriteClient, Write } from '../ipc/file-system-write-file'
 import { Client as SaveAsClient, PromptToSaveOptions } from '../ipc/saveAs'
+import path from 'path'
 
 /**
  * Handles writing data to files.
@@ -7,15 +8,21 @@ import { Client as SaveAsClient, PromptToSaveOptions } from '../ipc/saveAs'
 export interface FileWriter {
   write(data: Write['data']): Promise<void>
   end(): Promise<void>
+  filename: string
 }
 
 /**
  * Create a file writer from the given file descriptor and client.
  */
-export function create(fd: string, client = new FileWriteClient()): FileWriter {
+export function create(
+  fd: string,
+  filename: string,
+  client = new FileWriteClient(),
+): FileWriter {
   return {
     write: (data): Promise<void> => client.write(fd, data),
     end: (): Promise<void> => client.end(fd),
+    filename: filename,
   }
 }
 
@@ -23,11 +30,12 @@ export function create(fd: string, client = new FileWriteClient()): FileWriter {
  * Opens a file with the given path and returns a writer for it.
  */
 export async function fromPath(
-  path: string,
+  filePath: string,
   client = new FileWriteClient(),
 ): Promise<FileWriter> {
-  const { fd } = await client.open(path)
-  return create(fd, client)
+  const filename = path.parse(filePath).base
+  const { fd } = await client.open(filePath)
+  return create(fd, filename, client)
 }
 
 /**
@@ -43,5 +51,5 @@ export async function fromPrompt(
     return
   }
 
-  return create(output.fd, client)
+  return create(output.fd, output.name, client)
 }

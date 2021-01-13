@@ -47,7 +47,8 @@ test('open, write, close', async () => {
   expect(fs.createWriteStream).toHaveBeenCalledWith('/example/path.txt')
 
   ok(promptResult.type === 'file')
-  const { fd } = promptResult
+  const { fd, name } = promptResult
+  expect(name).toBe('path.txt')
 
   // do some writes
   await client.write(fd, 'abc')
@@ -119,7 +120,8 @@ test('accepts options for the save dialog', async () => {
   expect(fs.createWriteStream).toHaveBeenCalledWith('/example/path.txt')
 
   ok(promptResult.type === 'file')
-  const { fd } = promptResult
+  const { fd, name } = promptResult
+  expect(name).toBe('path.txt')
 
   // do some writes
   await client.write(fd, 'abc')

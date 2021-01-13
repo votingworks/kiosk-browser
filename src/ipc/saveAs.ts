@@ -1,4 +1,5 @@
 import makeDebug from 'debug'
+import path from 'path'
 import {
   dialog,
   IpcMain,
@@ -31,7 +32,7 @@ export type PromptToSaveOptions = Pick<
   'title' | 'defaultPath' | 'buttonLabel' | 'filters'
 >
 export type PromptToSaveResult =
-  | { type: 'file'; fd: string }
+  | { type: 'file'; fd: string; name: string }
   | { type: 'cancel' }
 
 /**
@@ -67,8 +68,9 @@ async function handlePromptToSave(
   assertHasWriteAccess(permissions, origin, result.filePath)
 
   const fd = files.open(origin, result.filePath)
+  const filename = path.parse(result.filePath).base
   debug('%s: opened %s for writing as fd=%s', input.type, result.filePath, fd)
-  return { type: 'file', fd }
+  return { type: 'file', fd, name: filename }
 }
 
 /**
