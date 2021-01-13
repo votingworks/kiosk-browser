@@ -22,17 +22,22 @@ test('creating from prompt fails', async () => {
 
 test('creating from prompt succeeds', async () => {
   const client = fakeClient()
-  client.promptToSave.mockResolvedValueOnce({ type: 'file', fd: uuid() })
+  client.promptToSave.mockResolvedValueOnce({
+    type: 'file',
+    fd: uuid(),
+    name: 'file.txt',
+  })
   expect(await fromPrompt({}, client)).toEqual({
     write: expect.any(Function),
     end: expect.any(Function),
+    filename: 'file.txt',
   })
 })
 
 test('write passes the file descriptor and data', async () => {
   const fd = uuid()
   const client = fakeClient()
-  const writer = create(fd, client)
+  const writer = create(fd, 'file.txt', client)
   await writer.write('abcdefg')
   expect(client.write).toHaveBeenCalledWith(fd, 'abcdefg')
 })
@@ -40,7 +45,7 @@ test('write passes the file descriptor and data', async () => {
 test('end passes the file descriptor', async () => {
   const fd = uuid()
   const client = fakeClient()
-  const writer = create(fd, client)
+  const writer = create(fd, 'file.txt', client)
   await writer.end()
   expect(client.end).toHaveBeenCalledWith(fd)
 })
