@@ -4,7 +4,6 @@ import register, {
 } from './file-system-make-directory'
 import { promises as fs } from 'fs'
 import { fakeIpc } from '../../test/ipc'
-import { basename, dirname } from 'path'
 
 jest.mock('fs', () => ({
   promises: { mkdir: jest.fn() },
