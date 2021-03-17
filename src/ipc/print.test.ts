@@ -4,7 +4,7 @@ import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
 import exec from '../utils/exec'
 import getPreferredPrinter from '../utils/getPreferredPrinter'
-import register, { channel as printChannel } from './print'
+import register, { channel as printChannel, PrintSides } from './print'
 
 const getPreferredPrinterMock = mockOf(getPreferredPrinter)
 const execMock = mockOf(exec)
@@ -132,4 +132,54 @@ test('does not allow fractional copies', async () => {
 
   expect(sender.printToPDF).not.toHaveBeenCalled()
   expect(execMock).not.toHaveBeenCalled()
+})
+
+test('allows specifying one-sided duplex', async () => {
+  const sender: Partial<WebContents> = {
+    getPrinters: () => [],
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
+
+  register(ipcMain)
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+  await ipcRenderer.invoke(printChannel, { sides: PrintSides.OneSided })
+
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    ['-P', 'main printer', '-o', 'sides=one-sided'],
+    expect.anything(),
+  )
+})
+
+test('allows specifying two-sided-short-edge duplex', async () => {
+  const sender: Partial<WebContents> = {
+    getPrinters: () => [],
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  }
+  const { ipcMain, ipcRenderer } = fakeIpc(sender)
+
+  register(ipcMain)
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakePrinter({ name: 'main printer' }),
+  )
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+  await ipcRenderer.invoke(printChannel, {
+    sides: PrintSides.TwoSidedShortEdge,
+  })
+
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    ['-P', 'main printer', '-o', 'sides=two-sided-short-edge'],
+    expect.anything(),
+  )
 })
