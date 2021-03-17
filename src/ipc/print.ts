@@ -18,10 +18,32 @@ function getPreferredPrinterName(printers: PrinterInfo[]): string | undefined {
 
 const availablePaperSources = ['Tray1', 'Tray2', 'Tray3']
 
+export enum PrintSides {
+  /**
+   * One page per sheet, aka simplex or "Duplex=None".
+   */
+  OneSided = 'one-sided',
+
+  /**
+   * Two pages per sheet, aka "Duplex=DuplexNoTumble". This option prints such
+   * that a right-side up portrait sheet flipped over on the long edge remains
+   * right-side up, i.e. a regular left-to-right book.
+   */
+  TwoSidedLongEdge = 'two-sided-long-edge',
+
+  /**
+   * Two pages per sheet, aka "Duplex=DuplexTumble". This option prints such
+   * that a right-side up portrait sheet flipped over on the short edge remains
+   * right-side up, i.e. a bound-at-the-top ring binder.
+   */
+  TwoSidedShortEdge = 'two-sided-short-edge',
+}
+
 interface PrintOptions {
   deviceName?: string
   paperSource?: string
   copies?: number
+  sides?: PrintSides
 }
 
 const PrintOptionsSchema = z.object({
@@ -38,6 +60,9 @@ const PrintOptionsSchema = z.object({
     .positive()
     .int()
     .optional(),
+  sides: z
+    .enum(Object.values(PrintSides) as [PrintSides, ...PrintSides[]])
+    .optional(),
 })
 
 interface PrintDataParameters extends PrintOptions {
@@ -49,6 +74,7 @@ async function printData({
   deviceName,
   paperSource,
   copies,
+  sides = PrintSides.TwoSidedLongEdge,
 }: PrintDataParameters): Promise<void> {
   const lprOptions: string[] = []
 
@@ -57,7 +83,7 @@ async function printData({
   }
 
   // duplex
-  lprOptions.push('-o', 'sides=two-sided-long-edge')
+  lprOptions.push('-o', `sides=${sides}`)
 
   // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
@@ -81,9 +107,12 @@ export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
     async (event: IpcMainInvokeEvent, options: PrintOptions = {}) => {
-      const { deviceName, paperSource, copies } = PrintOptionsSchema.parse(
-        options,
-      )
+      const {
+        deviceName,
+        paperSource,
+        copies,
+        sides,
+      } = PrintOptionsSchema.parse(options)
 
       debug('printing to PDF')
       const data = await event.sender.printToPDF({
@@ -97,6 +126,7 @@ export default function register(ipcMain: IpcMain): void {
           deviceName ?? getPreferredPrinterName(event.sender.getPrinters()),
         paperSource,
         copies,
+        sides,
       })
     },
   )

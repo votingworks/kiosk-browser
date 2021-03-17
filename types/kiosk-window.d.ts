@@ -17,6 +17,26 @@ declare namespace KioskBrowser {
     IANAZone: string
   }
 
+  type PrintSides =
+    /**
+     * One page per sheet, aka simplex or "Duplex=None".
+     */
+    | 'one-sided'
+
+    /**
+     * Two pages per sheet, aka "Duplex=DuplexNoTumble". This option prints such
+     * that a right-side up portrait sheet flipped over on the long edge remains
+     * right-side up, i.e. a regular left-to-right book.
+     */
+    | 'two-sided-long-edge'
+
+    /**
+     * Two pages per sheet, aka "Duplex=DuplexTumble". This option prints such
+     * that a right-side up portrait sheet flipped over on the short edge remains
+     * right-side up, i.e. a bound-at-the-top ring binder.
+     */
+    | 'two-sided-short-edge'
+
   interface Kiosk {
     getBatteryInfo(): Promise<BatteryInfo>
     getPrinterInfo(): Promise<PrinterInfo[]>
@@ -26,6 +46,7 @@ declare namespace KioskBrowser {
       deviceName?: string,
       paperSource?: string,
       copies?: number,
+      sides?: PrintSides,
     ): Promise<void>
     saveAs(options?: PromptToSaveOptions): Promise<FileWriter | undefined>
     setClock(params: SetClockParams): Promise<void>
