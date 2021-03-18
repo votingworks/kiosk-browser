@@ -129,14 +129,16 @@ test('registers a handler to get directory entries', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    originFilePermissions: [
-      {
-        origins: 'https://example.com',
-        paths: '**/*',
-        access: 'ro',
-      },
-    ],
-    url: new URL('https://example.com/'),
+    options: {
+      originFilePermissions: [
+        {
+          origins: 'https://example.com',
+          paths: '**/*',
+          access: 'ro',
+        },
+      ],
+      url: new URL('https://example.com/'),
+    },
   })
 
   jest.spyOn(fs, 'readdir').mockResolvedValueOnce([])

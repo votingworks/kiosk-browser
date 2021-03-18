@@ -75,7 +75,10 @@ export async function getEntries(
   )
 }
 
-export default function register(ipcMain: IpcMain, options: Options): void {
+export default function register(
+  ipcMain: IpcMain,
+  { options }: { options: Options },
+): void {
   ipcMain.handle(channel, async (event: IpcMainInvokeEvent, path: string) => {
     const url = new URL(event.sender.getURL())
     return await getEntries(options.originFilePermissions, url.origin, path)

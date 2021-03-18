@@ -25,7 +25,10 @@ export async function makeDirectory(
   await fs.mkdir(path, options)
 }
 
-export default function register(ipcMain: IpcMain, options: Options): void {
+export default function register(
+  ipcMain: IpcMain,
+  { options }: { options: Options },
+): void {
   ipcMain.handle(
     channel,
     async (

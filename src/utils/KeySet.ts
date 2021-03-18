@@ -1,3 +1,8 @@
+export interface ImmutableSet<T> extends Iterable<T> {
+  add(value: T): ImmutableSet<T>
+  delete(value: T): ImmutableSet<T>
+}
+
 /**
  * Implements an immutable `Set` using a custom key to check equality. The
  * built-in `Set` uses identity to determine whether a value is contained by a
@@ -24,7 +29,7 @@
  * keySet.has({ ...root }) // true
  * ```
  */
-export default class KeySet<T, K> {
+export default class KeySet<T, K> implements ImmutableSet<T> {
   private keyFn: (value: T) => K
   private map = new Map<K, T>()
 

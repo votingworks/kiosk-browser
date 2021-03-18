@@ -125,7 +125,10 @@ export async function end(
   await files.close(origin, input.fd)
 }
 
-export default function register(ipcMain: IpcMain, options: Options): void {
+export default function register(
+  ipcMain: IpcMain,
+  { options }: { options: Options },
+): void {
   const files = new OpenFiles()
 
   async function handler(

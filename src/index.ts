@@ -22,11 +22,15 @@ import registerSetClock from './ipc/clock'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
-import { devices } from './utils/usb'
+import { USBDetectionManager } from './utils/usb'
+import usbDetection from 'usb-detection'
 
 type RegisterIpcHandler = (
   ipcMain: IpcMain,
-  options: Options,
+  {
+    options,
+    usbManager,
+  }: { options: Options; usbManager: USBDetectionManager },
 ) => (() => void) | void
 
 // Allow use of `speechSynthesis` API.
@@ -54,10 +58,15 @@ async function createWindow(): Promise<void> {
     return
   }
 
+  const usbManager = new USBDetectionManager(usbDetection)
+
   const { options } = parseOptionsResult
   const autoconfigurePrinterSubscription =
     options.autoconfigurePrintConfig &&
-    autoconfigurePrint(options.autoconfigurePrintConfig, devices).subscribe()
+    autoconfigurePrint(
+      options.autoconfigurePrintConfig,
+      usbManager.devices,
+    ).subscribe()
 
   const mainScreen = await getMainScreen()
 
@@ -103,7 +112,7 @@ async function createWindow(): Promise<void> {
   ]
 
   const handlerCleanups = handlers
-    .map(handler => handler(ipcMain, options))
+    .map(handler => handler(ipcMain, { options, usbManager }))
     .filter(Boolean) as (() => void)[]
 
   function quit(): void {

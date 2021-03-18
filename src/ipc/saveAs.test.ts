@@ -17,8 +17,10 @@ test('open, write, close', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    url: new URL('https://example.com/'),
-    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    options: {
+      url: new URL('https://example.com/'),
+      originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    },
   })
 
   const client = new Client(ipcRenderer)
@@ -74,8 +76,10 @@ test('accepts options for the save dialog', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    url: new URL('https://example.com/'),
-    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    options: {
+      url: new URL('https://example.com/'),
+      originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    },
   })
 
   const client = new Client(ipcRenderer)
@@ -152,8 +156,7 @@ test('disallows hosts that are not explicitly listed', async () => {
   })
 
   register(ipcMain, {
-    url,
-    originFilePermissions: [],
+    options: { url, originFilePermissions: [] },
   })
 
   const client = new Client(ipcRenderer)
@@ -168,10 +171,12 @@ test('disallows file destinations that are not explicitly listed', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    url: new URL('https://example.com/'),
-    originFilePermissions: [
-      { origins: 'https://example.com', paths: '/media/**/*', access: 'rw' },
-    ],
+    options: {
+      url: new URL('https://example.com/'),
+      originFilePermissions: [
+        { origins: 'https://example.com', paths: '/media/**/*', access: 'rw' },
+      ],
+    },
   })
 
   const client = new Client(ipcRenderer)
@@ -193,8 +198,10 @@ test('does not allow cross-site file access', async () => {
   const { ipcMain, ipcRenderer, setWebContents } = fakeIpc()
 
   register(ipcMain, {
-    url: new URL('https://example.com/'),
-    originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    options: {
+      url: new URL('https://example.com/'),
+      originFilePermissions: [{ origins: '**/*', paths: '**/*', access: 'rw' }],
+    },
   })
 
   const client = new Client(ipcRenderer)

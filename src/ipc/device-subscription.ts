@@ -1,13 +1,16 @@
 import { IpcMain, IpcMainInvokeEvent, WebContents } from 'electron'
 import { Subscription } from 'rxjs'
-import { devices } from '../utils/usb'
+import { USBDetectionManager } from '../utils/usb'
 
 export const channel = 'device-subscription'
 
 /**
  * Subscribe to add/remove USB device events.
  */
-export default function register(ipcMain: IpcMain): void {
+export default function register(
+  ipcMain: IpcMain,
+  { usbManager }: { usbManager: USBDetectionManager },
+): void {
   const subscriptions = new Map<WebContents, Subscription>()
 
   ipcMain.handle(
@@ -20,7 +23,7 @@ export default function register(ipcMain: IpcMain): void {
       subscription?.unsubscribe()
 
       if (subscribe) {
-        const subscription = devices.subscribe(set =>
+        const subscription = usbManager.devices.subscribe(set =>
           webContents.send(channel, Array.from(set)),
         )
 
