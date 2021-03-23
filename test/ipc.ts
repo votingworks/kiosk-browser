@@ -48,6 +48,14 @@ export function fakeIpc(
   ipcRenderer: IpcRenderer
   setWebContents(sender: Partial<WebContents>): void
 } {
+  let webContents: Partial<WebContents>
+
+  function setWebContents(sender: Partial<WebContents>): void {
+    webContents = { getURL: (): string => 'https://example.com/', ...sender }
+  }
+
+  setWebContents(sender)
+
   const listeners = new Map<string, IpcMainListener>()
 
   const ipcMain: Partial<IpcMain> = {
@@ -73,7 +81,7 @@ export function fakeIpc(
       return roundTripData(
         await listener(
           ({
-            sender: { getURL: (): string => 'https://example.com/', ...sender },
+            sender: webContents,
           } as unknown) as IpcMainInvokeEvent,
           ...args.map(arg => roundTripData(arg as Input)),
         ),
@@ -84,8 +92,6 @@ export function fakeIpc(
   return {
     ipcMain: (ipcMain as unknown) as IpcMain,
     ipcRenderer: (ipcRenderer as unknown) as IpcRenderer,
-    setWebContents(newSender): void {
-      sender = newSender
-    },
+    setWebContents,
   }
 }
