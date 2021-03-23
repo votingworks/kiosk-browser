@@ -1,36 +1,43 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron'
 import { join } from 'path'
+import { Observable, of } from 'rxjs'
+import usbDetection, { Device } from 'usb-detection'
+import registerSetClock from './ipc/clock'
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription'
-import registerGetBatteryInfoHandler from './ipc/get-battery-info'
-import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries'
 import registerFileSystemMakeDirectoryHandler from './ipc/file-system-make-directory'
 import registerFileSystemReadFileHandler from './ipc/file-system-read-file'
 import registerFileSystemWriteFileHandler from './ipc/file-system-write-file'
+import registerGetBatteryInfoHandler from './ipc/get-battery-info'
+import registerGetPrinterInfoHandler from './ipc/get-printer-info'
 import registerGetUsbDrivesHandler from './ipc/get-usb-drives'
 import registerMountUsbDriveHandler from './ipc/mount-usb-drive'
 import registerPrintHandler from './ipc/print'
+import registerPrinterSubscription from './ipc/printer-subscription'
 import registerPrintToPDFHandler from './ipc/printToPDF'
 import registerQuitHandler from './ipc/quit'
 import registerSaveAsHandler from './ipc/saveAs'
-import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
-import registerStorageSetHandler from './ipc/storage-set'
+import registerStorageClearHandler from './ipc/storage-clear'
 import registerStorageGetHandler from './ipc/storage-get'
 import registerStorageRemoveHandler from './ipc/storage-remove'
-import registerStorageClearHandler from './ipc/storage-clear'
-import registerSetClock from './ipc/clock'
+import registerStorageSetHandler from './ipc/storage-set'
+import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
 import { USBDetectionManager } from './utils/usb'
-import usbDetection from 'usb-detection'
 
-type RegisterIpcHandler = (
+export type RegisterIpcHandler = (
   ipcMain: IpcMain,
   {
     options,
-    usbManager,
-  }: { options: Options; usbManager: USBDetectionManager },
+    changedDevices,
+    autoconfiguredPrinter,
+  }: {
+    options: Options
+    changedDevices: Observable<Iterable<Device>>
+    autoconfiguredPrinter: Observable<void>
+  },
 ) => (() => void) | void
 
 // Allow use of `speechSynthesis` API.
@@ -61,12 +68,10 @@ async function createWindow(): Promise<void> {
   const usbManager = new USBDetectionManager(usbDetection)
 
   const { options } = parseOptionsResult
-  const autoconfigurePrinterSubscription =
+  const autoconfigurePrinterObservable =
     options.autoconfigurePrintConfig &&
-    autoconfigurePrint(
-      options.autoconfigurePrintConfig,
-      usbManager.devices,
-    ).subscribe()
+    autoconfigurePrint(options.autoconfigurePrintConfig, usbManager.devices)
+  const autoconfigurePrinterSubscription = autoconfigurePrinterObservable?.subscribe()
 
   const mainScreen = await getMainScreen()
 
@@ -94,6 +99,7 @@ async function createWindow(): Promise<void> {
     registerGetPrinterInfoHandler,
     registerManageDeviceSubscriptionHandler,
     registerPrintHandler,
+    registerPrinterSubscription,
     registerPrintToPDFHandler,
     registerQuitHandler,
     registerSaveAsHandler,
@@ -112,7 +118,13 @@ async function createWindow(): Promise<void> {
   ]
 
   const handlerCleanups = handlers
-    .map(handler => handler(ipcMain, { options, usbManager }))
+    .map(handler =>
+      handler(ipcMain, {
+        options,
+        changedDevices: usbManager.devices,
+        autoconfiguredPrinter: autoconfigurePrinterObservable ?? of(),
+      }),
+    )
     .filter(Boolean) as (() => void)[]
 
   function quit(): void {

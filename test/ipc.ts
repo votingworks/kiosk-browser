@@ -1,4 +1,5 @@
 import { IpcMain, IpcMainInvokeEvent, IpcRenderer, WebContents } from 'electron'
+import { testEventEmitter } from './events'
 
 type Input =
   | string
@@ -94,4 +95,15 @@ export function fakeIpc(
     ipcRenderer: (ipcRenderer as unknown) as IpcRenderer,
     setWebContents,
   }
+}
+
+export function fakeWebContents(
+  webContents: Partial<jest.Mocked<WebContents>> = {},
+): jest.Mocked<WebContents> {
+  return ({
+    ...testEventEmitter(),
+    getPrinters: jest.fn(() => []),
+    send: jest.fn(),
+    ...webContents,
+  } as unknown) as jest.Mocked<WebContents>
 }
