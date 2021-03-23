@@ -60,6 +60,7 @@ export function fakeIpc(
   const listeners = new Map<string, IpcMainListener>()
 
   const ipcMain: Partial<IpcMain> = {
+    ...((testEventEmitter() as unknown) as NodeJS.EventEmitter),
     handle: jest.fn(function handle(
       channel: string,
       listener: IpcMainListener,
@@ -69,6 +70,7 @@ export function fakeIpc(
   }
 
   const ipcRenderer: Partial<IpcRenderer> = {
+    ...((testEventEmitter() as unknown) as NodeJS.EventEmitter),
     invoke: jest.fn(async function invoke(
       channel: string,
       ...args: unknown[]
