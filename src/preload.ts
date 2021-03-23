@@ -19,7 +19,10 @@ import {
   PrinterInfo,
 } from './ipc/get-printer-info'
 import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives'
-import { channel as mountUsbDriveChannel } from './ipc/mount-usb-drive'
+import {
+  channel as mountUsbDriveChannel,
+  Options as MountUsbDriveOptions,
+} from './ipc/mount-usb-drive'
 import { channel as printChannel } from './ipc/print'
 import { channel as printToPDFChannel } from './ipc/printToPDF'
 import { channel as quitChannel } from './ipc/quit'
@@ -91,9 +94,16 @@ class Kiosk implements KioskBrowser.Kiosk {
     return ipcRenderer.invoke(getUsbDrivesChannel)
   }
 
-  public async mountUsbDrive(device: string): Promise<void> {
+  public async mountUsbDrive(
+    optionsOrDevice: string | MountUsbDriveOptions,
+  ): Promise<void> {
     debug('forwarding `mountUsbDrive` to main process')
-    return ipcRenderer.invoke(mountUsbDriveChannel, device)
+    return ipcRenderer.invoke(
+      mountUsbDriveChannel,
+      typeof optionsOrDevice === 'string'
+        ? { device: optionsOrDevice }
+        : optionsOrDevice,
+    )
   }
 
   public async unmountUsbDrive(device: string): Promise<void> {

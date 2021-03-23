@@ -4,18 +4,26 @@ import exec from '../utils/exec'
 
 export const channel = 'mountUsbDrive'
 
-async function mountUsbDrive(device: string): Promise<void> {
+export interface Options {
+  device: string
+  label?: string
+}
+
+async function mountUsbDrive(options: Options): Promise<void> {
   await exec('pmount', [
     '-w',
     '-u',
     '000',
-    join('/dev', device),
-    `usb-drive-${device}`,
+    join('/dev', options.device),
+    options.label ?? `usb-drive-${options.device}`,
   ])
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async (event: IpcMainInvokeEvent, device: string) => {
-    await mountUsbDrive(device)
-  })
+  ipcMain.handle(
+    channel,
+    async (event: IpcMainInvokeEvent, options: Options) => {
+      await mountUsbDrive(options)
+    },
+  )
 }
