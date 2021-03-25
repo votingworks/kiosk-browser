@@ -76,7 +76,10 @@ async function handlePromptToSave(
 /**
  * Allows opening a file for writing.
  */
-export default function register(ipcMain: IpcMain, options: Options): void {
+export default function register(
+  ipcMain: IpcMain,
+  { options }: { options: Options },
+): void {
   const files = new OpenFiles()
 
   async function handler(

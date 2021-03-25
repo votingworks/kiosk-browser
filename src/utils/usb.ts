@@ -1,14 +1,9 @@
-import usbDetection, { Device } from 'usb-detection'
+import { strict as assert } from 'assert'
 import makeDebug from 'debug'
-import { Observable, from, defer, fromEvent } from 'rxjs'
-import { shareReplay, finalize, tap } from 'rxjs/operators'
-import KeySet from './KeySet'
-import mergeChanges, { ImmutableSet } from './mergeChanges'
-
-export interface DeviceChange {
-  type: unknown
-  device: Device
-}
+import { defer, fromEvent, Observable } from 'rxjs'
+import { finalize, tap } from 'rxjs/operators'
+import { Device } from 'usb-detection'
+import KeySet, { ImmutableSet } from './KeySet'
 
 const debug = makeDebug('kiosk-browser:usb')
 
@@ -32,81 +27,140 @@ function deviceKey({
   ].join('-')
 }
 
-/**
- * @deprecated Use `devices` observable instead.
- */
-export async function getDeviceList(): Promise<Device[]> {
-  const deviceList = await usbDetection.find()
-  debug('getDeviceList returning latest device list: %O', deviceList)
-  return deviceList
+export class USBDetectionManager {
+  private refCount = 0
+  private readonly usbDetection: typeof import('usb-detection').default
+
+  /**
+   * Build a manager for `usbDetection`.
+   */
+  public constructor(usbDetection: typeof import('usb-detection').default) {
+    this.usbDetection = usbDetection
+  }
+
+  public ref(): void {
+    assert(this.refCount >= 0)
+    if (this.refCount++ === 0) {
+      debug('got first USB detection reference, starting monitoring')
+      this.usbDetection.startMonitoring()
+    }
+    debug('ref: detection ref count=%d', this.refCount)
+  }
+
+  public deref(): void {
+    assert(this.refCount > 0)
+    if (--this.refCount === 0) {
+      debug('lost last USB detection reference, stopping monitoring')
+      this.usbDetection.stopMonitoring()
+    }
+    debug('deref: detection ref count=%d', this.refCount)
+  }
+
+  public isMonitoring(): boolean {
+    return this.refCount > 0
+  }
+
+  /**
+   * Gets the current list of connected devices.
+   */
+  private async find(): Promise<Device[]> {
+    assert(this.isMonitoring())
+    return await this.usbDetection.find()
+  }
+
+  /**
+   * Build an observable that yields a USB device whenever one is added.
+   */
+  public get deviceAdd(): Observable<Device> {
+    return defer(() => {
+      debug('deviceAdd observer initialize')
+      this.ref()
+      return fromEvent<Device>(this.usbDetection, 'add').pipe(
+        tap(device => debug('device added: %O', device)),
+        finalize(() => {
+          debug('deviceAdd observer finalize')
+          this.deref()
+        }),
+      )
+    })
+  }
+
+  /**
+   * Build an observable that yields a USB device whenever one is removed.
+   */
+  public get deviceRemove(): Observable<Device> {
+    return defer(() => {
+      debug('deviceRemove observer initialize')
+      this.ref()
+      return fromEvent<Device>(this.usbDetection, 'remove').pipe(
+        tap(device => debug('device removed: %O', device)),
+        finalize(() => {
+          debug('deviceRemove observer finalize')
+          this.deref()
+        }),
+      )
+    })
+  }
+
+  /**
+   * Build a new observable that yields the current set of connected USB devices
+   * as devices are added and removed.
+   *
+   * Given a set of initial devices (e.g. {mouse, keyboard}), a subscriber would
+   * receive the initial set. Once a new device is added (e.g. flash drive), that
+   * first subscriber receives a new set (e.g. {mouse, keyboard, flash drive}).
+   * New subscribers immediately receive the same current set.
+   */
+  public get devices(): Observable<ImmutableSet<Device>> {
+    const result = new Observable<ImmutableSet<Device>>(subscriber => {
+      this.ref()
+      let unsubscribed = false
+      const cleanups: VoidFunction[] = []
+
+      this.find().then(findResult => {
+        if (unsubscribed) {
+          return
+        }
+
+        let devices = new KeySet(deviceKey, findResult)
+
+        debug('pushing initial device list: %O', devices)
+        subscriber.next(devices)
+
+        const deviceAddSubscription = this.deviceAdd.subscribe(added => {
+          devices = devices.add(added)
+          debug('pushing new devices list: %O', devices)
+          subscriber.next(devices)
+        })
+
+        const deviceRemoveSubscription = this.deviceRemove.subscribe(
+          removed => {
+            devices = devices.delete(removed)
+            debug('pushing new devices list: %O', devices)
+            subscriber.next(devices)
+          },
+        )
+
+        cleanups.push(() => {
+          deviceAddSubscription.unsubscribe()
+          deviceRemoveSubscription.unsubscribe()
+        })
+      })
+
+      return (): void => {
+        unsubscribed = true
+        this.deref()
+        for (const cleanup of cleanups) {
+          cleanup()
+        }
+      }
+    })
+
+    // Memoize the observer.
+    Object.defineProperty(this, 'devices', { value: result })
+
+    return result
+  }
 }
-
-/**
- * Build an observable that yields a USB device whenever one is added.
- */
-const fromDeviceAdd = (): Observable<Device> =>
-  fromEvent<Device>(usbDetection, 'add').pipe(
-    tap(device => debug('device added: %O', device)),
-  )
-
-/**
- * Build an observable that yields a USB device whenever one is removed.
- */
-const fromDeviceRemove = (): Observable<Device> =>
-  fromEvent<Device>(usbDetection, 'remove').pipe(
-    tap(device => debug('device removed: %O', device)),
-  )
-
-/**
- * Build an observable that yields a single value, the set of connected USB
- * devices, and starts device monitoring. This observable should be used in
- * combination with another whose teardown logic will stop device monitoring.
- * Also, it will not start monitoring until it has a subscriber.
- */
-const initialDevices = (): Observable<ImmutableSet<Device>> =>
-  // Wait until we have a subscriber.
-  defer(() =>
-    from(
-      new Promise<Device[]>(resolve => {
-        usbDetection.startMonitoring()
-        debug('device monitoring started')
-        resolve(usbDetection.find())
-      }).then(devices => {
-        debug('got initial devices: %O', devices)
-        return new KeySet(deviceKey, devices)
-      }),
-    ),
-  )
-
-/**
- * Build a new observable that yields the current set of connected USB devices
- * as devices are added and removed.
- *
- * Given a set of initial devices (e.g. {mouse, keyboard}), a subscriber would
- * receive the initial set. Once a new device is added (e.g. flash drive), that
- * first subscriber receives a new set (e.g. {mouse, keyboard, flash drive}).
- * New subscribers immediately receive the same current set.
- */
-export const buildDevicesObservable = (): Observable<ImmutableSet<Device>> =>
-  // Get the initial devices and monitor devices.
-  initialDevices().pipe(
-    // Take the initial devices and merge in adds/removes.
-    mergeChanges(fromDeviceAdd(), fromDeviceRemove()),
-    // When we're done, stop monitoring.
-    finalize(() => {
-      usbDetection.stopMonitoring()
-    }),
-    // Ensure there's only one shared subscription, new subscribers get the most
-    // recent device set (bufferSize: 1), and we start/stop monitoring with
-    // subscribers (refCount: true).
-    shareReplay({ refCount: true, bufferSize: 1 }),
-    tap(devices => debug('yielding new devices to subscribers: %O', devices)),
-  )
-
-/**
- * The shared observable for monitoring connected USB devices. Typically, this
- * should be used instead of `buildDevicesObservable`.
- */
-export const devices = buildDevicesObservable()
 
 export { Device }

@@ -54,14 +54,16 @@ test('registers a handler to read files', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    originFilePermissions: [
-      {
-        origins: 'https://example.com',
-        paths: '**/*',
-        access: 'ro',
-      },
-    ],
-    url: new URL('https://example.com/'),
+    options: {
+      originFilePermissions: [
+        {
+          origins: 'https://example.com',
+          paths: '**/*',
+          access: 'ro',
+        },
+      ],
+      url: new URL('https://example.com/'),
+    },
   })
 
   jest.spyOn(fs, 'readFile').mockResolvedValueOnce('hello world')

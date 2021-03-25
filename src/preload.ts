@@ -33,6 +33,7 @@ import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
 import buildDevicesObservable from './utils/buildDevicesObservable'
+import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable'
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
 
 const debug = makeDebug('kiosk-browser:client')
@@ -196,6 +197,12 @@ class Kiosk implements KioskBrowser.Kiosk {
    * New subscribers immediately receive the same current set.
    */
   public devices = buildDevicesObservable(ipcRenderer)
+
+  /**
+   * Gets an observable that yields the current printer info whenever a printer
+   * is added or removed.
+   */
+  public printers = buildPrinterInfoObservable(ipcRenderer)
 
   public async saveAs(
     options?: PromptToSaveOptions,

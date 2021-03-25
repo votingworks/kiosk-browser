@@ -1,4 +1,5 @@
 import { IpcMain, IpcMainInvokeEvent, IpcRenderer, WebContents } from 'electron'
+import { testEventEmitter } from './events'
 
 type Input =
   | string
@@ -48,9 +49,18 @@ export function fakeIpc(
   ipcRenderer: IpcRenderer
   setWebContents(sender: Partial<WebContents>): void
 } {
+  let webContents: Partial<WebContents>
+
+  function setWebContents(sender: Partial<WebContents>): void {
+    webContents = { getURL: (): string => 'https://example.com/', ...sender }
+  }
+
+  setWebContents(sender)
+
   const listeners = new Map<string, IpcMainListener>()
 
   const ipcMain: Partial<IpcMain> = {
+    ...((testEventEmitter() as unknown) as NodeJS.EventEmitter),
     handle: jest.fn(function handle(
       channel: string,
       listener: IpcMainListener,
@@ -60,6 +70,7 @@ export function fakeIpc(
   }
 
   const ipcRenderer: Partial<IpcRenderer> = {
+    ...((testEventEmitter() as unknown) as NodeJS.EventEmitter),
     invoke: jest.fn(async function invoke(
       channel: string,
       ...args: unknown[]
@@ -73,7 +84,7 @@ export function fakeIpc(
       return roundTripData(
         await listener(
           ({
-            sender: { getURL: (): string => 'https://example.com/', ...sender },
+            sender: webContents,
           } as unknown) as IpcMainInvokeEvent,
           ...args.map(arg => roundTripData(arg as Input)),
         ),
@@ -84,8 +95,17 @@ export function fakeIpc(
   return {
     ipcMain: (ipcMain as unknown) as IpcMain,
     ipcRenderer: (ipcRenderer as unknown) as IpcRenderer,
-    setWebContents(newSender): void {
-      sender = newSender
-    },
+    setWebContents,
   }
+}
+
+export function fakeWebContents(
+  webContents: Partial<jest.Mocked<WebContents>> = {},
+): jest.Mocked<WebContents> {
+  return ({
+    ...testEventEmitter(),
+    getPrinters: jest.fn(() => []),
+    send: jest.fn(),
+    ...webContents,
+  } as unknown) as jest.Mocked<WebContents>
 }

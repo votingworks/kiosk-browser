@@ -153,14 +153,16 @@ test('registers a handler to write files', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc()
 
   register(ipcMain, {
-    originFilePermissions: [
-      {
-        origins: 'https://example.com',
-        paths: '**/*',
-        access: 'rw',
-      },
-    ],
-    url: new URL('https://example.com/'),
+    options: {
+      originFilePermissions: [
+        {
+          origins: 'https://example.com',
+          paths: '**/*',
+          access: 'rw',
+        },
+      ],
+      url: new URL('https://example.com/'),
+    },
   })
 
   const path = '/tmp/kiosk-browser-write-file-test-file'
