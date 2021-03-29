@@ -19,8 +19,19 @@ interface RawDataReturn {
   blockdevices: BlockDevice[]
 }
 
+interface MountedDevice {
+  target: string
+  source: string
+}
+
+interface FindMntRawDataReturn {
+  filesystems: MountedDevice[]
+}
+
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/'
 const USB_REGEXP = /^usb(.+)part(.*)$/
+
+const MOUNTED_USB_REGEXP = /(.*)\/usb-drive(.*)$/
 
 async function getUsbDrives(): Promise<UsbDrive[]> {
   try {
@@ -51,6 +62,21 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
         }
       }),
     )
+    const currentMountPoints = usbDrives.map(drive => drive.mountPoint)
+
+    // Find any phantom usb drives that were improperly removed and need to be unmounted
+    const { stdout } = await exec('findmnt', ['-J', '-t', 'vfat'])
+    if (stdout !== '') {
+      const rawData = JSON.parse(stdout) as FindMntRawDataReturn
+      const phantomFilesystems = rawData.filesystems.filter(
+        filesystem =>
+          !currentMountPoints.includes(filesystem.target) &&
+          MOUNTED_USB_REGEXP.test(filesystem.target),
+      )
+      await Promise.all(
+        phantomFilesystems.map(async fs => await exec('pumount', [fs.target])),
+      )
+    }
 
     return usbDrives
   } catch (e) {
