@@ -5,11 +5,13 @@ import exec from '../utils/exec'
 import register, { channel } from './get-usb-drives'
 
 const execMock = mockOf(exec)
+const accessMock = (fs.access as unknown) as jest.Mock<Promise<void>>
 const readdirMock = (fs.readdir as unknown) as jest.Mock<Promise<string[]>>
 const readlinkMock = (fs.readlink as unknown) as jest.Mock<Promise<string>>
 
 jest.mock('fs', () => ({
   promises: {
+    access: jest.fn(),
     readdir: jest.fn(),
     readlink: jest.fn(),
   },
@@ -84,6 +86,8 @@ test('get-usb-drives', async () => {
     stderr: '',
   })
 
+  accessMock.mockResolvedValueOnce().mockRejectedValueOnce(new Error('ENOENT'))
+
   // Is the handler wired up right?
   const [, handler] = handle.mock.calls[0]
   const devices = await handler()
@@ -135,7 +139,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
   const devices = await handler()
 
   expect(execMock).toHaveBeenCalledTimes(2)
-  expect(execMock).toHaveBeenCalledWith('findmnt', ['-J', '-t', 'vfat'])
+  expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list'])
   expect(devices).toEqual([
     { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
   ])
