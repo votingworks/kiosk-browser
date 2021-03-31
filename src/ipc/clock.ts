@@ -12,8 +12,8 @@ async function clockSet({
   const datetimeString = DateTime.fromISO(isoDatetime, {
     zone: IANAZone,
   }).toFormat('yyyy-LL-dd TT')
-  await exec('sudo', ['-n', '/usr/bin/timedatectl', 'set-time', datetimeString])
   await exec('sudo', ['-n', '/usr/bin/timedatectl', 'set-timezone', IANAZone])
+  await exec('sudo', ['-n', '/usr/bin/timedatectl', 'set-time', datetimeString])
 }
 
 export default function register(ipcMain: IpcMain): void {
