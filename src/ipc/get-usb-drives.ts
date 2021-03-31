@@ -1,7 +1,10 @@
+import makeDebug from 'debug'
 import { IpcMain } from 'electron'
 import { promises as fs } from 'fs'
-import exec from '../utils/exec'
 import { join } from 'path'
+import exec from '../utils/exec'
+
+const debug = makeDebug('kiosk-browser:get-usb-drives')
 
 export const channel = 'getUsbDrives'
 
@@ -30,8 +33,6 @@ interface FindMntRawDataReturn {
 
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/'
 const USB_REGEXP = /^usb(.+)part(.*)$/
-
-const MOUNTED_USB_REGEXP = /(.*)\/usb-drive(.*)$/
 
 async function getUsbDrives(): Promise<UsbDrive[]> {
   try {
@@ -62,19 +63,26 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
         }
       }),
     )
-    const currentMountPoints = usbDrives.map(drive => drive.mountPoint)
 
     // Find any phantom usb drives that were improperly removed and need to be unmounted
-    const { stdout } = await exec('findmnt', ['-J', '-t', 'vfat'])
+    const { stdout } = await exec('findmnt', ['--json', '--list'])
     if (stdout !== '') {
       const rawData = JSON.parse(stdout) as FindMntRawDataReturn
-      const phantomFilesystems = rawData.filesystems.filter(
-        filesystem =>
-          !currentMountPoints.includes(filesystem.target) &&
-          MOUNTED_USB_REGEXP.test(filesystem.target),
-      )
       await Promise.all(
-        phantomFilesystems.map(async fs => await exec('pumount', [fs.target])),
+        rawData.filesystems.map(async ({ source, target }) => {
+          if (source.startsWith('/')) {
+            try {
+              await fs.access(source)
+            } catch {
+              debug(
+                'cleaning up phantom mount at %s missing its disk %s',
+                target,
+                source,
+              )
+              await exec('pumount', [target])
+            }
+          }
+        }),
       )
     }
 
