@@ -41,7 +41,7 @@ test('get-usb-drives', async () => {
           size: '93.9M',
           ro: '1',
           type: 'part',
-          mountpoint: '/media/usb-sdb1',
+          mountpoint: '/media/usb-drive-sdb1',
         },
       ],
     }),
@@ -64,12 +64,79 @@ test('get-usb-drives', async () => {
     stderr: '',
   })
 
+  execMock.mockResolvedValueOnce({
+    stdout: JSON.stringify({
+      filesystems: [
+        {
+          target: '/media/usb-drive-sdb1',
+          source: '/dev/sdb1',
+        },
+        {
+          target: '/media/usb-drive-sdz1',
+          source: '/dev/sdz1',
+        },
+        {
+          target: 'something',
+          source: 'random',
+        },
+      ],
+    }),
+    stderr: '',
+  })
+
   // Is the handler wired up right?
   const [, handler] = handle.mock.calls[0]
   const devices = await handler()
 
+  expect(execMock).toHaveBeenCalledTimes(4)
+  expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
+    '/media/usb-drive-sdz1',
+  ])
   expect(devices).toEqual([
-    { deviceName: 'sdb1', mountPoint: '/media/usb-sdb1' },
+    { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
     { deviceName: 'sdc1' },
+  ])
+})
+
+test('get-usb-drives works when findmnt returns nothing', async () => {
+  // Register our handler.
+  const handle = jest.fn()
+  register(({ handle } as unknown) as IpcMain)
+
+  // Things should be registered as expected.
+  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
+
+  readdirMock.mockResolvedValueOnce(['usb-foobar-part23'])
+  readlinkMock.mockResolvedValueOnce('../../sdb1')
+  execMock.mockResolvedValueOnce({
+    stdout: JSON.stringify({
+      blockdevices: [
+        {
+          name: 'sdb1',
+          'maj:min': '8:3',
+          rm: '0',
+          size: '93.9M',
+          ro: '1',
+          type: 'part',
+          mountpoint: '/media/usb-drive-sdb1',
+        },
+      ],
+    }),
+    stderr: '',
+  })
+
+  execMock.mockResolvedValueOnce({
+    stdout: '',
+    stderr: '',
+  })
+
+  // Is the handler wired up right?
+  const [, handler] = handle.mock.calls[0]
+  const devices = await handler()
+
+  expect(execMock).toHaveBeenCalledTimes(2)
+  expect(execMock).toHaveBeenCalledWith('findmnt', ['-J', '-t', 'vfat'])
+  expect(devices).toEqual([
+    { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
   ])
 })
