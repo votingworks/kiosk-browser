@@ -25,6 +25,7 @@ test('call to totp calls appropriate shell command and returns the right data', 
   expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
+    '-t',
     'show',
   ])
 
@@ -47,6 +48,7 @@ test('when error in exec, return undefined', async () => {
   expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
+    '-t',
     'show',
   ])
 
@@ -63,6 +65,7 @@ test('when exec throws, return undefined', async () => {
   expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
+    '-t',
     'show',
   ])
 
