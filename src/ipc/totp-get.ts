@@ -16,6 +16,8 @@ async function totpGet(): Promise<TotpInfo | undefined> {
       'show',
     ])
 
+    if (stderr) return undefined
+
     const [timestamp, code] = stdout.split(': ')
 
     return {
