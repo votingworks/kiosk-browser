@@ -1,7 +1,10 @@
+import makeDebug from 'debug'
 import { IpcMain, IpcMainInvokeEvent } from 'electron'
 import exec from '../utils/exec'
 
 export const channel = 'totpGet'
+
+const debug = makeDebug('kiosk-browser:totp')
 
 export interface TotpInfo {
   isoDatetime: string
@@ -24,7 +27,8 @@ async function totpGet(): Promise<TotpInfo | undefined> {
       isoDatetime: new Date(timestamp).toISOString(),
       code,
     }
-  } catch {
+  } catch (err) {
+    debug('could not call tpm2-totp', err)
     return undefined
   }
 }
