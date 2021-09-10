@@ -35,3 +35,36 @@ test('call to totp calls appropriate shell command and returns the right data', 
     code: '932549',
   })
 })
+
+test('when error in exec, return undefined', async () => {
+  execMock.mockResolvedValueOnce({
+    stdout: '',
+    stderr: 'TPM is nowhere to be found',
+  })
+
+  const totpResult = await ipcRenderer.invoke(totpGetChannel)
+
+  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+    '-n',
+    '/usr/local/bin/tpm2-totp',
+    'show',
+  ])
+
+  expect(totpResult).toEqual(undefined)
+})
+
+test('when exec throws, return undefined', async () => {
+  execMock.mockImplementation(() => {
+    throw new Error("I don't know what's going on")
+  })
+
+  const totpResult = await ipcRenderer.invoke(totpGetChannel)
+
+  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+    '-n',
+    '/usr/local/bin/tpm2-totp',
+    'show',
+  ])
+
+  expect(totpResult).toEqual(undefined)
+})
