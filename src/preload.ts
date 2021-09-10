@@ -32,6 +32,7 @@ import { channel as storageGetChannel } from './ipc/storage-get'
 import { channel as storageRemoveChannel } from './ipc/storage-remove'
 import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
+import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable'
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
@@ -185,6 +186,13 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async setClock(params: KioskBrowser.SetClockParams): Promise<void> {
     debug('forwarding `setClock` to main process')
     return ipcRenderer.invoke(setClock, params)
+  }
+
+  public totp = {
+    async get(): Promise<TotpInfo | undefined> {
+      debug('forwarding `totp.get` to main process')
+      return await ipcRenderer.invoke(totpGetChannel)
+    },
   }
 
   /**
