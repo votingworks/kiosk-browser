@@ -16,6 +16,7 @@ async function totpGet(): Promise<TotpInfo | undefined> {
     const { stdout, stderr } = await exec('sudo', [
       '-n',
       '/usr/local/bin/tpm2-totp',
+      '-t',
       'show',
     ])
 
@@ -28,7 +29,7 @@ async function totpGet(): Promise<TotpInfo | undefined> {
       code,
     }
   } catch (err) {
-    debug('could not call tpm2-totp', err)
+    debug('could not call tpm2-totp: %s', err)
     return undefined
   }
 }
