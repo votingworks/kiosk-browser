@@ -1,5 +1,5 @@
 import makeDebug from 'debug'
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import { IpcMain } from 'electron'
 import exec from '../utils/exec'
 
 export const channel = 'totpGet'
@@ -35,5 +35,5 @@ async function totpGet(): Promise<TotpInfo | undefined> {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async (event: IpcMainInvokeEvent) => totpGet())
+  ipcMain.handle(channel, async () => totpGet())
 }
