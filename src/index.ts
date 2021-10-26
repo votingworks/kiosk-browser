@@ -23,6 +23,7 @@ import registerStorageRemoveHandler from './ipc/storage-remove'
 import registerStorageSetHandler from './ipc/storage-set'
 import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
 import registerTotpGetHandler from './ipc/totp-get'
+import registerLogHandler from './ipc/log'
 import registerSignHandler from './ipc/sign'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
@@ -118,6 +119,7 @@ async function createWindow(): Promise<void> {
     registerStorageClearHandler,
     registerSetClock,
     registerTotpGetHandler,
+    registerLogHandler,
     registerSignHandler,
   ]
 

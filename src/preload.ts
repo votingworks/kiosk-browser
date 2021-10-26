@@ -34,6 +34,7 @@ import { channel as storageSetChannel } from './ipc/storage-set'
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get'
 import { channel as signChannel, SignParams } from './ipc/sign'
+import { channel as logChannel } from './ipc/log'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable'
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
@@ -199,6 +200,11 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async sign(params: SignParams): Promise<string> {
     debug('forwarding `sign` to main process')
     return await ipcRenderer.invoke(signChannel, params)
+  }
+
+  public async log(message: string): Promise<void> {
+    debug('forwarding `log` to the main process')
+    return await ipcRenderer.invoke(logChannel, message)
   }
 
   /**
