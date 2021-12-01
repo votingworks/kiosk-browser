@@ -83,7 +83,7 @@ class Kiosk implements KioskBrowser.Kiosk {
     return await ipcRenderer.invoke(printToPDFChannel)
   }
 
-  public async getBatteryInfo(): Promise<BatteryInfo> {
+  public async getBatteryInfo(): Promise<BatteryInfo | undefined> {
     debug('forwarding `getBatteryInfo` to main process')
     return ipcRenderer.invoke(getBatteryInfoChannel)
   }

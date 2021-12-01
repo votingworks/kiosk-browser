@@ -38,7 +38,7 @@ declare namespace KioskBrowser {
     | 'two-sided-short-edge'
 
   interface Kiosk {
-    getBatteryInfo(): Promise<BatteryInfo>
+    getBatteryInfo(): Promise<BatteryInfo | undefined>
     getPrinterInfo(): Promise<PrinterInfo[]>
     devices: Observable<Iterable<Device>>
     print(options?: KioskBrowser.PrintOptions): Promise<void>

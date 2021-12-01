@@ -102,10 +102,9 @@ POWER_SUPPLY_STATUS=Discharging
   )
 })
 
-test('fails to read battery info if the power_supply "files" are not present', async () => {
+test('returns undefined if the power_supply "files" are not present', async () => {
   jest.spyOn(fs, 'readFile').mockRejectedValue(new Error('ENOENT'))
-
-  await expect(getBatteryInfo()).rejects.toThrowError('No batteries found')
+  expect(await getBatteryInfo()).toBeUndefined()
 })
 
 test('registers a handler to get battery info', async () => {
