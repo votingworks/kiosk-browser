@@ -30,7 +30,7 @@ describe('getPrinterInfo', () => {
   })
 
   it('expands the printer info with connected=false if lpinfo does not show the device', async () => {
-    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set())
+    mockOf(getConnectedDeviceURIs).mockResolvedValue(new Set())
 
     expect(
       await getPrinterInfo([
@@ -39,6 +39,25 @@ describe('getPrinterInfo', () => {
         }),
       ]),
     ).toEqual([expect.objectContaining({ connected: false })])
+  })
+
+  it('expands the printer info with connected=true if lpinfo shows the device after a momentary blip', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set())
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
+      new Set(['usb://HP/Color%20LaserJet?serial=1234']),
+    )
+
+    expect(
+      await getPrinterInfo([
+        fakePrinter(),
+        fakePrinter({
+          options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+        }),
+      ]),
+    ).toEqual([
+      expect.objectContaining({ connected: false }),
+      expect.objectContaining({ connected: true }),
+    ])
   })
 })
 
