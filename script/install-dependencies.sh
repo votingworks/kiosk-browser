@@ -13,7 +13,7 @@ fi
 $SUDO apt-get install -y build-essential libudev-dev unzip git python pmount cups-client
 
 if [[ $OS == "bullseye" ]]; then
-	sudo apt install -y libgtk-3-0  libnotify4 libxssl libxtst6 xdg-utils libatspi2.0-0 kde-cli-tools kde-runtime trash-cli libglib2.0-bin gvfs-bin
+	sudo apt install -y libgtk-3-0  libnotify4 libxss1 libxtst6 xdg-utils libatspi2.0-0 kde-cli-tools trash-cli libglib2.0-bin gvfs-bin
 fi
 
 if ! command -v node >/dev/null 2>&1; then
