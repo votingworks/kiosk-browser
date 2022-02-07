@@ -11,6 +11,10 @@ fi
 # Install native package build dependencies.
 $SUDO apt-get install -y build-essential libudev-dev unzip git python pmount cups-client
 
+if [[ $DISTRO == "Debian" ]]; then
+	sudo apt install -y libgtk-3-0  libnotify4 libxssl libxtst6 xdg-utils libatspi2.0-0 kde-cli-tools kde-runtime trash-cli libglib2.0-bin gvfs-bin
+fi
+
 if ! command -v node >/dev/null 2>&1; then
   echo "node not found. please install it before continuing: https://nodejs.org/en/" >&2
   exit 127
