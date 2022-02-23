@@ -1,6 +1,8 @@
-import exec, { ExecError } from '../exec'
+import exec from '../exec'
 import { debug } from '.'
 import assert from 'assert'
+import tmp from 'tmp-promise'
+import fs from 'fs'
 
 /**
  * IPP printer-state identifies the basic status of a printer.
@@ -22,7 +24,8 @@ export enum IppPrinterState {
  * suffix of either: "-report", "-warning", or "-error" (e.g. "media-jam-error").
  */
 export const IppPrinterStateReasonMessage = {
-  other: 'An unknown error occurred.',
+  other: 'An unknown error occurred.', // Custom reason added by us
+  'sleep-mode': 'The printer is in sleep mode.', // Custom reason added by us
   none: 'The printer is ready.',
   'media-needed': 'The printer is out of paper.',
   'media-jam': 'The printer has a paper jam.',
@@ -85,7 +88,7 @@ export interface IppMarkerInfo {
  * A collection of status attributes we can get from a printer via IPP.
  */
 export interface PrinterIppAttributes {
-  state?: IppPrinterState
+  state: IppPrinterState | null
   stateReasons: IppPrinterStateReason[]
   markerInfos: IppMarkerInfo[]
 }
@@ -99,6 +102,7 @@ const ippAttributesToQuery = [
   'marker-low-levels',
   'marker-high-levels',
   'marker-levels',
+  'printer-alert-description',
 ]
 const ippQuery = `{
   OPERATION Get-Printer-Attributes
@@ -115,78 +119,76 @@ const ippQuery = `{
 export async function getPrinterIppAttributes(
   printerIppUri: string,
 ): Promise<PrinterIppAttributes> {
-  // Tricky business: ipptool takes a query in file form, so we feed the query
-  // string to stdin, and then pass /dev/stdin as the "file". Since node child
-  // process file descriptors are sockets, not pipes, we have to use `sh` to run
-  // the command in order to get /dev/stdin to work.
-  // See https://github.com/nodejs/node-v0.x-archive/issues/3530#issuecomment-6561239
-  const ipptoolCommand = `ipptool -tv ${printerIppUri} /dev/stdin`
-  debug(
-    'getting printer IPP attributes from ipptool, command=%o, query=%O',
-    ipptoolCommand,
-    ippQuery,
-  )
-  // TODO add a timeout and maybe retry
+  // ipptool takes a file to specify the query to make, so we write a temporary
+  // file with the query text
+  const queryFile = await tmp.file()
+  await fs.promises.writeFile(queryFile.path, ippQuery)
+
+  const ipptoolArgs = ['-T', '1', '-tv', printerIppUri, queryFile.path]
+  debug('getting printer IPP attributes from ipptool, args=%o', ipptoolArgs)
   let ipptoolResult: { stdout: string; stderr: string }
   try {
-    ipptoolResult = await exec(
-      `sh`,
-      ['-c', `cat | ${ipptoolCommand}`],
-      ippQuery,
-    )
+    ipptoolResult = await exec(`ipptool`, ipptoolArgs)
     debug('ipptool stdout:\n%s', ipptoolResult.stdout)
     debug('ipptool stderr:\n%s', ipptoolResult.stderr)
-  } catch (error) {
-    if (
-      'stderr' in error &&
-      error.stderr.includes(
-        'IPP request failed with status successful-ok ((null))',
-      )
-    ) {
-      debug('ipptool returned null')
-      return { state: undefined, stateReasons: [], markerInfos: [] }
+
+    const attributes = parseIpptoolOutput(ipptoolResult.stdout)
+    debug('parsed ipptool attributes: %O', attributes)
+
+    const state = attributes['printer-state'] as IppPrinterState
+    let stateReasons = wrapWithArray(
+      attributes['printer-state-reasons'],
+    ) as IppPrinterStateReason[]
+
+    // On HP printers, printer-alert-description contains a list of the last few
+    // status messages shown on the printer screen. When sleep mode is on, this
+    // is the only place it shows up, and the printer appears idle (any errors -
+    // e.g. "cover open" - are not returned in printer-state-reasons).
+    const lastAlert = wrapWithArray(
+      attributes['printer-alert-description'],
+    ).pop()
+    const isSleepModeOn = lastAlert == 'Sleep Mode'
+    if (isSleepModeOn && state == 'idle') {
+      stateReasons = ['sleep-mode']
     }
+
+    const markerInfos = zip(
+      wrapWithArray(attributes['marker-names']),
+      wrapWithArray(attributes['marker-colors']),
+      wrapWithArray(attributes['marker-types']),
+      wrapWithArray(attributes['marker-low-levels']),
+      wrapWithArray(attributes['marker-high-levels']),
+      wrapWithArray(attributes['marker-levels']),
+    ).map(
+      ([name, color, type, lowLevel, highLevel, level]) =>
+        ({
+          name,
+          color,
+          type,
+          lowLevel,
+          highLevel,
+          level,
+        } as IppMarkerInfo),
+    )
+
+    return { state, stateReasons, markerInfos }
+  } catch (error) {
+    debug('ipptool error: %o', error)
     throw error
+  } finally {
+    queryFile.cleanup()
   }
-
-  const attributes = parseIpptoolOutput(ipptoolResult.stdout)
-
-  const state = attributes['printer-state'] as IppPrinterState
-  const stateReasons = wrapWithArray(
-    attributes['printer-state-reasons'],
-  ) as IppPrinterStateReason[]
-
-  const markerInfos = zip(
-    wrapWithArray(attributes['marker-names']),
-    wrapWithArray(attributes['marker-colors']),
-    wrapWithArray(attributes['marker-types']),
-    wrapWithArray(attributes['marker-low-levels']),
-    wrapWithArray(attributes['marker-high-levels']),
-    wrapWithArray(attributes['marker-levels']),
-  ).map(
-    ([name, color, type, lowLevel, highLevel, level]) =>
-      ({
-        name,
-        color,
-        type,
-        lowLevel,
-        highLevel,
-        level,
-      } as IppMarkerInfo),
-  )
-
-  return { state, stateReasons, markerInfos }
 }
 
 /**
  * Parse the output of ipptool. It looks like this:
- *  "/dev/stdin":
+ *  query-filename:
  *      Get-Printer-Attributes:
  *          attributes-charset (charset) = utf-8
  *          attributes-natural-language (naturalLanguage) = en
  *          printer-uri (uri) = ipp://localhost:60000/ipp/print
  *          requested-attributes (1setOf keyword) = printer-state,printer-state-reasons
- *      /dev/stdin                                                           [PASS]
+ *      query-filename                                                           [PASS]
  *          RECEIVED: 183 bytes in response
  *          status-code = successful-ok (successful-ok)
  *          attributes-charset (charset) = utf-8
@@ -198,22 +200,16 @@ type IppAttributes = {
   [attribute: string]: string | string[] | number | number[]
 }
 function parseIpptoolOutput(output: string): IppAttributes {
-  debug('parsing ipptool output: %s', output)
   let lines = output.split('\n')
-  assert(lines.shift() === '"/dev/stdin":')
+  assert(lines.length > 0, 'ipptool output is empty')
   lines = lines.slice(
-    lines.findIndex(line => line.trim().startsWith('/dev/stdin')) + 1,
-  )
-  assert(
-    lines
-      .shift()
-      ?.trim()
-      .startsWith('RECEIVED:'),
+    lines.findIndex(line => line.trim().startsWith('RECEIVED')) + 1,
   )
   const statusLine = lines.shift()?.trim()
-  if (statusLine !== 'status-code = successful-ok (successful-ok)') {
-    throw Error(`Unsuccessful ipptool response: ${statusLine}`)
-  }
+  assert(
+    statusLine === 'status-code = successful-ok (successful-ok)',
+    `Unsuccessful ipptool response: ${statusLine}`,
+  )
   assert(lines.shift()?.trim() === 'attributes-charset (charset) = utf-8')
   assert(
     lines.shift()?.trim() ===
@@ -234,12 +230,14 @@ function parseIpptoolOutput(output: string): IppAttributes {
           case 'keyword':
           case 'enum':
           case 'nameWithoutLanguage':
+          case 'textWithoutLanguage':
             return [attribute, value]
           case 'integer':
             return [attribute, parseInt(value)]
           case '1setOf keyword':
           case '1setOf enum':
           case '1setOf nameWithoutLanguage':
+          case '1setOf textWithoutLanguage':
             return [attribute, value.split(',')]
           case '1setOf integer':
             return [attribute, value.split(',').map(parseInt)]
@@ -248,7 +246,6 @@ function parseIpptoolOutput(output: string): IppAttributes {
         }
       }),
   )
-  debug('parsed ipptool attributes: %O', attributes)
   return attributes
 }
 

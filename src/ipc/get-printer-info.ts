@@ -6,9 +6,11 @@ import {
   getPrinterIppAttributes,
   PrinterIppAttributes,
 } from '../utils/printing/getPrinterIppAttributes'
+import { retry } from '../utils/retry'
 
 export const channel = 'get-printer-info'
 export const PRINTER_CONNECTION_NUM_TRIES = 3
+export const IPP_ATTRIBUTES_NUM_TRIES = 3
 
 /**
  * A collection of info about a printer.
@@ -27,44 +29,51 @@ export interface PrinterInfo
 export async function getPrinterInfo(
   printers: Electron.PrinterInfo[],
 ): Promise<PrinterInfo[]> {
-  let results: PrinterInfo[] = []
+  const connectedPrinters = await retry(
+    {
+      tries: PRINTER_CONNECTION_NUM_TRIES,
+      retryCondition: connectedPrinters => connectedPrinters.length === 0,
+    },
+    async () => {
+      const connectedDeviceURIs = await getConnectedDeviceURIs(
+        printerSchemes(printers),
+      )
+      return printers.filter(printer => {
+        const deviceURI = printer.options?.['device-uri']
+        return deviceURI ? connectedDeviceURIs.has(deviceURI) : false
+      })
+    },
+  )
 
-  for (
-    let attempt = 0;
-    attempt < PRINTER_CONNECTION_NUM_TRIES && results.length === 0;
-    attempt += 1
-  ) {
-    results = []
-    const connectedDeviceURIs = await getConnectedDeviceURIs(
-      printerSchemes(printers),
-    )
-
+  let ippAttributes: PrinterIppAttributes = {
+    state: null,
+    stateReasons: [],
+    markerInfos: [],
+  }
+  if (connectedPrinters.length > 0) {
     // CUPS makes an IPP server available for each USB printer, starting with port
-    // 6000 and incrementing for each printer. For now, we just assume that only
+    // 60000 and incrementing for each printer. For now, we just assume that only
     // one printer is connected and use this URI to query its IPP attributes.
     // https://wiki.debian.org/CUPSDriverlessPrinting#IPP-over-USB:_Investigation_and_Troubleshooting
-    const ippAttributes = await getPrinterIppAttributes(
-      'ipp://localhost:60000/ipp/print',
-    )
-
-    debug('checking known printers against connected printers')
-    for (const printer of printers) {
-      const deviceURI = printer.options?.['device-uri']
-      const connected = deviceURI ? connectedDeviceURIs.has(deviceURI) : false
-
-      debug('known printer has connected=%o: %O', connected, printer)
-      results.push({
-        name: printer.name,
-        isDefault: printer.isDefault,
-        options: printer.options,
-        description: printer.description,
-        ...ippAttributes,
-        connected,
-      })
+    try {
+      ippAttributes = await retry({ tries: IPP_ATTRIBUTES_NUM_TRIES }, () =>
+        getPrinterIppAttributes('ipp://localhost:60000/ipp/print'),
+      )
+    } catch (error) {
+      debug('failed to get IPP attributes: %o', error)
     }
   }
 
-  return results
+  return printers.map(printer => ({
+    name: printer.name,
+    isDefault: printer.isDefault,
+    options: printer.options,
+    description: printer.description,
+    ...ippAttributes,
+    connected: connectedPrinters.some(
+      connectedPrinter => connectedPrinter.name === printer.name,
+    ),
+  }))
 }
 
 /**
