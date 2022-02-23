@@ -10,8 +10,13 @@ import {
 export const channel = 'get-printer-info'
 export const PRINTER_CONNECTION_NUM_TRIES = 3
 
+/**
+ * A collection of info about a printer.
+ * Note that Electron's status is not accurate - its always 3 (idle) even when the printer is stopped.
+ * Instead, we get an accurate status via IPP.
+ */
 export interface PrinterInfo
-  extends Electron.PrinterInfo,
+  extends Omit<Electron.PrinterInfo, 'status'>,
     PrinterIppAttributes {
   connected: boolean
 }
@@ -49,7 +54,10 @@ export async function getPrinterInfo(
 
       debug('known printer has connected=%o: %O', connected, printer)
       results.push({
-        ...printer,
+        name: printer.name,
+        isDefault: printer.isDefault,
+        options: printer.options,
+        description: printer.description,
         ...ippAttributes,
         connected,
       })
