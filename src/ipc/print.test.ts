@@ -1,5 +1,5 @@
 import { WebContents } from 'electron'
-import fakePrinter from '../../test/fakePrinter'
+import { fakeElectronPrinter } from '../../test/fakePrinter'
 import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
 import exec from '../utils/exec'
@@ -54,7 +54,7 @@ test('uses the preferred printer if none is provided', async () => {
   register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
-    fakePrinter({ name: 'main printer' }),
+    fakeElectronPrinter({ name: 'main printer' }),
   )
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
@@ -95,7 +95,7 @@ test('prints a specified number of copies', async () => {
   register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
-    fakePrinter({ name: 'main printer' }),
+    fakeElectronPrinter({ name: 'main printer' }),
   )
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
@@ -121,7 +121,7 @@ test('does not allow fractional copies', async () => {
   register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
-    fakePrinter({ name: 'main printer' }),
+    fakeElectronPrinter({ name: 'main printer' }),
   )
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
@@ -144,7 +144,7 @@ test('allows specifying one-sided duplex', async () => {
   register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
-    fakePrinter({ name: 'main printer' }),
+    fakeElectronPrinter({ name: 'main printer' }),
   )
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })
@@ -168,7 +168,7 @@ test('allows specifying two-sided-short-edge duplex', async () => {
   register(ipcMain)
 
   getPreferredPrinterMock.mockReturnValueOnce(
-    fakePrinter({ name: 'main printer' }),
+    fakeElectronPrinter({ name: 'main printer' }),
   )
 
   execMock.mockResolvedValueOnce({ stdout: '', stderr: '' })

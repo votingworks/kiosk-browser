@@ -1,5 +1,5 @@
 import printerSchemes from './printerSchemes'
-import fakePrinter from '../../../test/fakePrinter'
+import { fakeElectronPrinter } from '../../../test/fakePrinter'
 
 describe('printerSchemes', () => {
   it('returns an empty set given no printers', () => {
@@ -9,11 +9,11 @@ describe('printerSchemes', () => {
   it('gets schemes for a list of printers', () => {
     expect(
       printerSchemes([
-        fakePrinter(),
-        fakePrinter({
+        fakeElectronPrinter(),
+        fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
-        fakePrinter({
+        fakeElectronPrinter({
           options: { 'device-uri': 'ippusb://HP/Color%20LaserJet?serial=1234' },
         }),
       ]),

@@ -93,7 +93,7 @@ export interface PrinterIppAttributes {
   markerInfos: IppMarkerInfo[]
 }
 
-const ippAttributesToQuery = [
+export const ippAttributesToQuery = [
   'printer-state',
   'printer-state-reasons',
   'marker-names',
@@ -103,7 +103,7 @@ const ippAttributesToQuery = [
   'marker-high-levels',
   'marker-levels',
   'printer-alert-description',
-]
+] as const
 const ippQuery = `{
   OPERATION Get-Printer-Attributes
   GROUP operation-attributes-tag
@@ -147,8 +147,7 @@ export async function getPrinterIppAttributes(
     const lastAlert = wrapWithArray(
       attributes['printer-alert-description'],
     ).pop()
-    const isSleepModeOn = lastAlert == 'Sleep Mode'
-    if (isSleepModeOn && state == 'idle') {
+    if (lastAlert == 'Sleep Mode' && state == 'idle') {
       stateReasons = ['sleep-mode']
     }
 

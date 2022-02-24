@@ -29,28 +29,25 @@ export interface PrinterInfo
 export async function getPrinterInfo(
   printers: Electron.PrinterInfo[],
 ): Promise<PrinterInfo[]> {
-  const connectedPrinters = await retry(
+  const printersWithConnectionStatus = await retry(
     {
       tries: PRINTER_CONNECTION_NUM_TRIES,
-      retryCondition: connectedPrinters => connectedPrinters.length === 0,
+      retryCondition: result => !result.some(printer => printer.connected),
     },
     async () => {
       const connectedDeviceURIs = await getConnectedDeviceURIs(
         printerSchemes(printers),
       )
-      return printers.filter(printer => {
+      return printers.map(printer => {
         const deviceURI = printer.options?.['device-uri']
-        return deviceURI ? connectedDeviceURIs.has(deviceURI) : false
+        const connected = deviceURI ? connectedDeviceURIs.has(deviceURI) : false
+        return { ...printer, connected }
       })
     },
   )
 
-  let ippAttributes: PrinterIppAttributes = {
-    state: null,
-    stateReasons: [],
-    markerInfos: [],
-  }
-  if (connectedPrinters.length > 0) {
+  let ippAttributes: PrinterIppAttributes | undefined
+  if (printersWithConnectionStatus.some(printer => printer.connected)) {
     // CUPS makes an IPP server available for each USB printer, starting with port
     // 60000 and incrementing for each printer. For now, we just assume that only
     // one printer is connected and use this URI to query its IPP attributes.
@@ -64,16 +61,20 @@ export async function getPrinterInfo(
     }
   }
 
-  return printers.map(printer => ({
-    name: printer.name,
-    isDefault: printer.isDefault,
-    options: printer.options,
-    description: printer.description,
-    ...ippAttributes,
-    connected: connectedPrinters.some(
-      connectedPrinter => connectedPrinter.name === printer.name,
-    ),
-  }))
+  return printersWithConnectionStatus.map(printer => {
+    const attributes =
+      printer.connected && ippAttributes
+        ? ippAttributes
+        : { state: null, stateReasons: [], markerInfos: [] }
+    return {
+      name: printer.name,
+      isDefault: printer.isDefault,
+      options: printer.options,
+      description: printer.description,
+      ...attributes,
+      connected: printer.connected,
+    }
+  })
 }
 
 /**

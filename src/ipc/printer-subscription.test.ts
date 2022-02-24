@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs'
 import { Device } from 'usb-detection'
-import fakePrinter from '../../test/fakePrinter'
+import { fakePrinterInfo, fakeElectronPrinter } from '../../test/fakePrinter'
 import { fakeIpc, fakeWebContents } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
 import deferred from '../utils/deferred'
@@ -17,10 +17,11 @@ const getPrinterInfoMock = mockOf(getPrinterInfo).mockRejectedValue(
 test('printer observer triggers on devices change', async () => {
   const onDevicesChange = new Subject<void>()
   const onPrinterConfigure = new Subject<void>()
-  const printer = { ...fakePrinter(), connected: true }
+  const electronPrinter = fakeElectronPrinter()
+  const printer = fakePrinterInfo(electronPrinter)
   const callback = jest.fn()
   buildPrinterObserver(
-    () => [printer],
+    () => [electronPrinter],
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback)
@@ -37,10 +38,11 @@ test('printer observer triggers on devices change', async () => {
 test('printer observer triggers on printer configure', async () => {
   const onDevicesChange = new Subject<void>()
   const onPrinterConfigure = new Subject<void>()
-  const printer = { ...fakePrinter(), connected: true }
+  const electronPrinter = fakeElectronPrinter()
+  const printer = fakePrinterInfo(electronPrinter)
   const callback = jest.fn()
   buildPrinterObserver(
-    () => [printer],
+    () => [electronPrinter],
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback)
@@ -57,10 +59,11 @@ test('printer observer triggers on printer configure', async () => {
 test('printer observer triggers multiple times', async () => {
   const onDevicesChange = new Subject<void>()
   const onPrinterConfigure = new Subject<void>()
-  const printer = { ...fakePrinter(), connected: true }
+  const electronPrinter = fakeElectronPrinter()
+  const printer = fakePrinterInfo(electronPrinter)
   const callback = jest.fn()
   buildPrinterObserver(
-    () => [printer],
+    () => [electronPrinter],
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback)
@@ -92,7 +95,7 @@ test('registering a subscription handler hooks up to both USB devices and autoco
     url: new URL('about:blank'),
     originFilePermissions: [],
   }
-  const printer = { ...fakePrinter(), connected: true }
+  const printer = fakePrinterInfo()
 
   const { resolve, promise } = deferred<void>()
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options })
@@ -123,7 +126,7 @@ test('unsubscribe', async () => {
     url: new URL('about:blank'),
     originFilePermissions: [],
   }
-  const printer = { ...fakePrinter(), connected: true }
+  const printer = fakePrinterInfo()
 
   const { resolve, promise } = deferred<void>()
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options })
@@ -154,7 +157,7 @@ test('unsubscribe on webContents teardown', async () => {
     url: new URL('about:blank'),
     originFilePermissions: [],
   }
-  const printer = { ...fakePrinter(), connected: true }
+  const printer = fakePrinterInfo()
 
   const { resolve, promise } = deferred<void>()
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options })
