@@ -17,6 +17,15 @@ export function fakeElectronPrinter(
   }
 }
 
+export const fakeMarkerInfo = {
+  color: '#000000',
+  highLevel: 100,
+  level: 100,
+  lowLevel: 2,
+  name: 'black cartridge',
+  type: 'toner-cartridge',
+}
+
 export function fakePrinterInfo(
   printer: Partial<Electron.PrinterInfo> = {},
 ): PrinterInfo {
@@ -28,16 +37,7 @@ export function fakePrinterInfo(
     state: IppPrinterState.Idle,
     connected: true,
     stateReasons: ['none'],
-    markerInfos: [
-      {
-        color: '#000000',
-        highLevel: 100,
-        level: 100,
-        lowLevel: 2,
-        name: 'black cartridge',
-        type: 'toner-cartridge',
-      },
-    ],
+    markerInfos: [fakeMarkerInfo],
   }
 }
 
@@ -57,22 +57,20 @@ export function fakeIpptoolStdout(
         status-code = successful-ok (successful-ok)
         attributes-charset (charset) = utf-8
         attributes-natural-language (naturalLanguage) = en
-        printer-state (enum) = ${attributes['printer-state'] ?? 'idle'}
-        printer-state-reasons (keyword) = ${attributes[
-          'printer-state-reasons'
-        ] ?? 'none'}
-        printer-alert-description (1setOf textWithoutLanguage) = ${attributes[
-          'printer-alert-description'
-        ] ?? ',Sleep Mode,Ready'}
-        marker-names (nameWithoutLanguage) = ${attributes['marker-names'] ??
-          'black cartridge'}
-        marker-colors (nameWithoutLanguage) = ${attributes['marker-colors'] ??
-          '#000000'}
-        marker-types (keyword) = ${attributes['marker-types'] ??
-          'toner-cartridge'}
-        marker-low-levels (integer) = ${attributes['marker-low-levels'] ?? '2'}
-        marker-high-levels (integer) = ${attributes['marker-high-levels'] ??
-          '100'}
-        marker-levels (integer) = ${attributes['marker-levels'] ?? '100'}
+        printer-state ${attributes['printer-state'] ?? '(enum) = idle'}
+        printer-state-reasons ${attributes['printer-state-reasons'] ??
+          '(keyword) = none'}
+        printer-alert-description ${attributes['printer-alert-description'] ??
+          '(1setOf textWithoutLanguage) = ,Sleep Mode,Ready'}
+        marker-names ${attributes['marker-names'] ??
+          '(nameWithoutLanguage) = black cartridge'}
+        marker-colors ${attributes['marker-colors'] ??
+          '(nameWithoutLanguage) = #000000'}
+        marker-types ${attributes['marker-types'] ??
+          '(keyword) = toner-cartridge'}
+        marker-low-levels ${attributes['marker-low-levels'] ?? '(integer) = 2'}
+        marker-high-levels ${attributes['marker-high-levels'] ??
+          '(integer) = 100'}
+        marker-levels ${attributes['marker-levels'] ?? '(integer) = 100'}
 `
 }

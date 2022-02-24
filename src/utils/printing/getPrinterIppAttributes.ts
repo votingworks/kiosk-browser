@@ -215,11 +215,12 @@ function parseIpptoolOutput(output: string): IppAttributes {
       'attributes-natural-language (naturalLanguage) = en',
   )
 
-  const lineRegex = /^\s*(.+) \((.+)\) = (.*)$/
+  const lineRegex = /^(.+) \((.+)\) = (.+)$/
   const attributes = Object.fromEntries(
     lines
       .filter(line => line !== '')
       .map(line => {
+        line = line.trim()
         const matches = lineRegex.exec(line)
         if (!matches) {
           throw Error(`Unable to parse ipptool output line: ${line}`)
@@ -232,14 +233,17 @@ function parseIpptoolOutput(output: string): IppAttributes {
           case 'textWithoutLanguage':
             return [attribute, value]
           case 'integer':
-            return [attribute, parseInt(value)]
+            return [attribute, parseInt(value, 10)]
           case '1setOf keyword':
           case '1setOf enum':
           case '1setOf nameWithoutLanguage':
           case '1setOf textWithoutLanguage':
             return [attribute, value.split(',')]
           case '1setOf integer':
-            return [attribute, value.split(',').map(parseInt)]
+            return [
+              attribute,
+              value.split(',').map(number => parseInt(number, 10)),
+            ]
           default:
             throw Error(`Unrecognized ipptool attribute type: ${type}`)
         }

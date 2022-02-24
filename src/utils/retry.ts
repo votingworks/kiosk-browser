@@ -16,16 +16,22 @@ export async function retry<T>(
   action: () => Promise<T>,
 ): Promise<T> {
   const { tries, retryCondition } = options
-  try {
-    const result = await action()
-    if (tries > 0 && retryCondition && retryCondition(result)) {
-      return retry({ ...options, tries: tries - 1 }, action)
-    }
-    return result
-  } catch (error) {
-    if (tries > 0) {
-      return retry({ ...options, tries: tries - 1 }, action)
-    }
-    throw error
+  if (tries <= 1) {
+    throw Error('retry requires at least 2 tries')
   }
+  async function retryHelper(triesLeft: number): Promise<T> {
+    try {
+      const result = await action()
+      if (triesLeft > 0 && retryCondition && retryCondition(result)) {
+        return retryHelper(triesLeft - 1)
+      }
+      return result
+    } catch (error) {
+      if (triesLeft > 0) {
+        return retryHelper(triesLeft - 1)
+      }
+      throw error
+    }
+  }
+  return await retryHelper(tries - 1)
 }
