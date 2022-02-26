@@ -25,6 +25,7 @@ import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive'
 import registerTotpGetHandler from './ipc/totp-get'
 import registerLogHandler from './ipc/log'
 import registerSignHandler from './ipc/sign'
+import registerRebootHandler from './ipc/reboot'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
@@ -121,6 +122,7 @@ async function createWindow(): Promise<void> {
     registerTotpGetHandler,
     registerLogHandler,
     registerSignHandler,
+    registerRebootHandler,
   ]
 
   const handlerCleanups = handlers
