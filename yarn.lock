@@ -6364,9 +6364,9 @@ url-parse-lax@^3.0.0:
   dependencies:
     prepend-http "^2.0.0"
 
-usb-detection@antelle/node-usb-detection:
+usb-detection@votingworks/node-usb-detection:
   version "4.11.0"
-  resolved "https://codeload.github.com/antelle/node-usb-detection/tar.gz/0ae0d306b02c3a37404d5ff25a424b29c3899727"
+  resolved "https://codeload.github.com/votingworks/node-usb-detection/tar.gz/0ae0d306b02c3a37404d5ff25a424b29c3899727"
   dependencies:
     bindings "^1.3.0"
     eventemitter2 "^5.0.1"
