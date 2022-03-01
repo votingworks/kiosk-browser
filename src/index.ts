@@ -26,6 +26,7 @@ import registerTotpGetHandler from './ipc/totp-get'
 import registerLogHandler from './ipc/log'
 import registerSignHandler from './ipc/sign'
 import registerRebootHandler from './ipc/reboot'
+import registerPrepareBootUsb from './ipc/prepare-boot-usb'
 import parseOptions, { Options, printHelp } from './utils/options'
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter'
 import { getMainScreen } from './utils/screen'
@@ -123,6 +124,7 @@ async function createWindow(): Promise<void> {
     registerLogHandler,
     registerSignHandler,
     registerRebootHandler,
+    registerPrepareBootUsb,
   ]
 
   const handlerCleanups = handlers

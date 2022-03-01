@@ -36,6 +36,7 @@ import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get'
 import { channel as signChannel, SignParams } from './ipc/sign'
 import { channel as logChannel } from './ipc/log'
 import { channel as rebootChannel } from './ipc/reboot'
+import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable'
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
@@ -201,6 +202,11 @@ class Kiosk implements KioskBrowser.Kiosk {
   public async sign(params: SignParams): Promise<string> {
     debug('forwarding `sign` to main process')
     return await ipcRenderer.invoke(signChannel, params)
+  }
+
+  public async prepareToBootFromUsb(): Promise<boolean> {
+    debug('forwarding `prepareToBootFromUsb` to main process')
+    return await ipcRenderer.invoke(prepareBootUsbChannel)
   }
 
   public async log(message: string): Promise<void> {
