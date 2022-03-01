@@ -35,6 +35,7 @@ import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive'
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get'
 import { channel as signChannel, SignParams } from './ipc/sign'
 import { channel as logChannel } from './ipc/log'
+import { channel as rebootChannel } from './ipc/reboot'
 import buildDevicesObservable from './utils/buildDevicesObservable'
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable'
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter'
@@ -233,6 +234,11 @@ class Kiosk implements KioskBrowser.Kiosk {
   public quit(): void {
     debug('forwarding `quit` to main process')
     ipcRenderer.invoke(quitChannel)
+  }
+
+  public async reboot(): Promise<void> {
+    debug('forwarding `reboot` to the main process')
+    return await ipcRenderer.invoke(rebootChannel)
   }
 }
 
