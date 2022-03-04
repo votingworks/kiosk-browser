@@ -7,6 +7,10 @@ const execMock = mockOf(exec)
 
 jest.mock('../utils/exec')
 
+beforeEach(() => {
+  execMock.mockClear()
+})
+
 test('prepare-boot-usb returns false when no bootable usbs', async () => {
   // Register our handler.
   const { ipcMain, ipcRenderer } = fakeIpc()
@@ -112,7 +116,7 @@ Boot2003* EFI Network	RC
   })
 
   // Is the handler wired up right?
-  const result = await ipcRenderer.invoke(channel, 'sdb1')
+  const result = await ipcRenderer.invoke(channel)
   expect(result).toBe(true)
   expect(execMock).toBeCalledTimes(3)
   expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
@@ -127,5 +131,51 @@ Boot2003* EFI Network	RC
     '/bin/efibootmgr',
     '-n',
     '0001',
+  ])
+})
+
+test('prepare-boot-usb returns true when there is a fallback Boot Menu option', async () => {
+  // Register our handler.
+  const { ipcMain, ipcRenderer } = fakeIpc()
+  register(ipcMain)
+
+  // Things should be registered as expected.
+  execMock.mockResolvedValueOnce({
+    stdout: `BootCurrent: 0000
+Timeout: 0 seconds
+BootOrder: 0000
+Boot0000* ubuntu	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(somefile.efi)
+Boot2001* EFI USB Device	RC
+Boot2002* EFI DVD/CDROM	RC
+Boot2003* EFI Network	RC
+Boot200E Boot Menu	RC
+       `,
+    stderr: '',
+  })
+  execMock.mockResolvedValueOnce({
+    stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
+    stderr: '',
+  })
+  execMock.mockResolvedValueOnce({
+    stdout: '',
+    stderr: '',
+  })
+
+  // Is the handler wired up right?
+  const result = await ipcRenderer.invoke(channel)
+  expect(result).toBe(true)
+  expect(execMock).toBeCalledTimes(3)
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
+  expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
+    '-o',
+    'partuuid,name',
+    '-J',
+    '-l',
+  ])
+  expect(execMock).toHaveBeenNthCalledWith(3, 'sudo', [
+    '-n',
+    '/bin/efibootmgr',
+    '-n',
+    '200E',
   ])
 })
