@@ -61,6 +61,12 @@ If you're working on a bug fix or feature for `kiosk-browser`, here's how to bui
 1. Install native package dependencies with `make install`.
 1. Run with `yarn start`. Changes will not automatically be picked up, so just Ctrl-C the `yarn start` and run it again.
 
+Kiosk browser has a number of command line arguments if you want the permissions and print config to mimic production but have access to devtools you probably want to run `kiosk-browser` locally with the following command:
+
+```sh
+DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG=../vxsuite-complete-system/printing/printer-autoconfigure.json yarn start
+```
+
 ## License
 
 GPL-3.0
