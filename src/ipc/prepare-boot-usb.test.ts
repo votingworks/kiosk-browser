@@ -98,8 +98,8 @@ test('prepare-boot-usb returns true when expected and sets correct boot order', 
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
-Boot0000* ubuntu	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(somefile.efi)
-Boot0001* Linpus Lite	HD(1,MDR,0x314d08f,0x800,0x100000)/File(\\EFI\\boot\\grubx64.efi)RC
+Boot0000* ubuntu 	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(somefile.efi)
+Boot0001* Linpus Lite   	HD(1,MDR,0x314d08f,0x800,0x100000)/File(\\EFI\\boot\\grubx64.efi)RC
 Boot2001* EFI USB Device	RC
 Boot2002* EFI DVD/CDROM	RC
 Boot2003* EFI Network	RC
@@ -148,7 +148,7 @@ Boot0000* ubuntu	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/F
 Boot2001* EFI USB Device	RC
 Boot2002* EFI DVD/CDROM	RC
 Boot2003* EFI Network	RC
-Boot200E Boot Menu	RC
+Boot200E  Boot Menu	RC
        `,
     stderr: '',
   })

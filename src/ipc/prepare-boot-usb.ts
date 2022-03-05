@@ -5,7 +5,7 @@ import exec from '../utils/exec'
 export const channel = 'prepare-boot-usb'
 const debug = makeDebug('kiosk-browser:prepare-boot-usb')
 
-const BootableOptionPattern = /^Boot([0-9a-fA-F]+)\*?\s(.+)\s(.+)$/
+const BootableOptionPattern = /^Boot([0-9a-fA-F]+)\*?\s+(.+)\s+(.+)$/
 const HardDriveDetailsPattern = /^HD\(.+,.+,(.+),.+,.+\).+$/
 const CurrentBootPattern = /^BootCurrent:\s*(.+)$/
 const BOOT_MENU_OPTION = 'Boot Menu'
