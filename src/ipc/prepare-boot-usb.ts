@@ -1,14 +1,14 @@
 import makeDebug from 'debug'
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
+import { IpcMain } from 'electron'
 import exec from '../utils/exec'
-import { join } from 'path'
 
 export const channel = 'prepare-boot-usb'
 const debug = makeDebug('kiosk-browser:prepare-boot-usb')
 
-const BootableOptionPattern = /^Boot([0-9]+)\*\s(.+)\s(.+)$/
+const BootableOptionPattern = /^Boot([0-9a-fA-F]+)\*?\s+(.+)\s+(.+)$/
 const HardDriveDetailsPattern = /^HD\(.+,.+,(.+),.+,.+\).+$/
 const CurrentBootPattern = /^BootCurrent:\s*(.+)$/
+const BOOT_MENU_OPTION = 'Boot Menu'
 
 export interface BootOption {
   bootNumber: string // The string representing the boot number i.e. `0001`
@@ -96,6 +96,11 @@ async function prepareToBootFromUsb(): Promise<boolean> {
         bootableUsbOption = matchingBootOption
       }
     }
+  }
+  if (bootableUsbOption === undefined) {
+    bootableUsbOption = bootOptions.find(
+      bootOption => bootOption.bootLabel === BOOT_MENU_OPTION,
+    )
   }
   if (bootableUsbOption === undefined) {
     debug('No bootable usb device was found.')
