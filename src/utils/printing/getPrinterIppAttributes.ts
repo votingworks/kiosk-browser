@@ -16,56 +16,13 @@ export enum IppPrinterState {
 
 /**
  * IPP printer-state-reasons explain what's going on with a printer in detail.
- * Here, we map them to a human-readable explanation, both for user-friendliness
- * and developer documentation.
  * Spec: https://datatracker.ietf.org/doc/html/rfc2911#section-4.4.12
+ * There are more possible reasons than covered in the spec, so we just type as string.
  *
  * Note that the actual printer-state-reasons sent by the printer may have a
  * suffix of either: "-report", "-warning", or "-error" (e.g. "media-jam-error").
  */
-export const IppPrinterStateReasonMessage = {
-  other: 'An unknown error occurred.', // Custom reason added by us
-  'sleep-mode': 'The printer is in sleep mode.', // Custom reason added by us
-  none: 'The printer is ready.',
-  'media-needed': 'The printer is out of paper.',
-  'media-jam': 'The printer has a paper jam.',
-  'moving-to-paused': 'The printer is pausing.',
-  paused: 'The printer is paused',
-  shutdown: 'The printer is turned off or disconnected.',
-  'timed-out': 'The printer is not responding.',
-  stopping: 'The printer is stopping.',
-  'stopped-partly': 'The printer is stopped.',
-  'toner-low': 'The printer is low on toner.',
-  'toner-empty': 'The printer is out of toner.',
-  'spool-area-full': 'The spool area is full.',
-  'cover-open': "The printer's cover is open.",
-  'interlock-open': "The printer's interlock device is open.",
-  'door-open': "The printer's door is open.",
-  'input-tray-missing': "The printer's input tray is missing.",
-  'media-low': 'The printer is low on paper.',
-  'media-empty': 'The printer is out of paper.',
-  'output-tray-missing': "The printer's output tray is missing.",
-  'output-area-almost-full': "The printer's output tray is almost full.",
-  'output-area-full': "The printer's output tray is full.",
-  'marker-supply-low': 'The printer is low on ink.',
-  'marker-supply-empty': 'The printer is out of ink.',
-  'marker-waste-almost-full':
-    "The printer's ink waste receptacle is almost full.",
-  'marker-waste-full': "The printer's ink waste receptacle is full.",
-  'fuser-over-temp': "The printer's fuser temperature is above normal.",
-  'fuser-under-temp': "The printer's fuser temperature is below normal.",
-  'opc-near-eol': "The printer's optical photo conductor is near end of life.",
-  'opc-life-over':
-    "The printer's optical photo conductor is no longer functioning.",
-  'developer-low': 'The printer is low on developer.',
-  'developer-empty': 'The printer is out of developer.',
-  'interpreter-resource-unavailable': 'An interpreter resource is unavailable.',
-}
-// IppPrinterStateReason only covers the basic RFC spec reasons - there may be
-// others, so we can't type them all.
-export type IppPrinterStateReason =
-  | keyof typeof IppPrinterStateReasonMessage
-  | string
+export type IppPrinterStateReason = string
 
 /**
  * "Marker" is a general name for ink/toner/etc. CUPS implements a variety of
