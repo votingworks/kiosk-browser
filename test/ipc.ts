@@ -22,6 +22,7 @@ function roundTripData<T extends Input>(data: T): Mapping<T> {
   } else if (Array.isArray(data)) {
     return data.map(roundTripData) as Mapping<T>
   } else if (
+    data !== null &&
     typeof data === 'object' &&
     Object.getPrototypeOf(data) === Object.prototype
   ) {

@@ -1,14 +1,21 @@
 import { WebContents } from 'electron'
-import fakePrinter from '../../test/fakePrinter'
+import {
+  fakeElectronPrinter,
+  fakePrinterInfo,
+  fakeIpptoolStdout,
+} from '../../test/fakePrinter'
 import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
 import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs'
+import { IppPrinterState } from '../utils/printing/getPrinterIppAttributes'
 import register, {
   channel as getPrinterInfoChannel,
   getPrinterInfo,
 } from './get-printer-info'
+import exec from '../utils/exec'
 
 jest.mock('../utils/printing/getConnectedDeviceURIs')
+jest.mock('../utils/exec')
 
 describe('getPrinterInfo', () => {
   it('expands the printer info with connected=true if lpinfo shows the device', async () => {
@@ -18,8 +25,8 @@ describe('getPrinterInfo', () => {
 
     expect(
       await getPrinterInfo([
-        fakePrinter(),
-        fakePrinter({
+        fakeElectronPrinter(),
+        fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
       ]),
@@ -34,7 +41,7 @@ describe('getPrinterInfo', () => {
 
     expect(
       await getPrinterInfo([
-        fakePrinter({
+        fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
       ]),
@@ -49,8 +56,8 @@ describe('getPrinterInfo', () => {
 
     expect(
       await getPrinterInfo([
-        fakePrinter(),
-        fakePrinter({
+        fakeElectronPrinter(),
+        fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
       ]),
@@ -59,13 +66,95 @@ describe('getPrinterInfo', () => {
       expect.objectContaining({ connected: true }),
     ])
   })
+
+  it('adds IPP attributes for connected printers', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
+      new Set(['usb://HP/Color%20LaserJet?serial=1234']),
+    )
+    mockOf(exec).mockResolvedValue({
+      stdout: fakeIpptoolStdout(),
+      stderr: '',
+    })
+
+    expect(
+      await getPrinterInfo([
+        fakeElectronPrinter(),
+        fakeElectronPrinter({
+          name: 'other printer',
+          isDefault: false,
+          options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+        }),
+      ]),
+    ).toEqual([
+      {
+        ...fakePrinterInfo(),
+        connected: false,
+        state: IppPrinterState.Unknown,
+        stateReasons: undefined,
+        markerInfos: undefined,
+      },
+      {
+        ...fakePrinterInfo(),
+        connected: true,
+        name: 'other printer',
+        description: 'other printer',
+        isDefault: false,
+        options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+      },
+    ])
+  })
+
+  it('adds empty IPP attributes if ipptool fails', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
+      new Set(['usb://HP/Color%20LaserJet?serial=1234']),
+    )
+    mockOf(exec).mockRejectedValue(new Error('ipptool failed'))
+
+    expect(
+      await getPrinterInfo([
+        fakeElectronPrinter({
+          options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+        }),
+      ]),
+    ).toEqual([
+      {
+        ...fakePrinterInfo(),
+        options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+        state: IppPrinterState.Unknown,
+        markerInfos: undefined,
+        stateReasons: undefined,
+      },
+    ])
+  })
+
+  it('retries if ipptool fails', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
+      new Set(['usb://HP/Color%20LaserJet?serial=1234']),
+    )
+    mockOf(exec)
+      .mockRejectedValueOnce(new Error('ipptool failed'))
+      .mockResolvedValueOnce({ stdout: fakeIpptoolStdout(), stderr: '' })
+
+    expect(
+      await getPrinterInfo([
+        fakeElectronPrinter({
+          options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+        }),
+      ]),
+    ).toEqual([
+      {
+        ...fakePrinterInfo(),
+        options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
+      },
+    ])
+  })
 })
 
 test('registers an IPC handler for getting printer info', async () => {
   const sender: Partial<WebContents> = {
     getPrinters(): Electron.PrinterInfo[] {
       return [
-        fakePrinter({
+        fakeElectronPrinter({
           options: {
             'device-uri': 'usb://HP/Color%20LaserJet?serial=1234',
           },
