@@ -1,37 +1,68 @@
 interface RetryOptions<T> {
   tries: number
-  retryCondition?: (result: T) => boolean
 }
 
 /**
- * Retries a given function `options.tries` times. By default, it will retry
- * whenever an error is thrown.
- *
- * To retry based on the result of the function, pass in `options.retryCondition`,
- * which will be called with the function result. If `options.retryCondition`
- * returns true, the function will be retried.
+ * Retries a given async function up to `options.tries` times if an error is
+ * thrown.
  */
 export async function retry<T>(
-  options: RetryOptions<T>,
   action: () => Promise<T>,
+  options: RetryOptions<T>,
 ): Promise<T> {
-  const { tries, retryCondition } = options
+  const { tries } = options
   if (tries <= 1) {
     throw Error('retry requires at least 2 tries')
   }
   async function retryHelper(triesLeft: number): Promise<T> {
     try {
-      const result = await action()
-      if (triesLeft > 0 && retryCondition && retryCondition(result)) {
-        return retryHelper(triesLeft - 1)
-      }
-      return result
+      return await action()
     } catch (error) {
       if (triesLeft > 0) {
         return retryHelper(triesLeft - 1)
       }
       throw error
     }
+  }
+  return await retryHelper(tries - 1)
+}
+
+interface RetryUntilOptions<T> extends RetryOptions<T> {
+  until: (result: T) => boolean
+  returnLastResult?: boolean
+}
+
+export class NoMoreTries extends Error {}
+
+/**
+ * Like `retry`, but retries based on `options.until`, which will be called with
+ * the function result. If `options.until` returns false, the function will be
+ * retried.
+ *
+ * If the max number of tries is reached, NoMoreTries will be thrown. If
+ * `options.returnLastResult` is true, then the last result will be returned
+ * instead.
+ */
+export async function retryUntil<T>(
+  action: () => Promise<T>,
+  options: RetryUntilOptions<T>,
+): Promise<T> {
+  const { until, tries, returnLastResult } = options
+  if (tries <= 1) {
+    throw Error('retry requires at least 2 tries')
+  }
+  async function retryHelper(triesLeft: number): Promise<T> {
+    const result = await action()
+    if (until(result)) {
+      return result
+    }
+    if (triesLeft > 0) {
+      return retryHelper(triesLeft - 1)
+    }
+    if (returnLastResult) {
+      return result
+    }
+    throw new NoMoreTries()
   }
   return await retryHelper(tries - 1)
 }

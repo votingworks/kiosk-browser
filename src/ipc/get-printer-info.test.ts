@@ -7,6 +7,7 @@ import {
 import { fakeIpc } from '../../test/ipc'
 import mockOf from '../../test/mockOf'
 import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs'
+import { IppPrinterState } from '../utils/printing/getPrinterIppAttributes'
 import register, {
   channel as getPrinterInfoChannel,
   getPrinterInfo,
@@ -88,9 +89,9 @@ describe('getPrinterInfo', () => {
       {
         ...fakePrinterInfo(),
         connected: false,
-        markerInfos: [],
-        state: null,
-        stateReasons: [],
+        state: IppPrinterState.Unknown,
+        stateReasons: undefined,
+        markerInfos: undefined,
       },
       {
         ...fakePrinterInfo(),
@@ -119,9 +120,9 @@ describe('getPrinterInfo', () => {
       {
         ...fakePrinterInfo(),
         options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
-        markerInfos: [],
-        state: null,
-        stateReasons: [],
+        state: IppPrinterState.Unknown,
+        markerInfos: undefined,
+        stateReasons: undefined,
       },
     ])
   })

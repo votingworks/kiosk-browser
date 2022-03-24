@@ -5,8 +5,9 @@ import { debug } from '../utils/printing'
 import {
   getPrinterIppAttributes,
   PrinterIppAttributes,
+  IppPrinterState,
 } from '../utils/printing/getPrinterIppAttributes'
-import { retry } from '../utils/retry'
+import { retry, retryUntil } from '../utils/retry'
 
 export const channel = 'get-printer-info'
 export const PRINTER_CONNECTION_NUM_TRIES = 3
@@ -17,11 +18,10 @@ export const IPP_ATTRIBUTES_NUM_TRIES = 3
  * Note that Electron's status is not accurate - its always 3 (idle) even when the printer is stopped.
  * Instead, we get an accurate status via IPP.
  */
-export interface PrinterInfo
-  extends Omit<Electron.PrinterInfo, 'status'>,
-    PrinterIppAttributes {
-  connected: boolean
-}
+export type PrinterInfo = Omit<Electron.PrinterInfo, 'status'> &
+  PrinterIppAttributes & {
+    connected: boolean
+  }
 
 /**
  * Get information about all known printers, including connection status.
@@ -29,11 +29,7 @@ export interface PrinterInfo
 export async function getPrinterInfo(
   printers: Electron.PrinterInfo[],
 ): Promise<PrinterInfo[]> {
-  const printersWithConnectionStatus = await retry(
-    {
-      tries: PRINTER_CONNECTION_NUM_TRIES,
-      retryCondition: result => !result.some(printer => printer.connected),
-    },
+  const printersWithConnectionStatus = await retryUntil(
     async () => {
       const connectedDeviceURIs = await getConnectedDeviceURIs(
         printerSchemes(printers),
@@ -44,17 +40,23 @@ export async function getPrinterInfo(
         return { ...printer, connected }
       })
     },
+    {
+      tries: PRINTER_CONNECTION_NUM_TRIES,
+      until: result => result.some(printer => printer.connected),
+      returnLastResult: true,
+    },
   )
 
-  let ippAttributes: PrinterIppAttributes | undefined
+  let ippAttributes: PrinterIppAttributes
   if (printersWithConnectionStatus.some(printer => printer.connected)) {
     // CUPS makes an IPP server available for each USB printer, starting with port
     // 60000 and incrementing for each printer. For now, we just assume that only
     // one printer is connected and use this URI to query its IPP attributes.
     // https://wiki.debian.org/CUPSDriverlessPrinting#IPP-over-USB:_Investigation_and_Troubleshooting
     try {
-      ippAttributes = await retry({ tries: IPP_ATTRIBUTES_NUM_TRIES }, () =>
-        getPrinterIppAttributes('ipp://localhost:60000/ipp/print'),
+      ippAttributes = await retry(
+        () => getPrinterIppAttributes('ipp://localhost:60000/ipp/print'),
+        { tries: IPP_ATTRIBUTES_NUM_TRIES },
       )
     } catch (error) {
       debug('failed to get IPP attributes: %o', error)
@@ -62,10 +64,9 @@ export async function getPrinterInfo(
   }
 
   return printersWithConnectionStatus.map(printer => {
-    const attributes =
-      printer.connected && ippAttributes
-        ? ippAttributes
-        : { state: null, stateReasons: [], markerInfos: [] }
+    const attributes = (printer.connected && ippAttributes) || {
+      state: IppPrinterState.Unknown,
+    }
     return {
       name: printer.name,
       isDefault: printer.isDefault,

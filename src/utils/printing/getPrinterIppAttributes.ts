@@ -9,6 +9,7 @@ import fs from 'fs'
  * Spec: https://datatracker.ietf.org/doc/html/rfc2911#section-4.4.11
  */
 export enum IppPrinterState {
+  Unknown = 'unknown', // We didn't get a response from the printer
   Idle = 'idle', // 3
   Processing = 'processing', // 4
   Stopped = 'stopped', // 5
@@ -44,11 +45,13 @@ export interface IppMarkerInfo {
 /**
  * A collection of status attributes we can get from a printer via IPP.
  */
-export interface PrinterIppAttributes {
-  state: IppPrinterState | null
-  stateReasons: IppPrinterStateReason[]
-  markerInfos: IppMarkerInfo[]
-}
+export type PrinterIppAttributes =
+  | { state: IppPrinterState.Unknown }
+  | {
+      state: IppPrinterState
+      stateReasons: IppPrinterStateReason[]
+      markerInfos: IppMarkerInfo[]
+    }
 
 export const ippAttributesToQuery = [
   'printer-state',
@@ -60,7 +63,7 @@ export const ippAttributesToQuery = [
   'marker-high-levels',
   'marker-levels',
   'printer-alert-description',
-] as const
+]
 const ippQuery = `{
   OPERATION Get-Printer-Attributes
   GROUP operation-attributes-tag
@@ -136,6 +139,10 @@ export async function getPrinterIppAttributes(
   }
 }
 
+type IppAttributes = {
+  [attribute: string]: string | string[] | number | number[]
+}
+
 /**
  * Parse the output of ipptool. It looks like this:
  *  query-filename:
@@ -152,9 +159,6 @@ export async function getPrinterIppAttributes(
  *          printer-state (enum) = stopped
  *          printer-state-reasons (1setOf keyword) = media-empty-error,media-needed-error,media-empty-error
  */
-type IppAttributes = {
-  [attribute: string]: string | string[] | number | number[]
-}
 function parseIpptoolOutput(output: string): IppAttributes {
   let lines = output.split('\n')
   assert(lines.length > 0, 'ipptool output is empty')
