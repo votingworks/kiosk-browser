@@ -56,7 +56,7 @@ async function parseOptionsWithoutTryCatch(
     } else if (arg === '--allow-devtools') {
       allowDevtoolsArg = true
       debug('got flag: %s', arg)
-    } else if (arg === '--add-file-perm') {
+    } else if (arg === '--add-file-perm' || arg === '-v') {
       i++
       const value = argv[i]
       debug('got option for %s: %s', arg, value)
