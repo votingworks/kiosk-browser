@@ -9,14 +9,14 @@
     "email": "contact@voting.works",
     "url": "https://voting.works"
   },
-  "main": "dist/src/index.js",
+  "main": "build/src/index.js",
   "scripts": {
+    "app:dir": "electron-builder --dir",
+    "app:dist": "USE_SYSTEM_FPM=true electron-builder",
+    "postinstall": "electron-builder install-app-deps",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "yarn lint --fix",
-    "make": "tsc && electron-forge make",
-    "package": "tsc && electron-forge package",
-    "publish": "tsc && electron-forge publish",
-    "start": "tsc && electron-forge start",
+    "start": "tsc && electron .",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"
@@ -30,17 +30,6 @@
     "*.ts": "eslint --quiet --fix",
     "package.json": "sort-package-json"
   },
-  "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        }
-      ]
-    }
-  },
   "dependencies": {
     "@types/luxon": "^1.25.0",
     "chalk": "^3.0.0",
@@ -50,14 +39,12 @@
     "multimatch": "^4.0.0",
     "rxjs": "^6.5.4",
     "tmp-promise": "^3.0.3",
-    "usb-detection": "votingworks/node-usb-detection",
+    "usb-detection": "^4.14.1",
     "uuid": "^8.3.1",
     "xrandr-parse": "^1.0.0",
     "zod": "^1.10.2"
   },
   "devDependencies": {
-    "@electron-forge/cli": "6.0.0-beta.47",
-    "@electron-forge/maker-deb": "6.0.0-beta.47",
     "@types/debug": "^4.1.5",
     "@types/electron-json-storage": "^4.0.0",
     "@types/jest": "^24.9.0",
@@ -67,7 +54,8 @@
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^2.15.0",
     "@typescript-eslint/parser": "^2.15.0",
-    "electron": "7.2.4",
+    "electron": "17",
+    "electron-builder": "^23.0.3",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -79,6 +67,16 @@
     "sort-package-json": "^1.39.1",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.0"
+  },
+  "build": {
+    "appId": "com.votingworks.kiosk-browser",
+    "files": [
+      "build/src/**/*"
+    ],
+    "linux": {
+      "target": "deb",
+      "category": "Utility"
+    }
   },
   "productName": "kiosk-browser"
 }

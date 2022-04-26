@@ -19,12 +19,16 @@ test('gets the first printer if there is no default printer', () => {
     getPreferredPrinter([
       {
         description: 'printer #1',
+        displayName: 'printer #1',
+        options: {},
         isDefault: false,
         name: 'printer #1',
         status: 0,
       },
       {
         description: 'printer #2',
+        displayName: 'printer #2',
+        options: {},
         isDefault: false,
         name: 'printer #2',
         status: 0,

@@ -33,7 +33,7 @@ test('fails given a non-absolute path', async () => {
 })
 
 test('makes a directory non-recursively by default', async () => {
-  mkdirMock.mockResolvedValueOnce()
+  mkdirMock.mockResolvedValueOnce(undefined)
 
   await makeDirectory(
     [
@@ -51,7 +51,7 @@ test('makes a directory non-recursively by default', async () => {
 })
 
 test('makes a directory recursively if requested', async () => {
-  mkdirMock.mockResolvedValueOnce()
+  mkdirMock.mockResolvedValueOnce(undefined)
 
   await makeDirectory(
     [
