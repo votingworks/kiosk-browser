@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
+  "homepage": "https://github.com/votingworks/kiosk-browser",
   "license": "GPL-3.0",
   "author": {
     "name": "VotingWorks",
