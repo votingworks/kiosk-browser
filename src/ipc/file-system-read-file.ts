@@ -13,7 +13,7 @@ export async function readFile(
   origin: string,
   permissions: readonly OriginFilePermission[],
   path: string,
-  encoding?: string,
+  encoding?: BufferEncoding,
 ): Promise<Buffer | string> {
   if (!isAbsolute(path)) {
     debug('aborting request because it is not an absolute path')
@@ -21,7 +21,7 @@ export async function readFile(
   }
 
   assertHasReadAccess(permissions, origin, path)
-  return await fs.readFile(path, encoding)
+  return await fs.readFile(path, { encoding })
 }
 
 export default function register(
@@ -30,7 +30,7 @@ export default function register(
 ): void {
   ipcMain.handle(
     channel,
-    (event: IpcMainInvokeEvent, path: string, encoding?: string) => {
+    (event: IpcMainInvokeEvent, path: string, encoding?: BufferEncoding) => {
       const url = new URL(event.sender.getURL())
       return readFile(url.origin, options.originFilePermissions, path, encoding)
     },

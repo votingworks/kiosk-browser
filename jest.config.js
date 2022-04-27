@@ -8,7 +8,7 @@ module.exports = {
     '!src/index.ts',
     '!src/preload.ts',
   ],
-  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/out/'],
+  modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/dist/', '<rootDir>/out/'],
   coverageThreshold: {
     // TODO: ratchet these up to 100 over time
     global: {

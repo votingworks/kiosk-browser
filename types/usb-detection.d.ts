@@ -14,31 +14,24 @@ declare module 'usb-detection' {
     deviceAddress: number
   }
 
-  class USBDetection extends NodeJS.EventEmitter {
-    public find(
-      vid: number,
-      pid: number,
-      callback: (error: any, devices: Device[]) => any,
-    ): void
-    public find(vid: number, pid: number): Promise<Device[]>
-    public find(
-      vid: number,
-      callback: (error: any, devices: Device[]) => any,
-    ): void
-    public find(vid: number): Promise<Device[]>
-    public find(callback: (error: any, devices: Device[]) => any): void
-    public find(): Promise<Device[]>
+  export function find(
+    vid: number,
+    pid: number,
+    callback: (error: any, devices: Device[]) => any,
+  ): void
+  export function find(vid: number, pid: number): Promise<Device[]>
+  export function find(
+    vid: number,
+    callback: (error: any, devices: Device[]) => any,
+  ): void
+  export function find(vid: number): Promise<Device[]>
+  export function find(callback: (error: any, devices: Device[]) => any): void
+  export function find(): Promise<Device[]>
 
-    public startMonitoring(): void
-    public stopMonitoring(): void
+  export function startMonitoring(): void
+  export function stopMonitoring(): void
+  export function on(event: string, callback: Function): void
+  export function off(event: string, callback: Function): void
 
-    public on(event: string, callback: (device: Device) => void): this
-    public off(event: string, callback: (device: Device) => void): this
-
-    public version: number
-  }
-
-  const usbDetection: USBDetection
-
-  export default usbDetection
+  export const version: number
 }

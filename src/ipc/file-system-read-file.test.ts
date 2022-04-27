@@ -33,7 +33,9 @@ test('read files with an encoding', async () => {
     ),
   ).toEqual('file content as a string')
 
-  expect(fs.readFile).toHaveBeenCalledWith('/a/path/to/file.txt', 'utf8')
+  expect(fs.readFile).toHaveBeenCalledWith('/a/path/to/file.txt', {
+    encoding: 'utf8',
+  })
 })
 
 test('read files without an encoding', async () => {
@@ -47,7 +49,9 @@ test('read files without an encoding', async () => {
     ),
   ).toEqual(Buffer.of(1, 2, 3))
 
-  expect(fs.readFile).toHaveBeenCalledWith('/a/path/to/file.png', undefined)
+  expect(fs.readFile).toHaveBeenCalledWith('/a/path/to/file.png', {
+    encoding: undefined,
+  })
 })
 
 test('registers a handler to read files', async () => {
@@ -72,5 +76,5 @@ test('registers a handler to read files', async () => {
     await ipcRenderer.invoke(fileSystemReadFileChannel, '/a/path', 'utf8'),
   ).toEqual('hello world')
 
-  expect(fs.readFile).toHaveBeenCalledWith('/a/path', 'utf8')
+  expect(fs.readFile).toHaveBeenCalledWith('/a/path', { encoding: 'utf8' })
 })

@@ -69,6 +69,7 @@ export async function getPrinterInfo(
     }
     return {
       name: printer.name,
+      displayName: printer.displayName,
       isDefault: printer.isDefault,
       options: printer.options,
       description: printer.description,

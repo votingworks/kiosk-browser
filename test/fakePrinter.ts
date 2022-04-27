@@ -10,6 +10,8 @@ export function fakeElectronPrinter(
 ): Electron.PrinterInfo {
   return {
     description: printer.name ?? 'main printer',
+    displayName: printer.displayName ?? 'main printer',
+    options: printer.options ?? {},
     isDefault: true,
     name: 'main printer',
     status: 0,
@@ -33,6 +35,8 @@ export function fakePrinterInfo(
   return {
     name: electronPrinter.name,
     description: electronPrinter.description,
+    displayName: electronPrinter.displayName,
+    options: electronPrinter.options,
     isDefault: electronPrinter.isDefault,
     state: IppPrinterState.Idle,
     connected: true,

@@ -85,6 +85,7 @@ typings/
 # Webpack
 .webpack/
 
-# Electron-Forge
+# Build artifacts
 out/
 dist/
+build/

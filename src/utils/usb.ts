@@ -29,12 +29,12 @@ function deviceKey({
 
 export class USBDetectionManager {
   private refCount = 0
-  private readonly usbDetection: typeof import('usb-detection').default
+  private readonly usbDetection: typeof import('usb-detection')
 
   /**
    * Build a manager for `usbDetection`.
    */
-  public constructor(usbDetection: typeof import('usb-detection').default) {
+  public constructor(usbDetection: typeof import('usb-detection')) {
     this.usbDetection = usbDetection
   }
 
