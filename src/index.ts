@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron';
+import storage from 'electron-json-storage';
 import { join } from 'path';
 import { Observable, of } from 'rxjs';
 import usbDetection, { Device } from 'usb-detection';
@@ -47,6 +48,9 @@ export type RegisterIpcHandler = (
 
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher');
+
+// Set storage location for user data.
+storage.setDataPath(join(app.getPath('userData'), 'data'));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
