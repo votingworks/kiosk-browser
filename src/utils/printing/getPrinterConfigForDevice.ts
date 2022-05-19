@@ -1,5 +1,5 @@
-import { Printer, PrintConfig } from '.'
-import { Device } from '../usb'
+import { Printer, PrintConfig } from '.';
+import { Device } from '../usb';
 
 /**
  * Finds a printer config matching a USB device.
@@ -13,7 +13,7 @@ export default function getPrinterConfigForDevice(
       printer.vendorId === device.vendorId &&
       printer.productId === device.productId
     ) {
-      return printer
+      return printer;
     }
   }
 }

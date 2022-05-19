@@ -1,31 +1,31 @@
-import { Dirent, promises as fs, Stats } from 'fs'
-import { basename } from 'path'
-import { fakeIpc } from '../../test/ipc'
+import { Dirent, promises as fs, Stats } from 'fs';
+import { basename } from 'path';
+import { fakeIpc } from '../../test/ipc';
 import register, {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntryType,
   getDirentType,
   getEntries,
-} from './file-system-get-entries'
+} from './file-system-get-entries';
 
 // Dirent types treat the constructor as private.
-const ConstructableDirent = (Dirent as unknown) as new (
+const ConstructableDirent = Dirent as unknown as new (
   name: string,
   type: FileSystemEntryType,
-) => Dirent
+) => Dirent;
 
 const file = (name: string): Dirent =>
-  new ConstructableDirent(name, FileSystemEntryType.File)
+  new ConstructableDirent(name, FileSystemEntryType.File);
 
 const symlink = (name: string): Dirent =>
-  new ConstructableDirent(name, FileSystemEntryType.SymbolicLink)
+  new ConstructableDirent(name, FileSystemEntryType.SymbolicLink);
 
 test('gets entries with stat info', async () => {
-  const entries = [file('a.txt'), file('b.json'), file('c.csv'), file('d.png')]
-  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries)
+  const entries = [file('a.txt'), file('b.json'), file('c.csv'), file('d.png')];
+  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries);
 
-  jest.spyOn(fs, 'lstat').mockImplementation(path => {
-    const base = basename(path as string)
+  jest.spyOn(fs, 'lstat').mockImplementation((path) => {
+    const base = basename(path as string);
     for (const [i, entry] of entries.entries()) {
       if (entry.name === base) {
         return Promise.resolve({
@@ -33,12 +33,12 @@ test('gets entries with stat info', async () => {
           mtime: new Date(0),
           atime: new Date(0),
           ctime: new Date(0),
-        } as Stats)
+        } as Stats);
       }
     }
 
-    throw new Error(`unexpected path: ${path}`)
-  })
+    throw new Error(`unexpected path: ${path as string}`);
+  });
 
   expect(
     await getEntries(
@@ -83,15 +83,15 @@ test('gets entries with stat info', async () => {
       atime: new Date(0),
       ctime: new Date(0),
     },
-  ])
-})
+  ]);
+});
 
 test('filters out symlinks', async () => {
-  const entries = [file('a.txt'), symlink('b.json')]
-  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries)
+  const entries = [file('a.txt'), symlink('b.json')];
+  jest.spyOn(fs, 'readdir').mockResolvedValueOnce(entries);
 
-  jest.spyOn(fs, 'lstat').mockImplementation(path => {
-    const base = basename(path as string)
+  jest.spyOn(fs, 'lstat').mockImplementation((path) => {
+    const base = basename(path as string);
     for (const [i, entry] of entries.entries()) {
       if (entry.name === base) {
         return Promise.resolve({
@@ -99,12 +99,12 @@ test('filters out symlinks', async () => {
           mtime: new Date(0),
           atime: new Date(0),
           ctime: new Date(0),
-        } as Stats)
+        } as Stats);
       }
     }
 
-    throw new Error(`unexpected path: ${path}`)
-  })
+    throw new Error(`unexpected path: ${path as string}`);
+  });
 
   expect(
     await getEntries(
@@ -122,11 +122,11 @@ test('filters out symlinks', async () => {
       atime: new Date(0),
       ctime: new Date(0),
     },
-  ])
-})
+  ]);
+});
 
 test('registers a handler to get directory entries', async () => {
-  const { ipcMain, ipcRenderer } = fakeIpc()
+  const { ipcMain, ipcRenderer } = fakeIpc();
 
   register(ipcMain, {
     options: {
@@ -139,16 +139,16 @@ test('registers a handler to get directory entries', async () => {
       ],
       url: new URL('https://example.com/'),
     },
-  })
+  });
 
-  jest.spyOn(fs, 'readdir').mockResolvedValueOnce([])
+  jest.spyOn(fs, 'readdir').mockResolvedValueOnce([]);
 
   expect(
     await ipcRenderer.invoke(fileSystemGetEntriesChannel, '/a/path'),
-  ).toEqual([])
+  ).toEqual([]);
 
-  expect(fs.readdir).toHaveBeenCalledWith('/a/path', { withFileTypes: true })
-})
+  expect(fs.readdir).toHaveBeenCalledWith('/a/path', { withFileTypes: true });
+});
 
 test('getDirentType maps dirent to type properly', () => {
   for (const type of [
@@ -160,22 +160,22 @@ test('getDirentType maps dirent to type properly', () => {
     FileSystemEntryType.CharacterDevice,
     FileSystemEntryType.BlockDevice,
   ]) {
-    expect(getDirentType(new ConstructableDirent('foo', type))).toEqual(type)
+    expect(getDirentType(new ConstructableDirent('foo', type))).toEqual(type);
   }
-})
+});
 
 test('getDirentType throws given something bogus', () => {
-  const unknownDirent = file('foo')
-  jest.spyOn(unknownDirent, 'isFile').mockReturnValue(false)
+  const unknownDirent = file('foo');
+  jest.spyOn(unknownDirent, 'isFile').mockReturnValue(false);
   expect(() => getDirentType(unknownDirent)).toThrowError(
     'dirent is not of a known type',
-  )
-})
+  );
+});
 
 test('fails when the file path is not absolute', async () => {
   await expect(
     getEntries([], 'https://example.com', 'some/relative/path'),
   ).rejects.toThrowError(
     new Error('requested path is not absolute: some/relative/path'),
-  )
-})
+  );
+});

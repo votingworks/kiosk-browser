@@ -1,24 +1,24 @@
-import exec from '../exec'
-import mockOf from '../../../test/mockOf'
-import { fakeIpptoolStdout, fakeMarkerInfo } from '../../../test/fakePrinter'
-import { getPrinterIppAttributes } from './getPrinterIppAttributes'
+import exec from '../exec';
+import mockOf from '../../../test/mockOf';
+import { fakeIpptoolStdout, fakeMarkerInfo } from '../../../test/fakePrinter';
+import { getPrinterIppAttributes } from './getPrinterIppAttributes';
 
-jest.mock('../exec')
+jest.mock('../exec');
 
-const ippUri = 'ipp://localhost:60000/ipp/print'
+const ippUri = 'ipp://localhost:60000/ipp/print';
 
 describe('getPrinterIppAttributes', () => {
   it('uses ipptool to query and parse printer atttributes', async () => {
     mockOf(exec).mockResolvedValueOnce({
       stdout: fakeIpptoolStdout(),
       stderr: '',
-    })
+    });
     expect(await getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['none'],
       markerInfos: [fakeMarkerInfo],
-    })
-  })
+    });
+  });
 
   it('parses multiple marker infos', async () => {
     mockOf(exec).mockResolvedValueOnce({
@@ -32,7 +32,7 @@ describe('getPrinterIppAttributes', () => {
         'marker-levels': '(1setOf integer) = 100,83',
       }),
       stderr: '',
-    })
+    });
     expect(await getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['none'],
@@ -47,8 +47,8 @@ describe('getPrinterIppAttributes', () => {
           level: 83,
         },
       ],
-    })
-  })
+    });
+  });
 
   it('parses multiple printer-state-reasons', async () => {
     mockOf(exec).mockResolvedValueOnce({
@@ -58,7 +58,7 @@ describe('getPrinterIppAttributes', () => {
           '(1setOf keyword) = media-empty-error,media-needed-error,media-empty-error',
       }),
       stderr: '',
-    })
+    });
     expect(await getPrinterIppAttributes(ippUri)).toEqual({
       state: 'stopped',
       stateReasons: [
@@ -67,8 +67,8 @@ describe('getPrinterIppAttributes', () => {
         'media-empty-error',
       ],
       markerInfos: [fakeMarkerInfo],
-    })
-  })
+    });
+  });
 
   it('creates a special printer-state-reason if HP sleep mode detected', async () => {
     mockOf(exec).mockResolvedValueOnce({
@@ -77,20 +77,20 @@ describe('getPrinterIppAttributes', () => {
           '(1setOf textWithoutLanguage) = ,Ready,Sleep Mode',
       }),
       stderr: '',
-    })
+    });
     expect(await getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['sleep-mode'],
       markerInfos: [fakeMarkerInfo],
-    })
-  })
+    });
+  });
 
   it('throws an error if ipptool fails', async () => {
-    mockOf(exec).mockRejectedValueOnce(new Error('ipptool failed'))
+    mockOf(exec).mockRejectedValueOnce(new Error('ipptool failed'));
     await expect(getPrinterIppAttributes(ippUri)).rejects.toThrow(
       new Error('ipptool failed'),
-    )
-  })
+    );
+  });
 
   it('throws an error if ipptool output cannot be parsed', async () => {
     const badOutput = [
@@ -117,7 +117,7 @@ describe('getPrinterIppAttributes', () => {
       requested-attributes (1setOf keyword) = printer-state,printer-state-reasons,marker-names,marker-colors,marker-types,marker-low-levels,marker-high-levels,marker-levels,printer-alert-description
   /tmp/tmp-122141-YkVU4ekfP1Eg                                         [PASS]
       RECEIVED: 395 bytes in response`,
-        'Unsuccessful ipptool response: undefined',
+        'Unsuccessful ipptool response: <empty>',
       ],
       [
         `"/tmp/tmp-122141-YkVU4ekfP1Eg":
@@ -152,12 +152,12 @@ describe('getPrinterIppAttributes', () => {
         fakeIpptoolStdout({ 'printer-state': '(badType) = idle' }),
         'Unrecognized ipptool attribute type: badType',
       ],
-    ]
+    ];
     for (const [stdout, expectedError] of badOutput) {
-      mockOf(exec).mockResolvedValueOnce({ stdout, stderr: '' })
+      mockOf(exec).mockResolvedValueOnce({ stdout, stderr: '' });
       await expect(getPrinterIppAttributes(ippUri)).rejects.toThrow(
         new Error(expectedError),
-      )
+      );
     }
-  })
-})
+  });
+});

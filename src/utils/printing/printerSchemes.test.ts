@@ -1,10 +1,10 @@
-import printerSchemes from './printerSchemes'
-import { fakeElectronPrinter } from '../../../test/fakePrinter'
+import printerSchemes from './printerSchemes';
+import { fakeElectronPrinter } from '../../../test/fakePrinter';
 
 describe('printerSchemes', () => {
   it('returns an empty set given no printers', () => {
-    expect(printerSchemes([])).toEqual(new Set())
-  })
+    expect(printerSchemes([])).toEqual(new Set());
+  });
 
   it('gets schemes for a list of printers', () => {
     expect(
@@ -17,6 +17,6 @@ describe('printerSchemes', () => {
           options: { 'device-uri': 'ippusb://HP/Color%20LaserJet?serial=1234' },
         }),
       ]),
-    ).toEqual(new Set(['usb', 'ippusb']))
-  })
-})
+    ).toEqual(new Set(['usb', 'ippusb']));
+  });
+});

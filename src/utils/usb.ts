@@ -1,11 +1,11 @@
-import { strict as assert } from 'assert'
-import makeDebug from 'debug'
-import { defer, fromEvent, Observable } from 'rxjs'
-import { finalize, tap } from 'rxjs/operators'
-import { Device } from 'usb-detection'
-import KeySet, { ImmutableSet } from './KeySet'
+import { strict as assert } from 'assert';
+import makeDebug from 'debug';
+import { defer, fromEvent, Observable } from 'rxjs';
+import { finalize, tap } from 'rxjs/operators';
+import { Device } from 'usb-detection';
+import KeySet, { ImmutableSet } from './KeySet';
 
-const debug = makeDebug('kiosk-browser:usb')
+const debug = makeDebug('kiosk-browser:usb');
 
 function deviceKey({
   deviceAddress,
@@ -24,48 +24,48 @@ function deviceKey({
     productId,
     serialNumber,
     vendorId,
-  ].join('-')
+  ].join('-');
 }
 
 export class USBDetectionManager {
-  private refCount = 0
-  private readonly usbDetection: typeof import('usb-detection')
+  private refCount = 0;
+  private readonly usbDetection: typeof import('usb-detection');
 
   /**
    * Build a manager for `usbDetection`.
    */
   public constructor(usbDetection: typeof import('usb-detection')) {
-    this.usbDetection = usbDetection
+    this.usbDetection = usbDetection;
   }
 
   public ref(): void {
-    assert(this.refCount >= 0)
+    assert(this.refCount >= 0);
     if (this.refCount++ === 0) {
-      debug('got first USB detection reference, starting monitoring')
-      this.usbDetection.startMonitoring()
+      debug('got first USB detection reference, starting monitoring');
+      this.usbDetection.startMonitoring();
     }
-    debug('ref: detection ref count=%d', this.refCount)
+    debug('ref: detection ref count=%d', this.refCount);
   }
 
   public deref(): void {
-    assert(this.refCount > 0)
+    assert(this.refCount > 0);
     if (--this.refCount === 0) {
-      debug('lost last USB detection reference, stopping monitoring')
-      this.usbDetection.stopMonitoring()
+      debug('lost last USB detection reference, stopping monitoring');
+      this.usbDetection.stopMonitoring();
     }
-    debug('deref: detection ref count=%d', this.refCount)
+    debug('deref: detection ref count=%d', this.refCount);
   }
 
   public isMonitoring(): boolean {
-    return this.refCount > 0
+    return this.refCount > 0;
   }
 
   /**
    * Gets the current list of connected devices.
    */
   private async find(): Promise<Device[]> {
-    assert(this.isMonitoring())
-    return await this.usbDetection.find()
+    assert(this.isMonitoring());
+    return await this.usbDetection.find();
   }
 
   /**
@@ -73,16 +73,16 @@ export class USBDetectionManager {
    */
   public get deviceAdd(): Observable<Device> {
     return defer(() => {
-      debug('deviceAdd observer initialize')
-      this.ref()
+      debug('deviceAdd observer initialize');
+      this.ref();
       return fromEvent<Device>(this.usbDetection, 'add').pipe(
-        tap(device => debug('device added: %O', device)),
+        tap((device) => debug('device added: %O', device)),
         finalize(() => {
-          debug('deviceAdd observer finalize')
-          this.deref()
+          debug('deviceAdd observer finalize');
+          this.deref();
         }),
-      )
-    })
+      );
+    });
   }
 
   /**
@@ -90,16 +90,16 @@ export class USBDetectionManager {
    */
   public get deviceRemove(): Observable<Device> {
     return defer(() => {
-      debug('deviceRemove observer initialize')
-      this.ref()
+      debug('deviceRemove observer initialize');
+      this.ref();
       return fromEvent<Device>(this.usbDetection, 'remove').pipe(
-        tap(device => debug('device removed: %O', device)),
+        tap((device) => debug('device removed: %O', device)),
         finalize(() => {
-          debug('deviceRemove observer finalize')
-          this.deref()
+          debug('deviceRemove observer finalize');
+          this.deref();
         }),
-      )
-    })
+      );
+    });
   }
 
   /**
@@ -112,55 +112,55 @@ export class USBDetectionManager {
    * New subscribers immediately receive the same current set.
    */
   public get devices(): Observable<ImmutableSet<Device>> {
-    const result = new Observable<ImmutableSet<Device>>(subscriber => {
-      this.ref()
-      let unsubscribed = false
-      const cleanups: VoidFunction[] = []
+    const result = new Observable<ImmutableSet<Device>>((subscriber) => {
+      this.ref();
+      let unsubscribed = false;
+      const cleanups: VoidFunction[] = [];
 
-      this.find().then(findResult => {
+      void this.find().then((findResult) => {
         if (unsubscribed) {
-          return
+          return;
         }
 
-        let devices = new KeySet(deviceKey, findResult)
+        let devices = new KeySet(deviceKey, findResult);
 
-        debug('pushing initial device list: %O', devices)
-        subscriber.next(devices)
+        debug('pushing initial device list: %O', devices);
+        subscriber.next(devices);
 
-        const deviceAddSubscription = this.deviceAdd.subscribe(added => {
-          devices = devices.add(added)
-          debug('pushing new devices list: %O', devices)
-          subscriber.next(devices)
-        })
+        const deviceAddSubscription = this.deviceAdd.subscribe((added) => {
+          devices = devices.add(added);
+          debug('pushing new devices list: %O', devices);
+          subscriber.next(devices);
+        });
 
         const deviceRemoveSubscription = this.deviceRemove.subscribe(
-          removed => {
-            devices = devices.delete(removed)
-            debug('pushing new devices list: %O', devices)
-            subscriber.next(devices)
+          (removed) => {
+            devices = devices.delete(removed);
+            debug('pushing new devices list: %O', devices);
+            subscriber.next(devices);
           },
-        )
+        );
 
         cleanups.push(() => {
-          deviceAddSubscription.unsubscribe()
-          deviceRemoveSubscription.unsubscribe()
-        })
-      })
+          deviceAddSubscription.unsubscribe();
+          deviceRemoveSubscription.unsubscribe();
+        });
+      });
 
       return (): void => {
-        unsubscribed = true
-        this.deref()
+        unsubscribed = true;
+        this.deref();
         for (const cleanup of cleanups) {
-          cleanup()
+          cleanup();
         }
-      }
-    })
+      };
+    });
 
     // Memoize the observer.
-    Object.defineProperty(this, 'devices', { value: result })
+    Object.defineProperty(this, 'devices', { value: result });
 
-    return result
+    return result;
   }
 }
 
-export { Device }
+export { Device };

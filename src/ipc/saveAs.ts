@@ -1,53 +1,53 @@
-import makeDebug from 'debug'
-import path from 'path'
+import makeDebug from 'debug';
+import path from 'path';
 import {
   dialog,
   IpcMain,
   IpcMainInvokeEvent,
   IpcRenderer,
   SaveDialogOptions,
-} from 'electron'
-import { assertHasWriteAccess, OriginFilePermission } from '../utils/access'
-import OpenFiles from '../utils/OpenFiles'
-import { Options } from '../utils/options'
+} from 'electron';
+import { assertHasWriteAccess, OriginFilePermission } from '../utils/access';
+import OpenFiles from '../utils/OpenFiles';
+import { Options } from '../utils/options';
 import {
   Client as WriteFileClient,
   End,
   end,
   write,
   Write,
-} from './file-system-write-file'
+} from './file-system-write-file';
 
-const debug = makeDebug('kiosk-browser:saveAs')
+const debug = makeDebug('kiosk-browser:saveAs');
 
-export const channel = 'saveAs'
+export const channel = 'saveAs';
 
 export interface PromptToSave {
-  type: 'PromptToSave'
-  options?: PromptToSaveOptions
+  type: 'PromptToSave';
+  options?: PromptToSaveOptions;
 }
 
 export type PromptToSaveOptions = Pick<
   SaveDialogOptions,
   'title' | 'defaultPath' | 'buttonLabel' | 'filters'
->
+>;
 export type PromptToSaveResult =
   | { type: 'file'; fd: string; name: string }
-  | { type: 'cancel' }
+  | { type: 'cancel' };
 
 /**
  * Use from the renderer process to easily send messages to the main process.
  */
 export class Client extends WriteFileClient {
   public constructor(ipcRenderer?: IpcRenderer) {
-    super(channel, ipcRenderer)
+    super(channel, ipcRenderer);
   }
 
   async promptToSave(
     options?: PromptToSaveOptions,
   ): Promise<PromptToSaveResult> {
-    const input: PromptToSave = { type: 'PromptToSave', options }
-    return (await this.invoke(input)) as PromptToSaveResult
+    const input: PromptToSave = { type: 'PromptToSave', options };
+    return (await this.invoke(input)) as PromptToSaveResult;
   }
 }
 
@@ -57,20 +57,20 @@ async function handlePromptToSave(
   permissions: readonly OriginFilePermission[],
   input: PromptToSave,
 ): Promise<PromptToSaveResult> {
-  const result = await dialog.showSaveDialog(input.options ?? {})
-  debug('%s: filePath=%s', input.type, result.filePath)
+  const result = await dialog.showSaveDialog(input.options ?? {});
+  debug('%s: filePath=%s', input.type, result.filePath);
 
   if (!result.filePath) {
-    debug('%s: aborting because save dialog was canceled', input.type)
-    return { type: 'cancel' }
+    debug('%s: aborting because save dialog was canceled', input.type);
+    return { type: 'cancel' };
   }
 
-  assertHasWriteAccess(permissions, origin, result.filePath)
+  assertHasWriteAccess(permissions, origin, result.filePath);
 
-  const fd = files.open(origin, result.filePath)
-  const filename = path.parse(result.filePath).base
-  debug('%s: opened %s for writing as fd=%s', input.type, result.filePath, fd)
-  return { type: 'file', fd, name: filename }
+  const fd = files.open(origin, result.filePath);
+  const filename = path.parse(result.filePath).base;
+  debug('%s: opened %s for writing as fd=%s', input.type, result.filePath, fd);
+  return { type: 'file', fd, name: filename };
 }
 
 /**
@@ -80,21 +80,24 @@ export default function register(
   ipcMain: IpcMain,
   { options }: { options: Options },
 ): void {
-  const files = new OpenFiles()
+  const files = new OpenFiles();
 
   async function handler(
     event: IpcMainInvokeEvent,
     input: PromptToSave,
-  ): Promise<PromptToSaveResult>
-  async function handler(event: IpcMainInvokeEvent, input: Write): Promise<void>
-  async function handler(event: IpcMainInvokeEvent, input: End): Promise<void>
+  ): Promise<PromptToSaveResult>;
+  async function handler(
+    event: IpcMainInvokeEvent,
+    input: Write,
+  ): Promise<void>;
+  async function handler(event: IpcMainInvokeEvent, input: End): Promise<void>;
   async function handler(
     event: IpcMainInvokeEvent,
     input: PromptToSave | Write | End,
   ): Promise<PromptToSaveResult | void> {
-    const url = new URL(event.sender.getURL())
-    const origin = url.origin
-    assertHasWriteAccess(options.originFilePermissions, origin)
+    const url = new URL(event.sender.getURL());
+    const origin = url.origin;
+    assertHasWriteAccess(options.originFilePermissions, origin);
 
     switch (input.type) {
       case 'PromptToSave':
@@ -103,18 +106,18 @@ export default function register(
           origin,
           options.originFilePermissions,
           input,
-        )
+        );
 
       case 'Write':
-        return await write(files, options.originFilePermissions, origin, input)
+        return await write(files, options.originFilePermissions, origin, input);
 
       case 'End':
-        return await end(files, options.originFilePermissions, origin, input)
+        return await end(files, options.originFilePermissions, origin, input);
 
       default:
-        throw new Error(`unknown action type: '${input['type']}'`)
+        throw new Error(`unknown action type: '${input['type'] as string}'`);
     }
   }
 
-  ipcMain.handle(channel, handler)
+  ipcMain.handle(channel, handler);
 }

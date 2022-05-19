@@ -1,7 +1,7 @@
-import { spawn } from 'child_process'
-import makeDebug from 'debug'
+import { spawn } from 'child_process';
+import makeDebug from 'debug';
 
-const debug = makeDebug('kiosk-browser:exec')
+const debug = makeDebug('kiosk-browser:exec');
 
 /**
  * Like `child_process.exec`, but with easy stdin.
@@ -11,9 +11,9 @@ export default async function exec(
   args: readonly string[] = [],
   stdin?: string | Buffer,
 ): Promise<{ stdout: string; stderr: string }> {
-  const child = spawn(file, args)
-  let stdout = ''
-  let stderr = ''
+  const child = spawn(file, args);
+  let stdout = '';
+  let stderr = '';
 
   debug(
     'running command=%s args=%o stdin=%s pid=%d',
@@ -21,20 +21,20 @@ export default async function exec(
     args,
     typeof stdin,
     child.pid,
-  )
+  );
 
-  child.stdout.on('data', chunk => {
-    stdout += chunk
-  })
+  child.stdout.on('data', (chunk) => {
+    stdout += chunk;
+  });
 
-  child.stderr.on('data', chunk => {
-    stderr += chunk
-  })
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk;
+  });
 
   if (stdin) {
-    debug('stdin passed to exec, feeding it in now.')
-    child.stdin.write(stdin)
-    child.stdin.end()
+    debug('stdin passed to exec, feeding it in now.');
+    child.stdin.write(stdin);
+    child.stdin.end();
   }
 
   return new Promise((resolve, reject) => {
@@ -46,10 +46,10 @@ export default async function exec(
         signal,
         file,
         args,
-      )
+      );
 
       if (code === 0) {
-        resolve({ stdout, stderr })
+        resolve({ stdout, stderr });
       } else {
         reject(
           makeExecError({
@@ -59,19 +59,19 @@ export default async function exec(
             stderr,
             cmd: `${file} ${args.join(' ')}`,
           }),
-        )
+        );
       }
-    })
-  })
+    });
+  });
 }
 
 export interface ExecError {
-  code: number
-  killed: boolean
-  signal: string | null
-  stdout: string
-  stderr: string
-  cmd: string
+  code: number;
+  killed: boolean;
+  signal: string | null;
+  stdout: string;
+  stderr: string;
+  cmd: string;
 }
 
 export function makeExecError({
@@ -82,9 +82,9 @@ export function makeExecError({
   stderr = '',
   cmd = '',
 }: Partial<ExecError> = {}): ExecError & Error {
-  const error = (new Error(
+  const error = new Error(
     `Error: Command failed: ${cmd} (stdout=${stdout} stderr=${stderr})`,
-  ) as unknown) as ExecError & Error
+  ) as unknown as ExecError & Error;
 
   Object.defineProperties(error, {
     killed: {
@@ -110,7 +110,7 @@ export function makeExecError({
     stderr: {
       value: stderr,
     },
-  })
+  });
 
-  return error
+  return error;
 }

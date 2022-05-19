@@ -1,5 +1,5 @@
-interface RetryOptions<T> {
-  tries: number
+interface RetryOptions {
+  tries: number;
 }
 
 /**
@@ -8,28 +8,28 @@ interface RetryOptions<T> {
  */
 export async function retry<T>(
   action: () => Promise<T>,
-  options: RetryOptions<T>,
+  options: RetryOptions,
 ): Promise<T> {
-  const { tries } = options
+  const { tries } = options;
   if (tries <= 1) {
-    throw Error('retry requires at least 2 tries')
+    throw Error('retry requires at least 2 tries');
   }
   async function retryHelper(triesLeft: number): Promise<T> {
     try {
-      return await action()
+      return await action();
     } catch (error) {
       if (triesLeft > 0) {
-        return retryHelper(triesLeft - 1)
+        return retryHelper(triesLeft - 1);
       }
-      throw error
+      throw error;
     }
   }
-  return await retryHelper(tries - 1)
+  return await retryHelper(tries - 1);
 }
 
-interface RetryUntilOptions<T> extends RetryOptions<T> {
-  until: (result: T) => boolean
-  returnLastResult?: boolean
+interface RetryUntilOptions<T> extends RetryOptions {
+  until: (result: T) => boolean;
+  returnLastResult?: boolean;
 }
 
 export class NoMoreTries extends Error {}
@@ -47,22 +47,22 @@ export async function retryUntil<T>(
   action: () => Promise<T>,
   options: RetryUntilOptions<T>,
 ): Promise<T> {
-  const { until, tries, returnLastResult } = options
+  const { until, tries, returnLastResult } = options;
   if (tries <= 1) {
-    throw Error('retry requires at least 2 tries')
+    throw Error('retry requires at least 2 tries');
   }
   async function retryHelper(triesLeft: number): Promise<T> {
-    const result = await action()
+    const result = await action();
     if (until(result)) {
-      return result
+      return result;
     }
     if (triesLeft > 0) {
-      return retryHelper(triesLeft - 1)
+      return retryHelper(triesLeft - 1);
     }
     if (returnLastResult) {
-      return result
+      return result;
     }
-    throw new NoMoreTries()
+    throw new NoMoreTries();
   }
-  return await retryHelper(tries - 1)
+  return await retryHelper(tries - 1);
 }

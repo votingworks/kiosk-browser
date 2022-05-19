@@ -1,4 +1,4 @@
-import { PrinterInfo } from 'electron'
+import { PrinterInfo } from 'electron';
 
 /**
  * Gets either the default printer or the first available printer.
@@ -6,5 +6,5 @@ import { PrinterInfo } from 'electron'
 export default function getPreferredPrinter(
   printers: PrinterInfo[],
 ): PrinterInfo | undefined {
-  return printers.find(printer => printer.isDefault) ?? printers[0]
+  return printers.find((printer) => printer.isDefault) ?? printers[0];
 }

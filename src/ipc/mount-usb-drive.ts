@@ -1,12 +1,12 @@
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
-import { join } from 'path'
-import exec from '../utils/exec'
+import { IpcMain, IpcMainInvokeEvent } from 'electron';
+import { join } from 'path';
+import exec from '../utils/exec';
 
-export const channel = 'mountUsbDrive'
+export const channel = 'mountUsbDrive';
 
 export interface Options {
-  device: string
-  label?: string
+  device: string;
+  label?: string;
 }
 
 async function mountUsbDrive(options: Options): Promise<void> {
@@ -16,14 +16,14 @@ async function mountUsbDrive(options: Options): Promise<void> {
     '000',
     join('/dev', options.device),
     options.label ?? `usb-drive-${options.device}`,
-  ])
+  ]);
 }
 
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
     async (event: IpcMainInvokeEvent, options: Options) => {
-      await mountUsbDrive(options)
+      await mountUsbDrive(options);
     },
-  )
+  );
 }

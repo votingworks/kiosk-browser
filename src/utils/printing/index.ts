@@ -1,34 +1,34 @@
-import makeDebug from 'debug'
+import makeDebug from 'debug';
 
-export const debug = makeDebug('kiosk-browser:printing')
+export const debug = makeDebug('kiosk-browser:printing');
 
 export interface PrintConfig {
-  printerName: string
-  printers: Printer[]
+  printerName: string;
+  printers: Printer[];
 }
 
 export interface Printer {
-  label: string
-  vendorId: number
-  productId: number
-  baseDeviceURI: string
-  ppd: PostScriptPrinterDefinition
+  label: string;
+  vendorId: number;
+  productId: number;
+  baseDeviceURI: string;
+  ppd: PostScriptPrinterDefinition;
 }
 
 export type PostScriptPrinterDefinition =
   | FilePostScriptPrinterDefinition
-  | ModelPostScriptPrinterDefinition
+  | ModelPostScriptPrinterDefinition;
 
 export interface FilePostScriptPrinterDefinition {
   /**
    * Path to a `.ppd` file for a given printer.
    */
-  path: string
+  path: string;
 }
 
 export interface ModelPostScriptPrinterDefinition {
   /**
    * Name of a well-known printer definition.
    */
-  model: string
+  model: string;
 }

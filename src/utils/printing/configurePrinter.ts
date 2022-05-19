@@ -1,5 +1,5 @@
-import { debug, PostScriptPrinterDefinition } from '.'
-import exec from '../exec'
+import { debug, PostScriptPrinterDefinition } from '.';
+import exec from '../exec';
 
 /**
  * Configures a printer at a given device URI with a name and PPD. Optionally
@@ -11,28 +11,28 @@ export default async function configurePrinter({
   ppd,
   setDefault = false,
 }: {
-  printerName: string
-  deviceURI: string
-  ppd: PostScriptPrinterDefinition
-  setDefault?: boolean
+  printerName: string;
+  deviceURI: string;
+  ppd: PostScriptPrinterDefinition;
+  setDefault?: boolean;
 }): Promise<boolean | void> {
-  const lpadminConfigureArgs = ['-p', printerName, '-v', deviceURI, '-E']
+  const lpadminConfigureArgs = ['-p', printerName, '-v', deviceURI, '-E'];
 
   if ('path' in ppd) {
-    lpadminConfigureArgs.push('-P', ppd.path)
+    lpadminConfigureArgs.push('-P', ppd.path);
   } else {
-    lpadminConfigureArgs.push('-m', ppd.model)
+    lpadminConfigureArgs.push('-m', ppd.model);
   }
 
-  debug('configuring printer with lpadmin: args=%o', lpadminConfigureArgs)
-  await exec('lpadmin', lpadminConfigureArgs)
+  debug('configuring printer with lpadmin: args=%o', lpadminConfigureArgs);
+  await exec('lpadmin', lpadminConfigureArgs);
 
   if (setDefault) {
-    const lpadminSetDefaultArgs = ['-d', printerName]
+    const lpadminSetDefaultArgs = ['-d', printerName];
     debug(
       'setting printer as default with lpadmin: args=%o',
       lpadminSetDefaultArgs,
-    )
-    await exec('lpadmin', lpadminSetDefaultArgs)
+    );
+    await exec('lpadmin', lpadminSetDefaultArgs);
   }
 }

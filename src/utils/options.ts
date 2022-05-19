@@ -1,105 +1,105 @@
-import chalk from 'chalk'
-import makeDebug from 'debug'
-import { promises } from 'fs'
-import { isAbsolute, join } from 'path'
-import { AccessType, OriginFilePermission } from './access'
-import { PrintConfig } from './printing'
+import chalk from 'chalk';
+import makeDebug from 'debug';
+import { promises } from 'fs';
+import { isAbsolute, join } from 'path';
+import { AccessType, OriginFilePermission } from './access';
+import { PrintConfig } from './printing';
 
-const debug = makeDebug('kiosk-browser:options')
+const debug = makeDebug('kiosk-browser:options');
 
 export type ParseOptionsResult =
   | { options: Options; warnings?: string[] }
   | { help: true; warnings?: string[] }
-  | { error: Error; warnings?: string[] }
+  | { error: Error; warnings?: string[] };
 
 export interface Options {
-  url: URL
-  autoconfigurePrintConfig?: PrintConfig
-  allowDevtools?: boolean
-  originFilePermissions: OriginFilePermission[]
-  signifySecretKey?: string
+  url: URL;
+  autoconfigurePrintConfig?: PrintConfig;
+  allowDevtools?: boolean;
+  originFilePermissions: OriginFilePermission[];
+  signifySecretKey?: string;
 }
 
 export interface Help {
-  help: true
+  help: true;
 }
 
 export interface Invalid {
-  error: Error
+  error: Error;
 }
 
 async function parseOptionsWithoutTryCatch(
   argv: typeof process.argv = [],
   env: typeof process.env = {},
 ): Promise<ParseOptionsResult> {
-  debug('parsing options from argv=%o and env=%O', argv, env)
+  debug('parsing options from argv=%o and env=%O', argv, env);
 
-  let urlArg: string | undefined
-  let autoconfigurePrintConfigArg: string | undefined
-  let helpArg: string | undefined
-  let allowDevtoolsArg: boolean | undefined
-  let originFilePermissions: OriginFilePermission[] | undefined
-  let signifySecretKey: string | undefined
-  const warnings: string[] = []
+  let urlArg: string | undefined;
+  let autoconfigurePrintConfigArg: string | undefined;
+  let helpArg: string | undefined;
+  let allowDevtoolsArg: boolean | undefined;
+  let originFilePermissions: OriginFilePermission[] | undefined;
+  let signifySecretKey: string | undefined;
+  const warnings: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
+    const arg = argv[i];
 
     if (arg === '--url' || arg === '-u') {
-      i++
-      urlArg = getOptionValue()
-      debug('got option for %s: %s', arg, urlArg)
+      i++;
+      urlArg = getOptionValue();
+      debug('got option for %s: %s', arg, urlArg);
     } else if (arg === '--autoconfigure-print-config' || arg === '-p') {
-      i++
-      autoconfigurePrintConfigArg = getOptionValue()
-      debug('got option for %s: %s', arg, autoconfigurePrintConfigArg)
+      i++;
+      autoconfigurePrintConfigArg = getOptionValue();
+      debug('got option for %s: %s', arg, autoconfigurePrintConfigArg);
     } else if (arg === '--allow-devtools') {
-      allowDevtoolsArg = true
-      debug('got flag: %s', arg)
+      allowDevtoolsArg = true;
+      debug('got flag: %s', arg);
     } else if (arg === '--add-file-perm' || arg === '-v') {
-      i++
-      const value = argv[i]
-      debug('got option for %s: %s', arg, value)
+      i++;
+      const value = argv[i];
+      debug('got option for %s: %s', arg, value);
       if (!value || value.startsWith('-')) {
-        return { error: new Error(`expected value for option: ${arg}`) }
+        return { error: new Error(`expected value for option: ${arg}`) };
       }
       originFilePermissions = [
         ...(originFilePermissions ?? []),
         parseOriginFilePermissionString(value),
-      ]
+      ];
     } else if (arg === '--signify-secret-key') {
-      i++
-      const value = argv[i]
-      debug('got option for %s: %s', arg, value)
+      i++;
+      const value = argv[i];
+      debug('got option for %s: %s', arg, value);
       if (!value || value.startsWith('-')) {
-        return { error: new Error(`expected value for option: ${arg}`) }
+        return { error: new Error(`expected value for option: ${arg}`) };
       }
-      signifySecretKey = value
+      signifySecretKey = value;
     } else if (arg === '--help' || arg === '-h') {
-      helpArg = arg
+      helpArg = arg;
     } else if (!arg.startsWith('-')) {
       if (urlArg) {
-        return { error: new Error(`duplicate URL argument: ${arg}`) }
+        return { error: new Error(`duplicate URL argument: ${arg}`) };
       }
-      urlArg = arg
-      debug('got implicit URL argument: %s', urlArg)
+      urlArg = arg;
+      debug('got implicit URL argument: %s', urlArg);
     } else {
-      debug('unexpected option: %s', arg)
-      throw new Error(`unexpected option: ${arg}`)
+      debug('unexpected option: %s', arg);
+      throw new Error(`unexpected option: ${arg}`);
     }
 
     // eslint-disable-next-line no-inner-declarations
     function getOptionValue(): string {
       if (i >= argv.length) {
-        throw new Error(`expected value for option: ${arg}`)
+        throw new Error(`expected value for option: ${arg}`);
       }
 
-      return argv[i]
+      return argv[i];
     }
   }
 
   if (helpArg ?? env.KIOSK_BROWSER_HELP) {
-    return { help: true, warnings }
+    return { help: true, warnings };
   }
 
   const options: Options = {
@@ -117,39 +117,39 @@ async function parseOptionsWithoutTryCatch(
       ) ??
       [],
     signifySecretKey: signifySecretKey ?? env.KIOSK_BROWSER_SIGNIFY_SECRET_KEY,
-  }
+  };
 
-  debug('parsed options: %O', options)
+  debug('parsed options: %O', options);
 
-  return { options, warnings }
+  return { options, warnings };
 }
 
 function isAccessType(value: string): value is AccessType {
-  return value === 'ro' || value === 'wo' || value === 'rw'
+  return value === 'ro' || value === 'wo' || value === 'rw';
 }
 
 function parseOriginFilePermissionString(value: string): OriginFilePermission {
-  let origins = '**/*'
-  let paths: string | undefined
-  let access: AccessType = 'rw'
+  let origins = '**/*';
+  let paths: string | undefined;
+  let access: AccessType = 'rw';
 
   for (const part of value.split(',', 3)) {
     if (part.startsWith('o=')) {
-      origins = part.slice('o='.length)
+      origins = part.slice('o='.length);
     } else if (part.startsWith('p=')) {
-      paths = part.slice('p='.length)
+      paths = part.slice('p='.length);
     } else if (isAccessType(part)) {
-      access = part
+      access = part;
     } else {
-      throw new Error(`unknown file permission format '${value}'`)
+      throw new Error(`unknown file permission format '${value}'`);
     }
   }
 
   if (!paths) {
-    throw new Error(`paths missing in file permissions: '${value}'`)
+    throw new Error(`paths missing in file permissions: '${value}'`);
   }
 
-  return { access, origins, paths }
+  return { access, origins, paths };
 }
 
 /**
@@ -160,9 +160,9 @@ export default async function parseOptions(
   env: typeof process.env = {},
 ): Promise<ParseOptionsResult> {
   try {
-    return await parseOptionsWithoutTryCatch(argv, env)
+    return await parseOptionsWithoutTryCatch(argv, env);
   } catch (error) {
-    return { error }
+    return { error: error as Error };
   }
 }
 
@@ -170,34 +170,34 @@ export async function loadPrintConfig(
   printConfigPath?: string,
 ): Promise<PrintConfig | undefined> {
   if (typeof printConfigPath === 'undefined') {
-    return
+    return;
   }
 
-  const printConfigJSON = await promises.readFile(printConfigPath, 'utf8')
-  const printConfig: PrintConfig = JSON.parse(printConfigJSON)
+  const printConfigJSON = await promises.readFile(printConfigPath, 'utf8');
+  const printConfig = JSON.parse(printConfigJSON) as PrintConfig;
 
   for (const printer of printConfig.printers) {
     if ('path' in printer.ppd) {
       if (!isAbsolute(printer.ppd.path)) {
-        printer.ppd.path = join(printConfigPath, '..', printer.ppd.path)
+        printer.ppd.path = join(printConfigPath, '..', printer.ppd.path);
       }
     }
   }
 
-  return printConfig
+  return printConfig;
 }
 
 export function printHelp(
   out: { write(str: string): void } = process.stdout,
 ): void {
-  const b = chalk.bold.underline
-  const i = chalk.italic.green
-  const c = chalk.dim
-  const jK = chalk.cyan
-  const jS = chalk.red
-  const jN = chalk.yellow
-  const str = chalk.blue('string')
-  const num = chalk.blue('number')
+  const b = chalk.bold.underline;
+  const i = chalk.italic.green;
+  const c = chalk.dim;
+  const jK = chalk.cyan;
+  const jS = chalk.red;
+  const jN = chalk.yellow;
+  const str = chalk.blue('string');
+  const num = chalk.blue('number');
   const text = `
 kiosk-browser [OPTIONS] [URL]
 
@@ -283,9 +283,9 @@ Here's an example:
     }
   ]
 }
-`.trim()
+`.trim();
 
   for (const line of text.split('\n')) {
-    out.write(`${line}\n`)
+    out.write(`${line}\n`);
   }
 }

@@ -1,14 +1,14 @@
-import multimatch from 'multimatch'
-import makeDebug from 'debug'
+import multimatch from 'multimatch';
+import makeDebug from 'debug';
 
-const debug = makeDebug('kiosk-browser:access')
+const debug = makeDebug('kiosk-browser:access');
 
-export type AccessType = 'ro' | 'wo' | 'rw'
+export type AccessType = 'ro' | 'wo' | 'rw';
 
 export interface OriginFilePermission {
-  readonly paths: string
-  readonly origins: string
-  readonly access: AccessType
+  readonly paths: string;
+  readonly origins: string;
+  readonly access: AccessType;
 }
 
 /**
@@ -21,15 +21,15 @@ export function hasAccess(
   path?: string,
   ...accesses: AccessType[]
 ): boolean {
-  let result = false
+  let result = false;
 
   for (const { origins, paths, access } of permissions) {
     if (
       matchesPatterns(origin, origins) &&
       (!path || matchesPatterns(path, paths))
     ) {
-      result = accesses.includes(access)
-      break
+      result = accesses.includes(access);
+      break;
     }
   }
 
@@ -40,9 +40,9 @@ export function hasAccess(
     path,
     accesses,
     permissions,
-  )
+  );
 
-  return result
+  return result;
 }
 
 /**
@@ -54,7 +54,7 @@ export function hasReadAccess(
   origin: string,
   path?: string,
 ): boolean {
-  return hasAccess(permissions, origin, path, 'ro', 'rw')
+  return hasAccess(permissions, origin, path, 'ro', 'rw');
 }
 
 /**
@@ -66,7 +66,7 @@ export function assertHasReadAccess(
   path?: string,
 ): void {
   if (!hasReadAccess(permissions, origin, path)) {
-    throw new Error(`${origin} is not allowed to read ${path ?? 'anything'}`)
+    throw new Error(`${origin} is not allowed to read ${path ?? 'anything'}`);
   }
 }
 
@@ -79,7 +79,7 @@ export function hasWriteAccess(
   origin: string,
   path?: string,
 ): boolean {
-  return hasAccess(permissions, origin, path, 'wo', 'rw')
+  return hasAccess(permissions, origin, path, 'wo', 'rw');
 }
 
 /**
@@ -91,10 +91,10 @@ export function assertHasWriteAccess(
   path?: string,
 ): void {
   if (!hasWriteAccess(permissions, origin, path)) {
-    throw new Error(`${origin} is not allowed to write to ${path ?? 'disk'}`)
+    throw new Error(`${origin} is not allowed to write to ${path ?? 'disk'}`);
   }
 }
 
 function matchesPatterns(value: string, pattern: string): boolean {
-  return multimatch(value, [pattern]).length > 0
+  return multimatch(value, [pattern]).length > 0;
 }
