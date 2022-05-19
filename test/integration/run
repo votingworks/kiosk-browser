@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+ROOT="${DIR}/../.."
+
+yarn -s tsc --project "${ROOT}/tsconfig.json"
+
+PORT=${PORT:-8080}
+TEST_SERVER_URL="http://localhost:${PORT}"
+
+export \
+  DISPLAY=${DISPLAY:-:0} \
+  KIOSK_BROWSER_URL="${TEST_SERVER_URL}" \
+  KIOSK_BROWSER_FILE_PERMISSIONS="o=${TEST_SERVER_URL},p=/**/*,rw"
+
+exec yarn -s concurrently \
+  --names 'server,browser' \
+  --kill-others \
+  --success command-server \
+  "yarn -s vite -l silent --strictPort --port '${PORT}' '${DIR}'" \
+  "yarn -s electron '${ROOT}'"

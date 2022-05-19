@@ -39,4 +39,6 @@ jobs:
         run: yarn lint
 
       - name: Run Tests
-        run: yarn test:coverage
+        uses: GabrielBB/xvfb-action@v1.0
+        with:
+          run: yarn test:ci
