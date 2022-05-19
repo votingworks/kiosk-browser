@@ -67,7 +67,7 @@
     "prettier": "^1.19.1",
     "sort-package-json": "^1.39.1",
     "ts-jest": "^24.3.0",
-    "typescript": "^3.7.0"
+    "typescript": "^4.6.4"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",

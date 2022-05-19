@@ -162,7 +162,7 @@ export default async function parseOptions(
   try {
     return await parseOptionsWithoutTryCatch(argv, env)
   } catch (error) {
-    return { error }
+    return { error: error as Error }
   }
 }
 

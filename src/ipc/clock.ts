@@ -22,9 +22,10 @@ export default function register(ipcMain: IpcMain): void {
     async (event: IpcMainInvokeEvent, params: KioskBrowser.SetClockParams) => {
       try {
         await clockSet(params)
-      } catch (error) {
+      } catch (err) {
+        const error = err as Error
         if ('stderr' in error) {
-          throw new Error(error.stderr)
+          throw new Error(((error as unknown) as { stderr: string }).stderr)
         } else {
           throw error
         }
