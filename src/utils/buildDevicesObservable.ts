@@ -1,8 +1,8 @@
-import { IpcRenderer } from 'electron'
-import { Observable } from 'rxjs'
-import { Device } from './usb'
-import { channel as manageDeviceSubscriptionChannel } from '../ipc/device-subscription'
-import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable'
+import { IpcRenderer } from 'electron';
+import { Observable } from 'rxjs';
+import { Device } from './usb';
+import { channel as manageDeviceSubscriptionChannel } from '../ipc/device-subscription';
+import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable';
 
 /**
  * Build a new observable that yields the current set of connected USB devices
@@ -19,6 +19,6 @@ const buildDevicesObservable = (
   buildIpcMainForwardingObservable<Iterable<Device>>(
     ipcRenderer,
     manageDeviceSubscriptionChannel,
-  )
+  );
 
-export default buildDevicesObservable
+export default buildDevicesObservable;

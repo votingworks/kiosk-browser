@@ -1,8 +1,8 @@
-import exec from '../exec'
-import { debug } from '.'
-import assert from 'assert'
-import tmp from 'tmp-promise'
-import fs from 'fs'
+import exec from '../exec';
+import { debug } from '.';
+import assert from 'assert';
+import tmp from 'tmp-promise';
+import fs from 'fs';
 
 /**
  * IPP printer-state identifies the basic status of a printer.
@@ -23,7 +23,7 @@ export enum IppPrinterState {
  * Note that the actual printer-state-reasons sent by the printer may have a
  * suffix of either: "-report", "-warning", or "-error" (e.g. "media-jam-error").
  */
-export type IppPrinterStateReason = string
+export type IppPrinterStateReason = string;
 
 /**
  * "Marker" is a general name for ink/toner/etc. CUPS implements a variety of
@@ -34,12 +34,12 @@ export type IppPrinterStateReason = string
  * Spec: https://www.cups.org/doc/spec-ipp.html
  */
 export interface IppMarkerInfo {
-  name: string // e.g. "black cartridge"
-  color: string // e.g. "#000000"
-  type: string // e.g. "toner-cartridge"
-  lowLevel: number // e.g. 2
-  highLevel: number // e.g. 100
-  level: number // e.g. 83
+  name: string; // e.g. "black cartridge"
+  color: string; // e.g. "#000000"
+  type: string; // e.g. "toner-cartridge"
+  lowLevel: number; // e.g. 2
+  highLevel: number; // e.g. 100
+  level: number; // e.g. 83
 }
 
 /**
@@ -48,10 +48,10 @@ export interface IppMarkerInfo {
 export type PrinterIppAttributes =
   | { state: IppPrinterState.Unknown }
   | {
-      state: IppPrinterState
-      stateReasons: IppPrinterStateReason[]
-      markerInfos: IppMarkerInfo[]
-    }
+      state: IppPrinterState;
+      stateReasons: IppPrinterStateReason[];
+      markerInfos: IppMarkerInfo[];
+    };
 
 export const ippAttributesToQuery = [
   'printer-state',
@@ -63,7 +63,7 @@ export const ippAttributesToQuery = [
   'marker-high-levels',
   'marker-levels',
   'printer-alert-description',
-]
+];
 const ippQuery = `{
   OPERATION Get-Printer-Attributes
   GROUP operation-attributes-tag
@@ -71,7 +71,7 @@ const ippQuery = `{
   ATTR language attributes-natural-language en
   ATTR uri printer-uri $uri
   ATTR keyword requested-attributes ${ippAttributesToQuery.join(',')}
-}`
+}`;
 
 /**
  * Query the printer for its status via IPP.
@@ -81,24 +81,24 @@ export async function getPrinterIppAttributes(
 ): Promise<PrinterIppAttributes> {
   // ipptool takes a file to specify the query to make, so we write a temporary
   // file with the query text
-  const queryFile = await tmp.file()
-  await fs.promises.writeFile(queryFile.path, ippQuery)
+  const queryFile = await tmp.file();
+  await fs.promises.writeFile(queryFile.path, ippQuery);
 
-  const ipptoolArgs = ['-T', '1', '-tv', printerIppUri, queryFile.path]
-  debug('getting printer IPP attributes from ipptool, args=%o', ipptoolArgs)
-  let ipptoolResult: { stdout: string; stderr: string }
+  const ipptoolArgs = ['-T', '1', '-tv', printerIppUri, queryFile.path];
+  debug('getting printer IPP attributes from ipptool, args=%o', ipptoolArgs);
+  let ipptoolResult: { stdout: string; stderr: string };
   try {
-    ipptoolResult = await exec(`ipptool`, ipptoolArgs)
-    debug('ipptool stdout:\n%s', ipptoolResult.stdout)
-    debug('ipptool stderr:\n%s', ipptoolResult.stderr)
+    ipptoolResult = await exec(`ipptool`, ipptoolArgs);
+    debug('ipptool stdout:\n%s', ipptoolResult.stdout);
+    debug('ipptool stderr:\n%s', ipptoolResult.stderr);
 
-    const attributes = parseIpptoolOutput(ipptoolResult.stdout)
-    debug('parsed ipptool attributes: %O', attributes)
+    const attributes = parseIpptoolOutput(ipptoolResult.stdout);
+    debug('parsed ipptool attributes: %O', attributes);
 
-    const state = attributes['printer-state'] as IppPrinterState
+    const state = attributes['printer-state'] as IppPrinterState;
     let stateReasons = wrapWithArray(
       attributes['printer-state-reasons'],
-    ) as IppPrinterStateReason[]
+    ) as IppPrinterStateReason[];
 
     // On HP printers, printer-alert-description contains a list of the last few
     // status messages shown on the printer screen. When sleep mode is on, this
@@ -106,9 +106,9 @@ export async function getPrinterIppAttributes(
     // e.g. "cover open" - are not returned in printer-state-reasons).
     const lastAlert = wrapWithArray(
       attributes['printer-alert-description'],
-    ).pop()
+    ).pop();
     if (lastAlert == 'Sleep Mode' && state == 'idle') {
-      stateReasons = ['sleep-mode']
+      stateReasons = ['sleep-mode'];
     }
 
     const markerInfos = zip(
@@ -128,20 +128,20 @@ export async function getPrinterIppAttributes(
           highLevel,
           level,
         } as IppMarkerInfo),
-    )
+    );
 
-    return { state, stateReasons, markerInfos }
+    return { state, stateReasons, markerInfos };
   } catch (error) {
-    debug('ipptool error: %o', error)
-    throw error
+    debug('ipptool error: %o', error);
+    throw error;
   } finally {
-    queryFile.cleanup()
+    void queryFile.cleanup();
   }
 }
 
 type IppAttributes = {
-  [attribute: string]: string | string[] | number | number[]
-}
+  [attribute: string]: string | string[] | number | number[];
+};
 
 /**
  * Parse the output of ipptool. It looks like this:
@@ -160,63 +160,61 @@ type IppAttributes = {
  *          printer-state-reasons (1setOf keyword) = media-empty-error,media-needed-error,media-empty-error
  */
 function parseIpptoolOutput(output: string): IppAttributes {
-  let lines = output.split('\n')
-  assert(lines.length > 0, 'ipptool output is empty')
+  let lines = output.split('\n');
+  assert(lines.length > 0, 'ipptool output is empty');
   lines = lines.slice(
-    lines.findIndex(line => line.trim().startsWith('RECEIVED')) + 1,
-  )
-  const statusLine = lines.shift()?.trim()
+    lines.findIndex((line) => line.trim().startsWith('RECEIVED')) + 1,
+  );
+  const statusLine = lines.shift()?.trim();
   assert(
     statusLine === 'status-code = successful-ok (successful-ok)',
-    `Unsuccessful ipptool response: ${statusLine}`,
-  )
-  assert(lines.shift()?.trim() === 'attributes-charset (charset) = utf-8')
+    `Unsuccessful ipptool response: ${statusLine ?? '<empty>'}`,
+  );
+  assert(lines.shift()?.trim() === 'attributes-charset (charset) = utf-8');
   assert(
     lines.shift()?.trim() ===
       'attributes-natural-language (naturalLanguage) = en',
-  )
+  );
 
-  const lineRegex = /^(.+) \((.+)\) = (.+)$/
-  const attributes = Object.fromEntries(
-    lines
-      .filter(line => line !== '')
-      .map(line => {
-        line = line.trim()
-        const matches = lineRegex.exec(line)
-        if (!matches) {
-          throw Error(`Unable to parse ipptool output line: ${line}`)
-        }
-        const [, attribute, type, value] = matches
-        switch (type) {
-          case 'keyword':
-          case 'enum':
-          case 'nameWithoutLanguage':
-          case 'textWithoutLanguage':
-            return [attribute, value]
-          case 'integer':
-            return [attribute, parseInt(value, 10)]
-          case '1setOf keyword':
-          case '1setOf enum':
-          case '1setOf nameWithoutLanguage':
-          case '1setOf textWithoutLanguage':
-            return [attribute, value.split(',')]
-          case '1setOf integer':
-            return [
-              attribute,
-              value.split(',').map(number => parseInt(number, 10)),
-            ]
-          default:
-            throw Error(`Unrecognized ipptool attribute type: ${type}`)
-        }
-      }),
-  )
-  return attributes
+  const lineRegex = /^(.+) \((.+)\) = (.+)$/;
+  const attributes = lines
+    .filter((line) => line !== '')
+    .reduce<IppAttributes>((attrs, line) => {
+      line = line.trim();
+      const matches = lineRegex.exec(line);
+      if (!matches) {
+        throw Error(`Unable to parse ipptool output line: ${line}`);
+      }
+      const [, attribute, type, value] = matches;
+      switch (type) {
+        case 'keyword':
+        case 'enum':
+        case 'nameWithoutLanguage':
+        case 'textWithoutLanguage':
+          return { ...attrs, [attribute]: value };
+        case 'integer':
+          return { ...attrs, [attribute]: parseInt(value, 10) };
+        case '1setOf keyword':
+        case '1setOf enum':
+        case '1setOf nameWithoutLanguage':
+        case '1setOf textWithoutLanguage':
+          return { ...attrs, [attribute]: value.split(',') };
+        case '1setOf integer':
+          return {
+            ...attrs,
+            [attribute]: value.split(',').map((number) => parseInt(number, 10)),
+          };
+        default:
+          throw Error(`Unrecognized ipptool attribute type: ${type}`);
+      }
+    }, {});
+  return attributes;
 }
 
 function wrapWithArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
+  return Array.isArray(value) ? value : [value];
 }
 
 function zip(...arrays: unknown[][]): unknown[][] {
-  return arrays[0].map((_, i) => arrays.map(a => a[i]))
+  return arrays[0].map((_, i) => arrays.map((a) => a[i]));
 }

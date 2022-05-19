@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "strict": true,
+    "skipLibCheck": true,
     "target": "ES2020",
     "paths": {
       "*": ["node_modules/*"]

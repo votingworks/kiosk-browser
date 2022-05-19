@@ -1,13 +1,13 @@
-import fakeDevice from '../../../test/fakeDevice'
-import mockOf from '../../../test/mockOf'
+import fakeDevice from '../../../test/fakeDevice';
+import mockOf from '../../../test/mockOf';
 
-import configurePrinter from './configurePrinter'
-import getConnectedDeviceURIs from './getConnectedDeviceURIs'
-import configurePrinterFromDevice from './configurePrinterFromDevice'
+import configurePrinter from './configurePrinter';
+import getConnectedDeviceURIs from './getConnectedDeviceURIs';
+import configurePrinterFromDevice from './configurePrinterFromDevice';
 
-jest.mock('./configurePrinter')
-jest.mock('./getConnectedDeviceURIs')
-jest.mock('./getPrinterDeviceURI')
+jest.mock('./configurePrinter');
+jest.mock('./getConnectedDeviceURIs');
+jest.mock('./getPrinterDeviceURI');
 
 test('device not matching a known printer', async () => {
   await configurePrinterFromDevice(
@@ -16,13 +16,13 @@ test('device not matching a known printer', async () => {
       printers: [],
     },
     fakeDevice(),
-  )
+  );
 
-  expect(configurePrinter).not.toHaveBeenCalled()
-})
+  expect(configurePrinter).not.toHaveBeenCalled();
+});
 
 test('device matching a known printer but not matching a connected device URI', async () => {
-  mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set())
+  mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set());
 
   await configurePrinterFromDevice(
     {
@@ -38,15 +38,15 @@ test('device matching a known printer but not matching a connected device URI', 
       ],
     },
     fakeDevice({ productId: 0x123, vendorId: 0x456 }),
-  )
+  );
 
-  expect(configurePrinter).not.toHaveBeenCalled()
-})
+  expect(configurePrinter).not.toHaveBeenCalled();
+});
 
 test('device matching a known printer and a connected device URI', async () => {
   mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
     new Set(['usb://HP/LaserSomething?serial=abc123']),
-  )
+  );
 
   await configurePrinterFromDevice(
     {
@@ -62,12 +62,12 @@ test('device matching a known printer and a connected device URI', async () => {
       ],
     },
     fakeDevice({ productId: 0x123, vendorId: 0x456 }),
-  )
+  );
 
   expect(configurePrinter).toHaveBeenCalledWith({
     printerName: 'VxPrinter',
     ppd: { model: 'foomatic-something' },
     deviceURI: 'usb://HP/LaserSomething?serial=abc123',
     setDefault: true,
-  })
-})
+  });
+});

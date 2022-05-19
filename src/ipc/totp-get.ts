@@ -1,14 +1,14 @@
-import makeDebug from 'debug'
-import { IpcMain } from 'electron'
-import exec from '../utils/exec'
+import makeDebug from 'debug';
+import { IpcMain } from 'electron';
+import exec from '../utils/exec';
 
-export const channel = 'totpGet'
+export const channel = 'totpGet';
 
-const debug = makeDebug('kiosk-browser:totp')
+const debug = makeDebug('kiosk-browser:totp');
 
 export interface TotpInfo {
-  isoDatetime: string
-  code: string
+  isoDatetime: string;
+  code: string;
 }
 
 async function totpGet(): Promise<TotpInfo | undefined> {
@@ -18,22 +18,22 @@ async function totpGet(): Promise<TotpInfo | undefined> {
       '/usr/local/bin/tpm2-totp',
       '-t',
       'show',
-    ])
+    ]);
 
-    if (stderr) return undefined
+    if (stderr) return undefined;
 
-    const [timestamp, code] = stdout.split(': ')
+    const [timestamp, code] = stdout.split(': ');
 
     return {
       isoDatetime: new Date(timestamp).toISOString(),
       code,
-    }
+    };
   } catch (err) {
-    debug('could not call tpm2-totp: %s', err)
-    return undefined
+    debug('could not call tpm2-totp: %s', err);
+    return undefined;
   }
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async () => totpGet())
+  ipcMain.handle(channel, async () => totpGet());
 }

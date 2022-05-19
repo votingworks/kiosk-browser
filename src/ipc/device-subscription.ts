@@ -1,39 +1,39 @@
-import { IpcMainInvokeEvent, WebContents } from 'electron'
-import { Subscription } from 'rxjs'
-import { RegisterIpcHandler } from '..'
+import { IpcMainInvokeEvent, WebContents } from 'electron';
+import { Subscription } from 'rxjs';
+import { RegisterIpcHandler } from '..';
 
-export const channel = 'device-subscription'
+export const channel = 'device-subscription';
 
 /**
  * Subscribe to add/remove USB device events.
  */
 export const register: RegisterIpcHandler = (ipcMain, { changedDevices }) => {
-  const subscriptions = new Map<WebContents, Subscription>()
+  const subscriptions = new Map<WebContents, Subscription>();
 
   ipcMain.handle(
     channel,
     (event: IpcMainInvokeEvent, { subscribe }: { subscribe: boolean }) => {
-      const webContents = event.sender
-      const subscription = subscriptions.get(webContents)
+      const webContents = event.sender;
+      const subscription = subscriptions.get(webContents);
 
       // Always remove the old subscription as there's only one per WebContents.
-      subscription?.unsubscribe()
+      subscription?.unsubscribe();
 
       if (subscribe) {
-        const subscription = changedDevices.subscribe(set =>
+        const subscription = changedDevices.subscribe((set) =>
           webContents.send(channel, Array.from(set)),
-        )
+        );
 
-        subscriptions.set(webContents, subscription)
+        subscriptions.set(webContents, subscription);
         webContents.on('destroyed', () => {
-          subscription.unsubscribe()
-          subscriptions.delete(webContents)
-        })
+          subscription.unsubscribe();
+          subscriptions.delete(webContents);
+        });
       } else if (!subscribe) {
-        subscriptions.delete(webContents)
+        subscriptions.delete(webContents);
       }
     },
-  )
-}
+  );
+};
 
-export default register
+export default register;

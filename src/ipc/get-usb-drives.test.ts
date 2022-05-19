@@ -1,13 +1,13 @@
-import { IpcMain } from 'electron'
-import { promises as fs } from 'fs'
-import mockOf from '../../test/mockOf'
-import exec from '../utils/exec'
-import register, { channel } from './get-usb-drives'
+import { IpcMain, IpcMainEvent } from 'electron';
+import { promises as fs } from 'fs';
+import mockOf from '../../test/mockOf';
+import exec from '../utils/exec';
+import register, { channel, UsbDrive } from './get-usb-drives';
 
-const execMock = mockOf(exec)
-const accessMock = (fs.access as unknown) as jest.Mock<Promise<void>>
-const readdirMock = (fs.readdir as unknown) as jest.Mock<Promise<string[]>>
-const readlinkMock = (fs.readlink as unknown) as jest.Mock<Promise<string>>
+const execMock = mockOf(exec);
+const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
+const readdirMock = fs.readdir as unknown as jest.Mock<Promise<string[]>>;
+const readlinkMock = fs.readlink as unknown as jest.Mock<Promise<string>>;
 
 jest.mock('fs', () => ({
   promises: {
@@ -15,24 +15,27 @@ jest.mock('fs', () => ({
     readdir: jest.fn(),
     readlink: jest.fn(),
   },
-}))
-jest.mock('../utils/exec')
+}));
+jest.mock('../utils/exec');
 
 test('get-usb-drives', async () => {
   // Register our handler.
-  const handle = jest.fn()
-  register(({ handle } as unknown) as IpcMain)
+  const handle = jest.fn<
+    ReturnType<IpcMain['handle']>,
+    Parameters<IpcMain['handle']>
+  >();
+  register({ handle } as unknown as IpcMain);
 
   // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
+  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
 
   readdirMock.mockResolvedValueOnce([
     'usb-foobar-part23',
     'notausb-bazbar-part21',
     'usb-babar-part3',
-  ])
-  readlinkMock.mockResolvedValueOnce('../../sdb1')
-  readlinkMock.mockResolvedValueOnce('../../sdc1')
+  ]);
+  readlinkMock.mockResolvedValueOnce('../../sdb1');
+  readlinkMock.mockResolvedValueOnce('../../sdc1');
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
@@ -48,7 +51,7 @@ test('get-usb-drives', async () => {
       ],
     }),
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
@@ -64,7 +67,7 @@ test('get-usb-drives', async () => {
       ],
     }),
     stderr: '',
-  })
+  });
 
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
@@ -84,34 +87,37 @@ test('get-usb-drives', async () => {
       ],
     }),
     stderr: '',
-  })
+  });
 
-  accessMock.mockResolvedValueOnce().mockRejectedValueOnce(new Error('ENOENT'))
+  accessMock.mockResolvedValueOnce().mockRejectedValueOnce(new Error('ENOENT'));
 
   // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0]
-  const devices = await handler()
+  const [, handler] = handle.mock.calls[0];
+  const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
 
-  expect(execMock).toHaveBeenCalledTimes(4)
+  expect(execMock).toHaveBeenCalledTimes(4);
   expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
     '/media/usb-drive-sdz1',
-  ])
+  ]);
   expect(devices).toEqual([
     { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
     { deviceName: 'sdc1' },
-  ])
-})
+  ]);
+});
 
 test('get-usb-drives works when findmnt returns nothing', async () => {
   // Register our handler.
-  const handle = jest.fn()
-  register(({ handle } as unknown) as IpcMain)
+  const handle = jest.fn<
+    ReturnType<IpcMain['handle']>,
+    Parameters<IpcMain['handle']>
+  >();
+  register({ handle } as unknown as IpcMain);
 
   // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function))
+  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
 
-  readdirMock.mockResolvedValueOnce(['usb-foobar-part23'])
-  readlinkMock.mockResolvedValueOnce('../../sdb1')
+  readdirMock.mockResolvedValueOnce(['usb-foobar-part23']);
+  readlinkMock.mockResolvedValueOnce('../../sdb1');
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
@@ -127,20 +133,20 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
       ],
     }),
     stderr: '',
-  })
+  });
 
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
-  })
+  });
 
   // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0]
-  const devices = await handler()
+  const [, handler] = handle.mock.calls[0];
+  const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
 
-  expect(execMock).toHaveBeenCalledTimes(2)
-  expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list'])
+  expect(execMock).toHaveBeenCalledTimes(2);
+  expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list']);
   expect(devices).toEqual([
     { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
-  ])
-})
+  ]);
+});

@@ -1,14 +1,17 @@
-import { Client as FileWriteClient, Write } from '../ipc/file-system-write-file'
-import { Client as SaveAsClient, PromptToSaveOptions } from '../ipc/saveAs'
-import path from 'path'
+import {
+  Client as FileWriteClient,
+  Write,
+} from '../ipc/file-system-write-file';
+import { Client as SaveAsClient, PromptToSaveOptions } from '../ipc/saveAs';
+import path from 'path';
 
 /**
  * Handles writing data to files.
  */
 export interface FileWriter {
-  write(data: Write['data']): Promise<void>
-  end(): Promise<void>
-  filename: string
+  write(data: Write['data']): Promise<void>;
+  end(): Promise<void>;
+  filename: string;
 }
 
 /**
@@ -23,7 +26,7 @@ export function create(
     write: (data): Promise<void> => client.write(fd, data),
     end: (): Promise<void> => client.end(fd),
     filename: filename,
-  }
+  };
 }
 
 /**
@@ -33,9 +36,9 @@ export async function fromPath(
   filePath: string,
   client = new FileWriteClient(),
 ): Promise<FileWriter> {
-  const filename = path.parse(filePath).base
-  const { fd } = await client.open(filePath)
-  return create(fd, filename, client)
+  const filename = path.parse(filePath).base;
+  const { fd } = await client.open(filePath);
+  return create(fd, filename, client);
 }
 
 /**
@@ -45,11 +48,11 @@ export async function fromPrompt(
   options?: PromptToSaveOptions,
   client = new SaveAsClient(),
 ): Promise<FileWriter | undefined> {
-  const output = await client.promptToSave(options)
+  const output = await client.promptToSave(options);
 
   if (output.type === 'cancel') {
-    return
+    return;
   }
 
-  return create(output.fd, output.name, client)
+  return create(output.fd, output.name, client);
 }

@@ -1,10 +1,10 @@
-import exec from './exec'
-import mockOf from '../../test/mockOf'
-import { getMainScreen } from './screen'
+import exec from './exec';
+import mockOf from '../../test/mockOf';
+import { getMainScreen } from './screen';
 
-jest.mock('./exec', () => jest.fn())
+jest.mock('./exec', () => jest.fn());
 
-const execMock = mockOf(exec)
+const execMock = mockOf(exec);
 
 test('`getMainScreen` gets screen information for the first connected screen', async () => {
   execMock.mockResolvedValue({
@@ -20,7 +20,7 @@ Virtual4 disconnected
 Virtual5 disconnected
 Virtual6 disconnected`,
     stderr: '',
-  })
+  });
 
   expect(await getMainScreen()).toMatchInlineSnapshot(`
     Object {
@@ -51,14 +51,14 @@ Virtual6 disconnected`,
       ],
       "width": 1314,
     }
-  `)
-})
+  `);
+});
 
 test('`getMainScreen` returns nothing if there are no connected screens', async () => {
   execMock.mockResolvedValue({
     stdout: '',
     stderr: '',
-  })
+  });
 
-  expect(await getMainScreen()).toBeUndefined()
-})
+  expect(await getMainScreen()).toBeUndefined();
+});

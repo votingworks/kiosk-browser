@@ -1,22 +1,22 @@
 export function ok<T>(
   condition: T,
-  message = `expected condition to be truthy but got: ${condition}`,
+  message = `expected condition to be truthy but got: ${String(condition)}`,
 ): asserts condition {
   if (!condition) {
-    throw new Error(message)
+    throw new Error(message);
   }
 }
 
 export function defined<T>(
   value: T | undefined,
-  message = `expected value to be defined but got: ${value}`,
+  message = `expected value to be defined but got: ${String(value)}`,
 ): asserts value is T {
-  ok(typeof value !== 'undefined', message)
+  ok(typeof value !== 'undefined', message);
 }
 
 export function notDefined<T>(
   value: T | undefined,
-  message = `expected value not to be defined but got: ${value}`,
+  message = `expected value not to be defined but got: ${String(value)}`,
 ): asserts value is undefined {
-  ok(typeof value === 'undefined', message)
+  ok(typeof value === 'undefined', message);
 }

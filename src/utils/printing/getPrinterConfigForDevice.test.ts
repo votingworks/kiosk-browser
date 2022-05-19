@@ -1,11 +1,11 @@
-import getPrinterConfigForDevice from './getPrinterConfigForDevice'
-import fakeDevice from '../../../test/fakeDevice'
+import getPrinterConfigForDevice from './getPrinterConfigForDevice';
+import fakeDevice from '../../../test/fakeDevice';
 
 test('config has no printers', () => {
   expect(
     getPrinterConfigForDevice({ printerName: '', printers: [] }, fakeDevice()),
-  ).toEqual(undefined)
-})
+  ).toEqual(undefined);
+});
 
 test('config printers do not match device', () => {
   expect(
@@ -24,8 +24,8 @@ test('config printers do not match device', () => {
       },
       fakeDevice({ productId: 1, vendorId: 1 }),
     ),
-  ).toEqual(undefined)
-})
+  ).toEqual(undefined);
+});
 
 test('a config printer matches the device', () => {
   expect(
@@ -44,5 +44,5 @@ test('a config printer matches the device', () => {
       },
       fakeDevice({ productId: 0, vendorId: 0 }),
     ),
-  ).toEqual(expect.objectContaining({ label: 'Example Printer' }))
-})
+  ).toEqual(expect.objectContaining({ label: 'Example Printer' }));
+});

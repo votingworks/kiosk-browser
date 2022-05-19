@@ -1,18 +1,18 @@
-import { parsePrinterOptions, getPrinterOptions } from './options'
-import exec from '../exec'
-import mockOf from '../../../test/mockOf'
+import { parsePrinterOptions, getPrinterOptions } from './options';
+import exec from '../exec';
+import mockOf from '../../../test/mockOf';
 
-jest.mock('../exec')
+jest.mock('../exec');
 
-const execMock = mockOf(exec)
+const execMock = mockOf(exec);
 
 beforeEach(() => {
-  execMock.mockRestore()
-})
+  execMock.mockRestore();
+});
 
 test('parse empty options', () => {
-  expect(parsePrinterOptions('')).toEqual({})
-})
+  expect(parsePrinterOptions('')).toEqual({});
+});
 
 test('no default', () => {
   expect(parsePrinterOptions('Opt/Option Name: A B')).toEqual({
@@ -21,8 +21,8 @@ test('no default', () => {
       label: 'Option Name',
       values: ['A', 'B'],
     },
-  })
-})
+  });
+});
 
 test('full option set', () => {
   expect(
@@ -247,14 +247,14 @@ HPFTDigit/Fourth Digit: *0 1 2 3 4 5 6 7 8 9
         ],
       },
     }
-  `)
-})
+  `);
+});
 
 test('options for default printer', async () => {
   execMock.mockResolvedValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
-  })
+  });
 
   expect(await getPrinterOptions()).toEqual({
     Opt: {
@@ -262,16 +262,16 @@ test('options for default printer', async () => {
       label: 'Option Name',
       values: ['A', 'B'],
     },
-  })
+  });
 
-  expect(exec).toHaveBeenCalledWith('lpoptions', ['-l'])
-})
+  expect(exec).toHaveBeenCalledWith('lpoptions', ['-l']);
+});
 
 test('options for named printer', async () => {
   execMock.mockResolvedValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
-  })
+  });
 
   expect(await getPrinterOptions('VxPrinter')).toEqual({
     Opt: {
@@ -279,7 +279,7 @@ test('options for named printer', async () => {
       label: 'Option Name',
       values: ['A', 'B'],
     },
-  })
+  });
 
-  expect(exec).toHaveBeenCalledWith('lpoptions', ['-p', 'VxPrinter', '-l'])
-})
+  expect(exec).toHaveBeenCalledWith('lpoptions', ['-p', 'VxPrinter', '-l']);
+});

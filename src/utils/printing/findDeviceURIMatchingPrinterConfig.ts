@@ -1,4 +1,4 @@
-import { Printer } from '.'
+import { Printer } from '.';
 
 /**
  */
@@ -8,7 +8,7 @@ export default function findDeviceURIMatchingPrinterConfig(
 ): string | undefined {
   for (const deviceURI of deviceURIs) {
     if (deviceURI.startsWith(printer.baseDeviceURI)) {
-      return deviceURI
+      return deviceURI;
     }
   }
 }

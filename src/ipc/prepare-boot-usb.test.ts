@@ -1,20 +1,20 @@
-import { fakeIpc } from '../../test/ipc'
-import mockOf from '../../test/mockOf'
-import exec from '../utils/exec'
-import register, { channel } from './prepare-boot-usb'
+import { fakeIpc } from '../../test/ipc';
+import mockOf from '../../test/mockOf';
+import exec from '../utils/exec';
+import register, { channel } from './prepare-boot-usb';
 
-const execMock = mockOf(exec)
+const execMock = mockOf(exec);
 
-jest.mock('../utils/exec')
+jest.mock('../utils/exec');
 
 beforeEach(() => {
-  execMock.mockClear()
-})
+  execMock.mockClear();
+});
 
 test('prepare-boot-usb returns false when no bootable usbs', async () => {
   // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc()
-  register(ipcMain)
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain);
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -29,30 +29,30 @@ Boot0004* UEFI Shell	FvVol(45801e53-5502-4463-929a-9bafaf424a72)/FvFile(7c04a583
 Boot0005* debian	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(\\EFI\\debian\\shimaa64.efi)
     `,
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"7dd453ac-01"}]}',
     stderr: '',
-  })
+  });
 
   // Is the handler wired up right?
-  const result = await ipcRenderer.invoke(channel)
-  expect(result).toBe(false)
+  const result = (await ipcRenderer.invoke(channel)) as boolean;
+  expect(result).toBe(false);
 
-  expect(execMock).toBeCalledTimes(2)
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
+  expect(execMock).toBeCalledTimes(2);
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
   expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
     '-o',
     'partuuid,name',
     '-J',
     '-l',
-  ])
-})
+  ]);
+});
 
 test('prepare-boot-usb returns false when there are more than one bootable usbs', async () => {
   // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc()
-  register(ipcMain)
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain);
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -67,31 +67,31 @@ Boot2002* EFI DVD/CDROM	RC
 Boot2003* EFI Network	RC
        `,
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout:
       '{"blockdevices": [{"name": "sda1", "partuuid":"123d08f-01"}, {"name": "sdb1", "partuuid":"314d08f-01"}]}',
     stderr: '',
-  })
+  });
 
   // Is the handler wired up right?
-  const result = await ipcRenderer.invoke(channel)
-  expect(result).toBe(false)
+  const result = (await ipcRenderer.invoke(channel)) as boolean;
+  expect(result).toBe(false);
 
-  expect(execMock).toBeCalledTimes(2)
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
+  expect(execMock).toBeCalledTimes(2);
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
   expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
     '-o',
     'partuuid,name',
     '-J',
     '-l',
-  ])
-})
+  ]);
+});
 
 test('prepare-boot-usb returns true when expected and sets correct boot order', async () => {
   // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc()
-  register(ipcMain)
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain);
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -105,39 +105,39 @@ Boot2002* EFI DVD/CDROM	RC
 Boot2003* EFI Network	RC
        `,
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
-  })
+  });
 
   // Is the handler wired up right?
-  const result = await ipcRenderer.invoke(channel)
-  expect(result).toBe(true)
-  expect(execMock).toBeCalledTimes(3)
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
+  const result = (await ipcRenderer.invoke(channel)) as boolean;
+  expect(result).toBe(true);
+  expect(execMock).toBeCalledTimes(3);
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
   expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
     '-o',
     'partuuid,name',
     '-J',
     '-l',
-  ])
+  ]);
   expect(execMock).toHaveBeenNthCalledWith(3, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
     '0001',
-  ])
-})
+  ]);
+});
 
 test('prepare-boot-usb returns true when there is a fallback Boot Menu option', async () => {
   // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc()
-  register(ipcMain)
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain);
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -151,31 +151,31 @@ Boot2003* EFI Network	RC
 Boot200E  Boot Menu	RC
        `,
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
     stderr: '',
-  })
+  });
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
-  })
+  });
 
   // Is the handler wired up right?
-  const result = await ipcRenderer.invoke(channel)
-  expect(result).toBe(true)
-  expect(execMock).toBeCalledTimes(3)
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v'])
+  const result = (await ipcRenderer.invoke(channel)) as boolean;
+  expect(result).toBe(true);
+  expect(execMock).toBeCalledTimes(3);
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
   expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
     '-o',
     'partuuid,name',
     '-J',
     '-l',
-  ])
+  ]);
   expect(execMock).toHaveBeenNthCalledWith(3, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
     '200E',
-  ])
-})
+  ]);
+});

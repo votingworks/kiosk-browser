@@ -1,6 +1,6 @@
 export interface ImmutableSet<T> extends Iterable<T> {
-  add(value: T): ImmutableSet<T>
-  delete(value: T): ImmutableSet<T>
+  add(value: T): ImmutableSet<T>;
+  delete(value: T): ImmutableSet<T>;
 }
 
 /**
@@ -30,18 +30,18 @@ export interface ImmutableSet<T> extends Iterable<T> {
  * ```
  */
 export default class KeySet<T, K> implements ImmutableSet<T> {
-  private keyFn: (value: T) => K
-  private map = new Map<K, T>()
+  private keyFn: (value: T) => K;
+  private map = new Map<K, T>();
 
   /**
    * @param keyFn Maps a value to a key, where two values with the same key are
    *              considered to be equivalent.
    */
   public constructor(keyFn: (value: T) => K, values: Iterable<T> = []) {
-    this.keyFn = keyFn
+    this.keyFn = keyFn;
 
     for (const value of values) {
-      this.map.set(keyFn(value), value)
+      this.map.set(keyFn(value), value);
     }
   }
 
@@ -49,32 +49,32 @@ export default class KeySet<T, K> implements ImmutableSet<T> {
    * Determines whether this set has a given value based on key equivalence.
    */
   public has(value: T): boolean {
-    return this.map.has(this.keyFn(value))
+    return this.map.has(this.keyFn(value));
   }
 
   /**
    * Builds a new set that includes a new value.
    */
   public add(value: T): KeySet<T, K> {
-    return new KeySet(this.keyFn, [...this.values(), value])
+    return new KeySet(this.keyFn, [...this.values(), value]);
   }
 
   /**
    * Deletes a value from the set based on key equivalence.
    */
   public delete(value: T): KeySet<T, K> {
-    const key = this.keyFn(value)
+    const key = this.keyFn(value);
     return new KeySet(
       this.keyFn,
-      [...this.values()].filter(value => this.keyFn(value) !== key),
-    )
+      [...this.values()].filter((value) => this.keyFn(value) !== key),
+    );
   }
 
   /**
    * Clears all values in the set.
    */
   public clear(): KeySet<T, K> {
-    return new KeySet<T, K>(this.keyFn)
+    return new KeySet<T, K>(this.keyFn);
   }
 
   /**
@@ -85,23 +85,23 @@ export default class KeySet<T, K> implements ImmutableSet<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     thisArg?: any,
   ): void {
-    this.map.forEach(value => {
-      callbackfn(value, value, this)
-    }, thisArg)
+    this.map.forEach((value) => {
+      callbackfn(value, value, this);
+    }, thisArg);
   }
 
   /**
    * Gets the number of values in the set.
    */
   public get size(): number {
-    return this.map.size
+    return this.map.size;
   }
 
   /**
    * Gets an iterator for all values in the set.
    */
   public [Symbol.iterator](): IterableIterator<T> {
-    return this.map.values()
+    return this.map.values();
   }
 
   /**
@@ -109,7 +109,7 @@ export default class KeySet<T, K> implements ImmutableSet<T> {
    * and not a map, keys and values are the same.
    */
   public entries(): IterableIterator<[T, T]> {
-    return new Set<T>(this.map.values()).entries()
+    return new Set<T>(this.map.values()).entries();
   }
 
   /**
@@ -117,20 +117,20 @@ export default class KeySet<T, K> implements ImmutableSet<T> {
    * map, keys and values are the same.
    */
   public keys(): IterableIterator<T> {
-    return this.map.values()
+    return this.map.values();
   }
 
   /**
    * Gets an iterator for all values in the set.
    */
   public values(): IterableIterator<T> {
-    return this.map.values()
+    return this.map.values();
   }
 
   /**
    * Gets a string value used to construct a description of the set.
    */
   public get [Symbol.toStringTag](): string {
-    return Set.prototype[Symbol.toStringTag]
+    return Set.prototype[Symbol.toStringTag];
   }
 }

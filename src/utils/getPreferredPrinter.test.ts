@@ -1,9 +1,9 @@
-import getPreferredPrinter from './getPreferredPrinter'
-import { fakeElectronPrinter } from '../../test/fakePrinter'
+import getPreferredPrinter from './getPreferredPrinter';
+import { fakeElectronPrinter } from '../../test/fakePrinter';
 
 test('returns nothing if given no printers', () => {
-  expect(getPreferredPrinter([])).toBeUndefined()
-})
+  expect(getPreferredPrinter([])).toBeUndefined();
+});
 
 test('gets the default printer if there is one', () => {
   expect(
@@ -11,8 +11,8 @@ test('gets the default printer if there is one', () => {
       fakeElectronPrinter({ name: 'another printer', isDefault: false }),
       fakeElectronPrinter({ name: 'main printer', isDefault: true }),
     ])?.name,
-  ).toEqual('main printer')
-})
+  ).toEqual('main printer');
+});
 
 test('gets the first printer if there is no default printer', () => {
   expect(
@@ -34,5 +34,5 @@ test('gets the first printer if there is no default printer', () => {
         status: 0,
       },
     ])?.name,
-  ).toEqual('printer #1')
-})
+  ).toEqual('printer #1');
+});

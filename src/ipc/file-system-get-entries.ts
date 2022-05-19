@@ -1,13 +1,13 @@
-import makeDebug from 'debug'
-import { IpcMain, IpcMainInvokeEvent } from 'electron'
-import { Dirent, promises as fs } from 'fs'
-import { isAbsolute, join } from 'path'
-import { assertHasReadAccess, OriginFilePermission } from '../utils/access'
-import { Options } from '../utils/options'
+import makeDebug from 'debug';
+import { IpcMain, IpcMainInvokeEvent } from 'electron';
+import { Dirent, promises as fs } from 'fs';
+import { isAbsolute, join } from 'path';
+import { assertHasReadAccess, OriginFilePermission } from '../utils/access';
+import { Options } from '../utils/options';
 
-const debug = makeDebug('kiosk-browser:file-system-get-entries')
+const debug = makeDebug('kiosk-browser:file-system-get-entries');
 
-export const channel = 'file-system-get-entries'
+export const channel = 'file-system-get-entries';
 
 export enum FileSystemEntryType {
   File = 1, // UV_DIRENT_FILE
@@ -20,24 +20,24 @@ export enum FileSystemEntryType {
 }
 
 export interface FileSystemEntry {
-  readonly name: string
-  readonly path: string
-  readonly type: FileSystemEntryType
-  readonly size: number
-  readonly mtime: Date
-  readonly atime: Date
-  readonly ctime: Date
+  readonly name: string;
+  readonly path: string;
+  readonly type: FileSystemEntryType;
+  readonly size: number;
+  readonly mtime: Date;
+  readonly atime: Date;
+  readonly ctime: Date;
 }
 
 export function getDirentType(dirent: Dirent): FileSystemEntryType {
-  if (dirent.isFile()) return FileSystemEntryType.File
-  if (dirent.isDirectory()) return FileSystemEntryType.Directory
-  if (dirent.isSymbolicLink()) return FileSystemEntryType.SymbolicLink
-  if (dirent.isFIFO()) return FileSystemEntryType.FIFO
-  if (dirent.isSocket()) return FileSystemEntryType.Socket
-  if (dirent.isCharacterDevice()) return FileSystemEntryType.CharacterDevice
-  if (dirent.isBlockDevice()) return FileSystemEntryType.BlockDevice
-  throw new TypeError('dirent is not of a known type')
+  if (dirent.isFile()) return FileSystemEntryType.File;
+  if (dirent.isDirectory()) return FileSystemEntryType.Directory;
+  if (dirent.isSymbolicLink()) return FileSystemEntryType.SymbolicLink;
+  if (dirent.isFIFO()) return FileSystemEntryType.FIFO;
+  if (dirent.isSocket()) return FileSystemEntryType.Socket;
+  if (dirent.isCharacterDevice()) return FileSystemEntryType.CharacterDevice;
+  if (dirent.isBlockDevice()) return FileSystemEntryType.BlockDevice;
+  throw new TypeError('dirent is not of a known type');
 }
 
 /**
@@ -49,18 +49,18 @@ export async function getEntries(
   path: string,
 ): Promise<FileSystemEntry[] | undefined> {
   if (!isAbsolute(path)) {
-    debug('aborting request because it is not an absolute path')
-    throw new Error(`requested path is not absolute: ${path}`)
+    debug('aborting request because it is not an absolute path');
+    throw new Error(`requested path is not absolute: ${path}`);
   }
-  assertHasReadAccess(permissions, origin, path)
+  assertHasReadAccess(permissions, origin, path);
 
-  const entries = await fs.readdir(path, { withFileTypes: true })
+  const entries = await fs.readdir(path, { withFileTypes: true });
   return await Promise.all(
     entries
-      .filter(entry => entry.isFile() || entry.isDirectory())
-      .map(async entry => {
-        const entryPath = join(path, entry.name)
-        const stat = await fs.lstat(entryPath)
+      .filter((entry) => entry.isFile() || entry.isDirectory())
+      .map(async (entry) => {
+        const entryPath = join(path, entry.name);
+        const stat = await fs.lstat(entryPath);
 
         return {
           name: entry.name,
@@ -70,9 +70,9 @@ export async function getEntries(
           mtime: stat.mtime,
           atime: stat.atime,
           ctime: stat.ctime,
-        }
+        };
       }),
-  )
+  );
 }
 
 export default function register(
@@ -80,7 +80,7 @@ export default function register(
   { options }: { options: Options },
 ): void {
   ipcMain.handle(channel, async (event: IpcMainInvokeEvent, path: string) => {
-    const url = new URL(event.sender.getURL())
-    return await getEntries(options.originFilePermissions, url.origin, path)
-  })
+    const url = new URL(event.sender.getURL());
+    return await getEntries(options.originFilePermissions, url.origin, path);
+  });
 }
