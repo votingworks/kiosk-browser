@@ -1,6 +1,55 @@
+<!--
+  Provides a test runner for the integration tests. This is loaded by vite
+  implicitly. See `vite.config.ts` for more information.
+-->
+
 <script type="module">
-  // polyfill for packages expecting NodeJS
+  // provide just enough scaffolding for packages expecting NodeJS
   globalThis.global = globalThis;
+  globalThis.process = {
+    env: {
+      NODE_ENV: 'test'
+    },
+
+    cwd: () => '/',
+    version: 'v16.14.2',
+
+    stdin: {
+      isTTY: false,
+    },
+
+    stdout: {
+      isTTY: false,
+    },
+
+    stderr: {
+      isTTY: false,
+    }
+  };
 </script>
 
-<script type="module" src="./kiosk.test.ts"></script>
+<script type="module">
+  /// Load and run all the tests.
+
+  import { jestExpect as expect } from '@jest/expect';
+  import {
+    afterAll,
+    afterEach,
+    beforeAll,
+    beforeEach,
+    loadTestModules,
+    runTests,
+    test,
+  } from './support/minitest';
+
+  // Set up the test environment, i.e. jest globals.
+  globalThis.afterAll = afterAll;
+  globalThis.afterEach = afterEach;
+  globalThis.beforeAll = beforeAll;
+  globalThis.beforeEach = beforeEach;
+  globalThis.expect = expect;
+  globalThis.test = test;
+
+  await loadTestModules(import.meta.glob('./tests/**/*'));
+  await runTests();
+</script>

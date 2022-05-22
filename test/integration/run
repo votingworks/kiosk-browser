@@ -1,18 +1,27 @@
 #!/usr/bin/env bash
 
+###
+# Runs the integration tests for `kiosk-browser` in Electron.
+###
+
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT="${DIR}/../.."
 
+# build `kiosk-browser`'s TypeScript project
 yarn -s tsc --project "${ROOT}/tsconfig.json"
 
+# integration test configuration
 PORT=${PORT:-8080}
 TEST_SERVER_URL="http://localhost:${PORT}"
 
+# provide options & default DISPLAY to `kiosk-browser`
 export \
   DISPLAY=${DISPLAY:-:0} \
   KIOSK_BROWSER_URL="${TEST_SERVER_URL}" \
   KIOSK_BROWSER_FILE_PERMISSIONS="o=${TEST_SERVER_URL},p=/**/*,rw"
 
+# run test server and `kiosk-browser` concurrently, exiting when either exits
+# and providing the exit code from the test server
 exec yarn -s concurrently \
   --names 'server,browser' \
   --kill-others \
