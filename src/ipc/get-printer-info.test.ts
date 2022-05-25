@@ -152,14 +152,14 @@ describe('getPrinterInfo', () => {
 
 test('registers an IPC handler for getting printer info', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters(): Electron.PrinterInfo[] {
-      return [
+    getPrintersAsync(): Promise<Electron.PrinterInfo[]> {
+      return Promise.resolve([
         fakeElectronPrinter({
           options: {
             'device-uri': 'usb://HP/Color%20LaserJet?serial=1234',
           },
         }),
-      ];
+      ]);
     },
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);

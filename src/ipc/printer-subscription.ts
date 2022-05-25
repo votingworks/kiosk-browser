@@ -9,7 +9,7 @@ import { PrinterInfo as ElectronPrinterInfo } from 'electron';
 export const channel = 'printer-subscription';
 
 export function buildPrinterObserver(
-  getPrinters: () => ElectronPrinterInfo[],
+  getPrinters: () => Promise<ElectronPrinterInfo[]>,
   onDevicesChange: Observable<void>,
   onPrinterConfigure: Observable<void>,
 ): Observable<PrinterInfo[]> {
@@ -20,7 +20,10 @@ export function buildPrinterObserver(
     onPrinterConfigure.pipe(
       tap(() => debug('printer configured, checking printers')),
     ),
-  ).pipe(switchMap(() => from(getPrinterInfo(getPrinters()))));
+  ).pipe(
+    switchMap(() => from(getPrinters())),
+    switchMap((printers) => from(getPrinterInfo(printers))),
+  );
 }
 
 /**
@@ -30,11 +33,16 @@ const register: RegisterIpcHandler = (
   ipcMain,
   { changedDevices, autoconfiguredPrinter },
 ) => {
+  debug('registering handler with channel: %s', channel);
   const subscriptions = new Map<WebContents, Subscription>();
 
   ipcMain.handle(
     channel,
     (event: IpcMainInvokeEvent, { subscribe }: { subscribe: boolean }) => {
+      debug(
+        'handling request to subscribe/unsubscribe: subscribe=%s',
+        subscribe,
+      );
       const webContents = event.sender;
       const subscription = subscriptions.get(webContents);
 
@@ -46,7 +54,7 @@ const register: RegisterIpcHandler = (
 
       if (subscribe) {
         const subscription = buildPrinterObserver(
-          () => webContents.getPrinters(),
+          () => webContents.getPrintersAsync(),
           changedDevices.pipe(
             // erase device info, we only care about the event
             map(() => undefined),

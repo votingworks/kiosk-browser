@@ -1,6 +1,5 @@
 import autoconfigurePrinter from './autoconfigurePrinter';
 import { Subject } from 'rxjs';
-import { Device } from '../usb';
 import fakeDevice from '../../../test/fakeDevice';
 import configurePrinterFromDevice from './configurePrinterFromDevice';
 import mockOf from '../../../test/mockOf';
@@ -14,7 +13,7 @@ test('configurable device added', async () => {
     configurePrinterDeferred.promise,
   );
 
-  const observable = new Subject<Iterable<Device>>();
+  const observable = new Subject<Iterable<KioskBrowser.Device>>();
   const config = {
     printerName: 'VxPrinter',
     printers: [],
@@ -49,7 +48,7 @@ test('unconfigurable device added', async () => {
     configurePrinterDeferred.promise,
   );
 
-  const observable = new Subject<Iterable<Device>>();
+  const observable = new Subject<Iterable<KioskBrowser.Device>>();
   const config = {
     printerName: 'VxPrinter',
     printers: [],

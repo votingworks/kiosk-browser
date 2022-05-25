@@ -5,33 +5,47 @@ declare module 'usb-detection' {
   //                 Rico Brase <https://github.com/RicoBrase>
 
   export interface Device {
-    locationId: number
-    vendorId: number
-    productId: number
-    deviceName: string
-    manufacturer: string
-    serialNumber: string
-    deviceAddress: number
+    locationId: number;
+    vendorId: number;
+    productId: number;
+    deviceName: string;
+    manufacturer: string;
+    serialNumber: string;
+    deviceAddress: number;
   }
 
   export function find(
     vid: number,
     pid: number,
     callback: (error: any, devices: Device[]) => any,
-  ): void
-  export function find(vid: number, pid: number): Promise<Device[]>
+  ): void;
+  export function find(vid: number, pid: number): Promise<Device[]>;
   export function find(
     vid: number,
     callback: (error: any, devices: Device[]) => any,
-  ): void
-  export function find(vid: number): Promise<Device[]>
-  export function find(callback: (error: any, devices: Device[]) => any): void
-  export function find(): Promise<Device[]>
+  ): void;
+  export function find(vid: number): Promise<Device[]>;
+  export function find(callback: (error: any, devices: Device[]) => any): void;
+  export function find(): Promise<Device[]>;
 
-  export function startMonitoring(): void
-  export function stopMonitoring(): void
-  export function on(event: string, callback: Function): void
-  export function off(event: string, callback: Function): void
+  export function startMonitoring(): void;
+  export function stopMonitoring(): void;
+  export function on(
+    event: string,
+    callback: (devices: Device[]) => void,
+  ): void;
+  export function off(
+    event: string,
+    callback: (devices: Device[]) => void,
+  ): void;
+  export function addListener(
+    event: string,
+    callback: (devices: Device[]) => void,
+  ): void;
+  export function removeListener(
+    event: string,
+    callback: (devices: Device[]) => void,
+  ): void;
 
-  export const version: number
+  export const version: number;
 }

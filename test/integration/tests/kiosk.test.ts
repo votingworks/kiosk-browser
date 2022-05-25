@@ -1,5 +1,11 @@
+import { waitFor } from '../support/minitest';
+
 // Declare `kiosk` as a definitely defined global variable
 declare let kiosk: KioskBrowser.Kiosk;
+
+// This isn't actually Jest, so we can't use `jest`.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare let jest: never;
 
 test('storage', async () => {
   await kiosk.storage.clear();
@@ -44,6 +50,41 @@ test('print to PDF', async () => {
       .map((c) => String.fromCharCode(c))
       .join(''),
   ).toEqual(prelude);
+});
+
+test('devices', async () => {
+  let devices: KioskBrowser.Device[] | undefined;
+
+  const unsubscribe = kiosk.devices.subscribe((newDevices) => {
+    devices = [...newDevices];
+  });
+
+  await waitFor(() => {
+    expect(devices).toBeInstanceOf(Array);
+  });
+
+  unsubscribe();
+});
+
+// TODO: remove `.skip` once we've figured out why this test causes a crash:
+//
+//   Assertion 'udev->n_ref > 0' failed at src/libudev/libudev.c:106, function udev_unref(). Aborting.
+//
+test.skip('printers', async () => {
+  let printers: KioskBrowser.PrinterInfo[] | undefined;
+
+  const unsubscribe = kiosk.printers.subscribe((newPrinters) => {
+    printers = [...newPrinters];
+  });
+
+  await waitFor(
+    () => {
+      expect(printers).toBeInstanceOf(Array);
+    },
+    { timeout: 10_000 },
+  );
+
+  unsubscribe();
 });
 
 // force tooling to consider this a module

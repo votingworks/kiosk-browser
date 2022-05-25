@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, IpcMain } from 'electron';
 import storage from 'electron-json-storage';
 import { join } from 'path';
 import { Observable, of } from 'rxjs';
-import usbDetection, { Device } from 'usb-detection';
+import usbDetection from 'usb-detection';
 import registerSetClock from './ipc/clock';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
 import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries';
@@ -41,7 +41,7 @@ export type RegisterIpcHandler = (
     autoconfiguredPrinter,
   }: {
     options: Options;
-    changedDevices: Observable<Iterable<Device>>;
+    changedDevices: Observable<Iterable<KioskBrowser.Device>>;
     autoconfiguredPrinter: Observable<void>;
   },
 ) => (() => void) | void;

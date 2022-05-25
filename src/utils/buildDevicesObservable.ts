@@ -1,7 +1,5 @@
 import { IpcRenderer } from 'electron';
-import { Observable } from 'rxjs';
-import { Device } from './usb';
-import { channel as manageDeviceSubscriptionChannel } from '../ipc/device-subscription';
+import { channel as deviceSubscriptionChannel } from '../ipc/device-subscription';
 import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable';
 
 /**
@@ -15,10 +13,10 @@ import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable
  */
 const buildDevicesObservable = (
   ipcRenderer: IpcRenderer,
-): Observable<Iterable<Device>> =>
-  buildIpcMainForwardingObservable<Iterable<Device>>(
+): KioskBrowser.Observable<Iterable<KioskBrowser.Device>> =>
+  buildIpcMainForwardingObservable<Iterable<KioskBrowser.Device>>(
     ipcRenderer,
-    manageDeviceSubscriptionChannel,
+    deviceSubscriptionChannel,
   );
 
 export default buildDevicesObservable;

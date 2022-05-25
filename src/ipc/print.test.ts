@@ -19,7 +19,7 @@ beforeEach(() => {
 
 test('registers a handler to trigger a print', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -46,7 +46,7 @@ test('registers a handler to trigger a print', async () => {
 
 test('uses the preferred printer if none is provided', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -72,7 +72,7 @@ test('uses the preferred printer if none is provided', async () => {
 
 test('propagates errors', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockRejectedValueOnce(new Error('PCLOADLETTER')),
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -87,7 +87,7 @@ test('propagates errors', async () => {
 
 test('prints a specified number of copies', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -113,7 +113,7 @@ test('prints a specified number of copies', async () => {
 
 test('does not allow fractional copies', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -136,7 +136,7 @@ test('does not allow fractional copies', async () => {
 
 test('allows specifying one-sided duplex', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);
@@ -160,7 +160,7 @@ test('allows specifying one-sided duplex', async () => {
 
 test('allows specifying two-sided-short-edge duplex', async () => {
   const sender: Partial<WebContents> = {
-    getPrinters: () => [],
+    getPrintersAsync: () => Promise.resolve([]),
     printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
   };
   const { ipcMain, ipcRenderer } = fakeIpc(sender);

@@ -46,7 +46,11 @@ function testServer(): Plugin {
           }
 
           if (result.success) {
-            console.log(`✅ ${result.test}`);
+            console.log(
+              `${result.skipped ? '⚠️' : '✅'} ${result.test}${
+                result.skipped ? ' (skipped)' : ''
+              }`,
+            );
           } else {
             console.error(`❌ ${result.test}`);
             console.error(
@@ -66,25 +70,41 @@ function testServer(): Plugin {
         .use('/minitest/done', (req, res) => {
           res.end();
 
-          const successes = results.filter((result) => result.success);
+          const successes = results.filter(
+            (result) => result.success && !result.skipped,
+          );
+          const skips = results.filter(
+            (result) => result.success && result.skipped,
+          );
           const failures = results.filter((result) => !result.success);
+          const isSuccess = failures.length === 0;
           console.log();
 
           if (failures.length) {
             console.log(
               `${successes.length} passed, ${chalk.redBright(
                 `${failures.length} failed`,
-              )}`,
+              )}${
+                skips.length
+                  ? `, ${chalk.yellow(`${skips.length} skipped`)}`
+                  : ''
+              }`,
             );
           } else {
-            console.log(chalk.greenBright(`${successes.length} passed`));
+            console.log(
+              `${chalk.greenBright(`${successes.length} passed`)}${
+                skips.length
+                  ? `, ${chalk.yellow(`${skips.length} skipped`)}`
+                  : ''
+              }`,
+            );
           }
 
           console.log();
 
           // exit after running in CI
           if (process.env.CI) {
-            process.exit(successes.length === results.length ? 0 : 1);
+            process.exit(isSuccess ? 0 : 1);
           }
 
           // reset test results

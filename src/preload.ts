@@ -1,12 +1,12 @@
 import makeDebug from 'debug';
 import { contextBridge, ipcRenderer } from 'electron';
 import { MakeDirectoryOptions } from 'fs';
-import { channel as setClock } from './ipc/clock';
+import { channel as setClockChannel } from './ipc/clock';
 import {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntry,
 } from './ipc/file-system-get-entries';
-import { channel as fileSystemMakeDirectory } from './ipc/file-system-make-directory';
+import { channel as fileSystemMakeDirectoryChannel } from './ipc/file-system-make-directory';
 import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file';
 import {
   BatteryInfo,
@@ -14,24 +14,24 @@ import {
 } from './ipc/get-battery-info';
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
 import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives';
+import { channel as logChannel } from './ipc/log';
 import {
   channel as mountUsbDriveChannel,
   Options as MountUsbDriveOptions,
 } from './ipc/mount-usb-drive';
+import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb';
 import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
 import { channel as quitChannel } from './ipc/quit';
+import { channel as rebootChannel } from './ipc/reboot';
 import { PromptToSaveOptions } from './ipc/saveAs';
+import { channel as signChannel, SignParams } from './ipc/sign';
 import { channel as storageClearChannel } from './ipc/storage-clear';
 import { channel as storageGetChannel } from './ipc/storage-get';
 import { channel as storageRemoveChannel } from './ipc/storage-remove';
 import { channel as storageSetChannel } from './ipc/storage-set';
-import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
-import { channel as signChannel, SignParams } from './ipc/sign';
-import { channel as logChannel } from './ipc/log';
-import { channel as rebootChannel } from './ipc/reboot';
-import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb';
+import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
 import buildDevicesObservable from './utils/buildDevicesObservable';
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable';
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter';
@@ -152,7 +152,7 @@ function makeKiosk(): KioskBrowser.Kiosk {
       options: MakeDirectoryOptions = {},
     ): Promise<void> {
       debug('forwarding `makeDirectory` to main process');
-      await ipcRenderer.invoke(fileSystemMakeDirectory, path, options);
+      await ipcRenderer.invoke(fileSystemMakeDirectoryChannel, path, options);
     },
 
     storage: {
@@ -181,7 +181,7 @@ function makeKiosk(): KioskBrowser.Kiosk {
 
     async setClock(params: KioskBrowser.SetClockParams): Promise<void> {
       debug('forwarding `setClock` to main process');
-      await ipcRenderer.invoke(setClock, params);
+      await ipcRenderer.invoke(setClockChannel, params);
     },
 
     totp: {

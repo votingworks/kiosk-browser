@@ -167,6 +167,10 @@ declare namespace KioskBrowser {
     payload: string;
   }
 
+  export interface Observable<T> {
+    subscribe(callback: (value: T) => void): () => void;
+  }
+
   export interface Kiosk {
     print(options?: PrintOptions): Promise<void>;
     getPrinterInfo(): Promise<PrinterInfo[]>;
@@ -178,8 +182,8 @@ declare namespace KioskBrowser {
     log(message: string): Promise<void>;
 
     getBatteryInfo(): Promise<BatteryInfo | undefined>;
-    devices: import('rxjs').Observable<Iterable<Device>>;
-    printers: import('rxjs').Observable<Iterable<PrinterInfo>>;
+    devices: Observable<Iterable<Device>>;
+    printers: Observable<Iterable<PrinterInfo>>;
     quit(): void;
 
     /**

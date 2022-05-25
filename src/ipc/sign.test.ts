@@ -1,5 +1,4 @@
 import { Subject } from 'rxjs';
-import { Device } from 'usb-detection';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
@@ -13,7 +12,7 @@ beforeEach(() => {
   execMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
 
-const changedDevices = new Subject<Iterable<Device>>();
+const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
 const autoconfiguredPrinter = new Subject<void>();
 
 test('call to sign invokes the right signify command, but only if signatureType is well-formed', async () => {
