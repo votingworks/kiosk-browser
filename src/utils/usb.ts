@@ -2,7 +2,6 @@ import { strict as assert } from 'assert';
 import makeDebug from 'debug';
 import { defer, fromEvent, Observable } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
-import { Device } from 'usb-detection';
 import KeySet, { ImmutableSet } from './KeySet';
 
 const debug = makeDebug('kiosk-browser:usb');
@@ -15,7 +14,7 @@ function deviceKey({
   productId,
   serialNumber,
   vendorId,
-}: Device): string {
+}: KioskBrowser.Device): string {
   return [
     deviceAddress,
     deviceName,
@@ -63,7 +62,7 @@ export class USBDetectionManager {
   /**
    * Gets the current list of connected devices.
    */
-  private async find(): Promise<Device[]> {
+  private async find(): Promise<KioskBrowser.Device[]> {
     assert(this.isMonitoring());
     return await this.usbDetection.find();
   }
@@ -71,11 +70,11 @@ export class USBDetectionManager {
   /**
    * Build an observable that yields a USB device whenever one is added.
    */
-  public get deviceAdd(): Observable<Device> {
+  public get deviceAdd(): Observable<KioskBrowser.Device> {
     return defer(() => {
       debug('deviceAdd observer initialize');
       this.ref();
-      return fromEvent<Device>(this.usbDetection, 'add').pipe(
+      return fromEvent<KioskBrowser.Device>(this.usbDetection, 'add').pipe(
         tap((device) => debug('device added: %O', device)),
         finalize(() => {
           debug('deviceAdd observer finalize');
@@ -88,11 +87,11 @@ export class USBDetectionManager {
   /**
    * Build an observable that yields a USB device whenever one is removed.
    */
-  public get deviceRemove(): Observable<Device> {
+  public get deviceRemove(): Observable<KioskBrowser.Device> {
     return defer(() => {
       debug('deviceRemove observer initialize');
       this.ref();
-      return fromEvent<Device>(this.usbDetection, 'remove').pipe(
+      return fromEvent<KioskBrowser.Device>(this.usbDetection, 'remove').pipe(
         tap((device) => debug('device removed: %O', device)),
         finalize(() => {
           debug('deviceRemove observer finalize');
@@ -111,50 +110,52 @@ export class USBDetectionManager {
    * first subscriber receives a new set (e.g. {mouse, keyboard, flash drive}).
    * New subscribers immediately receive the same current set.
    */
-  public get devices(): Observable<ImmutableSet<Device>> {
-    const result = new Observable<ImmutableSet<Device>>((subscriber) => {
-      this.ref();
-      let unsubscribed = false;
-      const cleanups: VoidFunction[] = [];
+  public get devices(): Observable<ImmutableSet<KioskBrowser.Device>> {
+    const result = new Observable<ImmutableSet<KioskBrowser.Device>>(
+      (subscriber) => {
+        this.ref();
+        let unsubscribed = false;
+        const cleanups: VoidFunction[] = [];
 
-      void this.find().then((findResult) => {
-        if (unsubscribed) {
-          return;
-        }
+        void this.find().then((findResult) => {
+          if (unsubscribed) {
+            return;
+          }
 
-        let devices = new KeySet(deviceKey, findResult);
+          let devices = new KeySet(deviceKey, findResult);
 
-        debug('pushing initial device list: %O', devices);
-        subscriber.next(devices);
-
-        const deviceAddSubscription = this.deviceAdd.subscribe((added) => {
-          devices = devices.add(added);
-          debug('pushing new devices list: %O', devices);
+          debug('pushing initial device list: %O', devices);
           subscriber.next(devices);
-        });
 
-        const deviceRemoveSubscription = this.deviceRemove.subscribe(
-          (removed) => {
-            devices = devices.delete(removed);
+          const deviceAddSubscription = this.deviceAdd.subscribe((added) => {
+            devices = devices.add(added);
             debug('pushing new devices list: %O', devices);
             subscriber.next(devices);
-          },
-        );
+          });
 
-        cleanups.push(() => {
-          deviceAddSubscription.unsubscribe();
-          deviceRemoveSubscription.unsubscribe();
+          const deviceRemoveSubscription = this.deviceRemove.subscribe(
+            (removed) => {
+              devices = devices.delete(removed);
+              debug('pushing new devices list: %O', devices);
+              subscriber.next(devices);
+            },
+          );
+
+          cleanups.push(() => {
+            deviceAddSubscription.unsubscribe();
+            deviceRemoveSubscription.unsubscribe();
+          });
         });
-      });
 
-      return (): void => {
-        unsubscribed = true;
-        this.deref();
-        for (const cleanup of cleanups) {
-          cleanup();
-        }
-      };
-    });
+        return (): void => {
+          unsubscribed = true;
+          this.deref();
+          for (const cleanup of cleanups) {
+            cleanup();
+          }
+        };
+      },
+    );
 
     // Memoize the observer.
     Object.defineProperty(this, 'devices', { value: result });
@@ -162,5 +163,3 @@ export class USBDetectionManager {
     return result;
   }
 }
-
-export { Device };

@@ -4,11 +4,10 @@ import configurePrinter from './configurePrinter';
 import getConnectedDeviceURIs from './getConnectedDeviceURIs';
 import getPrinterDeviceURI from './getPrinterDeviceURI';
 import { debug, PrintConfig } from '.';
-import { Device } from '../usb';
 
 export default async function configurePrinterFromDevice(
   config: PrintConfig,
-  device: Device,
+  device: KioskBrowser.Device,
 ): Promise<boolean> {
   const printer = getPrinterConfigForDevice(config, device);
 

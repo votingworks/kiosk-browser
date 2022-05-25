@@ -1,4 +1,4 @@
-import usbDetection, { Device } from 'usb-detection';
+import usbDetection from 'usb-detection';
 import fakeDevice from '../../test/fakeDevice';
 import mockOf from '../../test/mockOf';
 import deferred from './deferred';
@@ -42,9 +42,9 @@ test('yields initial devices', async () => {
   ]);
 
   const devices = new USBDetectionManager(usbDetection).devices;
-  const defer = deferred<ImmutableSet<Device>>();
+  const defer = deferred<ImmutableSet<KioskBrowser.Device>>();
   const subscriber = jest
-    .fn<void, [ImmutableSet<Device>]>()
+    .fn<void, [ImmutableSet<KioskBrowser.Device>]>()
     .mockImplementation(defer.resolve);
 
   devices.subscribe(subscriber);
@@ -72,7 +72,7 @@ test('does not include removed devices in initial yield', async () => {
     .mockRejectedValue(new Error('find was called too many times'));
 
   // Ensure device monitoring is on.
-  const defer = deferred<ImmutableSet<Device>>();
+  const defer = deferred<ImmutableSet<KioskBrowser.Device>>();
   devices.subscribe(defer.resolve);
   await defer.promise;
 
@@ -80,12 +80,14 @@ test('does not include removed devices in initial yield', async () => {
   const [, onDeviceRemoved] =
     mockOf(usbDetection.on).mock.calls.find((call) => call[0] === 'remove') ??
     [];
-  for (const device of initialDevices) {
-    onDeviceRemoved?.(device);
+  for (let i = 0; i < initialDevices.length; i++) {
+    onDeviceRemoved?.(initialDevices.slice(i));
   }
 
-  const defer2 = deferred<ImmutableSet<Device>>();
-  const subscriber = jest.fn<void, [ImmutableSet<Device>]>(defer2.resolve);
+  const defer2 = deferred<ImmutableSet<KioskBrowser.Device>>();
+  const subscriber = jest.fn<void, [ImmutableSet<KioskBrowser.Device>]>(
+    defer2.resolve,
+  );
 
   devices.subscribe(subscriber);
   await defer2.promise;

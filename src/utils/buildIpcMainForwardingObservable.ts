@@ -1,7 +1,5 @@
-import { IpcRenderer, IpcRendererEvent } from 'electron';
-import { defer, Observable, fromEvent } from 'rxjs';
-import { map, tap, finalize, shareReplay } from 'rxjs/operators';
 import makeDebug from 'debug';
+import { IpcRenderer, IpcRendererEvent } from 'electron';
 
 const debug = makeDebug('kiosk-browser:client:ipc');
 
@@ -11,23 +9,35 @@ const debug = makeDebug('kiosk-browser:client:ipc');
 const buildIpcMainForwardingObservable = <T>(
   ipcRenderer: IpcRenderer,
   channel: string,
-): Observable<T> => {
+): KioskBrowser.Observable<T> => {
   debug('building observable for channel: %s', channel);
-  return defer(() => {
-    debug('subscribing to channel: %s', channel);
-    void ipcRenderer.invoke(channel, { subscribe: true });
-    return fromEvent<[IpcRendererEvent, T]>(ipcRenderer, channel);
-  }).pipe(
-    map(([, value]) => value),
-    tap((value) =>
-      debug('got value from IPC channel "%s": %O', channel, value),
-    ),
-    finalize(() => {
-      debug('unsubscribing from channel: %s', channel);
-      void ipcRenderer.invoke(channel, { subscribe: false });
-    }),
-    shareReplay({ refCount: true, bufferSize: 1 }),
-  );
+  return {
+    subscribe: (callback) => {
+      debug('subscribing to channel: %s', channel);
+
+      // set up listener for channel
+      const listener = (event: IpcRendererEvent, arg: T) => {
+        debug('received event on channel: %s', channel);
+        callback(arg);
+      };
+
+      // starting listening
+      ipcRenderer.on(channel, listener);
+
+      // begin subscription
+      void ipcRenderer.invoke(channel, { subscribe: true });
+
+      return () => {
+        debug('unsubscribing from channel: %s', channel);
+
+        // stop listening
+        ipcRenderer.off(channel, listener);
+
+        // end subscription
+        void ipcRenderer.invoke(channel, { subscribe: false });
+      };
+    },
+  };
 };
 
 export default buildIpcMainForwardingObservable;

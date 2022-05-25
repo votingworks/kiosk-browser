@@ -109,7 +109,8 @@ export default function register(ipcMain: IpcMain): void {
       await printData({
         data,
         deviceName:
-          deviceName ?? getPreferredPrinterName(event.sender.getPrinters()),
+          deviceName ??
+          getPreferredPrinterName(await event.sender.getPrintersAsync()),
         paperSource,
         copies,
         sides,

@@ -1,5 +1,4 @@
 import { Subject } from 'rxjs';
-import { Device } from 'usb-detection';
 import { fakePrinterInfo, fakeElectronPrinter } from '../../test/fakePrinter';
 import { fakeIpc, fakeWebContents } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
@@ -8,7 +7,7 @@ import { Options } from '../utils/options';
 import { getPrinterInfo } from './get-printer-info';
 import register, {
   buildPrinterObserver,
-  channel,
+  channel as printerSubscriptionChannel,
 } from './printer-subscription';
 
 jest.mock('./get-printer-info');
@@ -24,7 +23,7 @@ test('printer observer triggers on devices change', async () => {
   const printer = fakePrinterInfo(electronPrinter);
   const callback = jest.fn();
   buildPrinterObserver(
-    () => [electronPrinter],
+    () => Promise.resolve([electronPrinter]),
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback);
@@ -33,6 +32,9 @@ test('printer observer triggers on devices change', async () => {
   // Trigger change and wait for promises.
   getPrinterInfoMock.mockResolvedValueOnce([printer]);
   onDevicesChange.next();
+
+  // wait for promises to resolve twice, once for each `switchMap/from`
+  await Promise.resolve();
   await Promise.resolve();
 
   expect(callback).toHaveBeenCalledWith([printer]);
@@ -45,7 +47,7 @@ test('printer observer triggers on printer configure', async () => {
   const printer = fakePrinterInfo(electronPrinter);
   const callback = jest.fn();
   buildPrinterObserver(
-    () => [electronPrinter],
+    () => Promise.resolve([electronPrinter]),
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback);
@@ -54,6 +56,9 @@ test('printer observer triggers on printer configure', async () => {
   // Trigger change and wait for promises.
   getPrinterInfoMock.mockResolvedValueOnce([printer]);
   onPrinterConfigure.next();
+
+  // wait for promises to resolve twice, once for each `switchMap/from`
+  await Promise.resolve();
   await Promise.resolve();
 
   expect(callback).toHaveBeenCalledWith([printer]);
@@ -66,7 +71,7 @@ test('printer observer triggers multiple times', async () => {
   const printer = fakePrinterInfo(electronPrinter);
   const callback = jest.fn();
   buildPrinterObserver(
-    () => [electronPrinter],
+    () => Promise.resolve([electronPrinter]),
     onDevicesChange,
     onPrinterConfigure,
   ).subscribe(callback);
@@ -75,11 +80,17 @@ test('printer observer triggers multiple times', async () => {
   // Trigger change and wait for promises.
   getPrinterInfoMock.mockResolvedValueOnce([printer]);
   onDevicesChange.next();
+
+  // wait for promises to resolve twice, once for each `switchMap/from`
+  await Promise.resolve();
   await Promise.resolve();
 
   // Trigger change and wait for promises.
   getPrinterInfoMock.mockResolvedValueOnce([printer]);
   onPrinterConfigure.next();
+
+  // wait for promises to resolve twice, once for each `switchMap/from`
+  await Promise.resolve();
   await Promise.resolve();
 
   expect(callback).toHaveBeenNthCalledWith(1, [printer]);
@@ -88,11 +99,11 @@ test('printer observer triggers multiple times', async () => {
 
 test('registering a subscription handler hooks up to both USB devices and autoconfigured printers', async () => {
   const webContents = fakeWebContents({
-    getPrinters: jest.fn().mockReturnValue([]),
+    getPrintersAsync: jest.fn().mockResolvedValue([]),
     send: jest.fn(),
   });
   const { ipcMain, ipcRenderer } = fakeIpc(webContents);
-  const changedDevices = new Subject<Iterable<Device>>();
+  const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
   const autoconfiguredPrinter = new Subject<void>();
   const options: Options = {
     url: new URL('about:blank'),
@@ -102,7 +113,7 @@ test('registering a subscription handler hooks up to both USB devices and autoco
 
   const { resolve, promise } = deferred<void>();
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options });
-  await ipcRenderer.invoke(channel, { subscribe: true });
+  await ipcRenderer.invoke(printerSubscriptionChannel, { subscribe: true });
 
   expect(webContents.send).not.toHaveBeenCalled();
   getPrinterInfoMock.mockImplementationOnce(() => {
@@ -112,18 +123,23 @@ test('registering a subscription handler hooks up to both USB devices and autoco
 
   // Trigger device change and wait.
   changedDevices.next([]);
+
+  // wait for promises to resolve twice, once for each `switchMap/from`
+  await promise;
   await promise;
 
-  expect(webContents.send).toHaveBeenCalledWith(channel, [printer]);
+  expect(webContents.send).toHaveBeenCalledWith(printerSubscriptionChannel, [
+    printer,
+  ]);
 });
 
 test('unsubscribe', async () => {
   const webContents = fakeWebContents({
-    getPrinters: jest.fn().mockReturnValue([]),
+    getPrintersAsync: jest.fn().mockResolvedValue([]),
     send: jest.fn(),
   });
   const { ipcMain, ipcRenderer } = fakeIpc(webContents);
-  const changedDevices = new Subject<Iterable<Device>>();
+  const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
   const autoconfiguredPrinter = new Subject<void>();
   const options: Options = {
     url: new URL('about:blank'),
@@ -133,8 +149,8 @@ test('unsubscribe', async () => {
 
   const { resolve, promise } = deferred<void>();
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options });
-  await ipcRenderer.invoke(channel, { subscribe: true });
-  await ipcRenderer.invoke(channel, { subscribe: false });
+  await ipcRenderer.invoke(printerSubscriptionChannel, { subscribe: true });
+  await ipcRenderer.invoke(printerSubscriptionChannel, { subscribe: false });
 
   getPrinterInfoMock.mockImplementationOnce(() => {
     resolve();
@@ -153,11 +169,11 @@ test('unsubscribe', async () => {
 
 test('unsubscribe on webContents teardown', async () => {
   const webContents = fakeWebContents({
-    getPrinters: jest.fn().mockReturnValue([]),
+    getPrintersAsync: jest.fn().mockResolvedValue([]),
     send: jest.fn(),
   });
   const { ipcMain, ipcRenderer } = fakeIpc(webContents);
-  const changedDevices = new Subject<Iterable<Device>>();
+  const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
   const autoconfiguredPrinter = new Subject<void>();
   const options: Options = {
     url: new URL('about:blank'),
@@ -167,7 +183,7 @@ test('unsubscribe on webContents teardown', async () => {
 
   const { resolve, promise } = deferred<void>();
   register(ipcMain, { changedDevices, autoconfiguredPrinter, options });
-  await ipcRenderer.invoke(channel, { subscribe: true });
+  await ipcRenderer.invoke(printerSubscriptionChannel, { subscribe: true });
 
   // Trigger unsubscribe.
   webContents.emit('destroyed');

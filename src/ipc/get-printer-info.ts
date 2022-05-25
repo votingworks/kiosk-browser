@@ -1,12 +1,12 @@
-import { IpcMainInvokeEvent, IpcMain } from 'electron';
-import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs';
-import printerSchemes from '../utils/printing/printerSchemes';
+import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { debug } from '../utils/printing';
+import getConnectedDeviceURIs from '../utils/printing/getConnectedDeviceURIs';
 import {
   getPrinterIppAttributes,
-  PrinterIppAttributes,
   IppPrinterState,
+  PrinterIppAttributes,
 } from '../utils/printing/getPrinterIppAttributes';
+import printerSchemes from '../utils/printing/printerSchemes';
 import { retry, retryUntil } from '../utils/retry';
 
 export const channel = 'get-printer-info';
@@ -85,7 +85,7 @@ export async function getPrinterInfo(
  * Registers a handler to get printer info.
  */
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, (event: IpcMainInvokeEvent) =>
-    getPrinterInfo(event.sender.getPrinters()),
+  ipcMain.handle(channel, async (event: IpcMainInvokeEvent) =>
+    getPrinterInfo(await event.sender.getPrintersAsync()),
   );
 }

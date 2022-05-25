@@ -1,6 +1,6 @@
-import { Device } from '../src/utils/usb'
-
-export default function fakeDevice(props: Partial<Device> = {}): Device {
+export default function fakeDevice(
+  props: Partial<KioskBrowser.Device> = {},
+): KioskBrowser.Device {
   return {
     deviceName: 'fake device',
     deviceAddress: 0,
@@ -10,5 +10,5 @@ export default function fakeDevice(props: Partial<Device> = {}): Device {
     serialNumber: '12345',
     vendorId: 0,
     ...props,
-  }
+  };
 }

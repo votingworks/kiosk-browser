@@ -1,18 +1,17 @@
 import { IpcRenderer } from 'electron';
-import { Observable } from 'rxjs';
-import { channel as managePrinterSubscriptionChannel } from '../ipc/printer-subscription';
-import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable';
+import { channel as printerSubscriptionChannel } from '../ipc/printer-subscription';
 import { PrinterInfo } from '../ipc/get-printer-info';
+import buildIpcMainForwardingObservable from './buildIpcMainForwardingObservable';
 
 /**
  * Build a new observable that yields the current set of printers.
  */
-const buildDevicesObservable = (
+const buildPrinterInfoObservable = (
   ipcRenderer: IpcRenderer,
-): Observable<Iterable<PrinterInfo>> =>
+): KioskBrowser.Observable<Iterable<PrinterInfo>> =>
   buildIpcMainForwardingObservable<Iterable<PrinterInfo>>(
     ipcRenderer,
-    managePrinterSubscriptionChannel,
+    printerSubscriptionChannel,
   );
 
-export default buildDevicesObservable;
+export default buildPrinterInfoObservable;

@@ -12,7 +12,7 @@ test('subscribes on first connection', () => {
   );
   expect(handler).not.toHaveBeenCalled();
 
-  observable.subscribe();
+  observable.subscribe(jest.fn());
   expect(handler).toHaveBeenCalledWith(expect.anything(), { subscribe: true });
 });
 
@@ -27,7 +27,9 @@ test('unsubscribes on last disconnection', () => {
   );
   expect(handler).not.toHaveBeenCalled();
 
-  observable.subscribe().unsubscribe();
+  const unsubscribe = observable.subscribe(jest.fn());
+  unsubscribe();
+
   expect(handler).toHaveBeenNthCalledWith(1, expect.anything(), {
     subscribe: true,
   });
