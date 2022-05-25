@@ -1,6 +1,10 @@
 // Declare `kiosk` as a definitely defined global variable
 declare let kiosk: KioskBrowser.Kiosk;
 
+// This isn't actually Jest, so we can't use `jest`.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare let jest: never;
+
 test('storage', async () => {
   await kiosk.storage.clear();
   await kiosk.storage.set('some-key', { some: 'value' });
