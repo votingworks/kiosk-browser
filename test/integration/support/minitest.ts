@@ -84,6 +84,60 @@ test.skip = (name: string, fn: TestFn): void => {
 };
 
 /**
+ * Calls `callback` until it runs without throwing an error or until `timeout`
+ * is reached. Customize the interval between calls with `interval`, and the
+ * timeout with `timeout`. If it succeeds, the returned promise will resolve.
+ * If it fails, the returned promise will reject with the last error.
+ */
+export function waitFor(
+  callback: () => void | Promise<void>,
+  {
+    interval: intervalMs = 10,
+    timeout: timeoutMs = 5000,
+  }: { interval?: number; timeout?: number } = {},
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let lastError: Error | undefined;
+    let callbackPending = false;
+
+    const interval = setInterval(() => {
+      void (async () => {
+        if (callbackPending) {
+          return;
+        }
+
+        try {
+          callbackPending = true;
+          await callback();
+          cleanup();
+          resolve();
+        } catch (error) {
+          lastError = error as Error;
+        } finally {
+          callbackPending = false;
+        }
+      })();
+    }, intervalMs);
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      if (lastError) {
+        reject(lastError ?? new Error('waitFor timed out'));
+      }
+    }, timeoutMs);
+
+    function cleanup() {
+      if (interval) {
+        clearInterval(interval);
+      }
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+  });
+}
+
+/**
  * Reports a test result.
  */
 async function report(result: TestResult): Promise<void> {
