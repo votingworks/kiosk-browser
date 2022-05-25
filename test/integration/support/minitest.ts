@@ -8,6 +8,7 @@ type HookFn = () => void | Promise<void>;
 interface Test {
   name: string;
   fn: TestFn;
+  skip?: boolean;
 }
 
 export interface TestModule {
@@ -20,7 +21,7 @@ export interface TestModule {
  * A test result.
  */
 export type TestResult =
-  | { testModulePath: string; test: string; success: true }
+  | { testModulePath: string; test: string; success: true; skipped?: boolean }
   | { testModulePath: string; test: string; success: false; error: Error };
 
 const testModules: TestModule[] = [];
@@ -73,6 +74,14 @@ export function test(name: string, fn: TestFn): void {
 
   currentTestModule.tests.push({ name, fn });
 }
+
+test.skip = (name: string, fn: TestFn): void => {
+  if (!currentTestModule) {
+    throw new Error('No test module is currently running');
+  }
+
+  currentTestModule.tests.push({ name, fn, skip: true });
+};
 
 /**
  * Reports a test result.
@@ -150,6 +159,17 @@ async function runHooksWithoutReporting(
  * `beforeEach`/`afterEach` hooks.
  */
 async function runTest(testModule: TestModule, test: Test): Promise<boolean> {
+  if (test.skip) {
+    console.log(`⚠️ Skipping ${testModule.path} ${test.name}`);
+    await report({
+      testModulePath: testModule.path,
+      test: test.name,
+      success: true,
+      skipped: true,
+    });
+    return true;
+  }
+
   console.log(`running test ${test.name}`);
   try {
     await runHooksWithoutReporting(testModule, 'beforeEach');
