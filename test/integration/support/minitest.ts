@@ -182,7 +182,7 @@ async function runTest(testModule: TestModule, test: Test): Promise<boolean> {
       success: true,
     });
   } catch (error) {
-    console.error(`❌ ${test.name} failed`);
+    console.error(`❌ ${test.name} failed`, error);
     await report({
       testModulePath: testModule.path,
       test: test.name,
