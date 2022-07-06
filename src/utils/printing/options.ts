@@ -53,9 +53,7 @@ export function parsePrinterOptions(lptionsOutput: string): PrinterOptionMap {
  *
  * @param deviceName the name of the printer as understood by `lpoptions`
  */
-export async function getPrinterOptions(
-  deviceName?: string,
-): Promise<PrinterOptionMap> {
+export function getPrinterOptions(deviceName?: string): PrinterOptionMap {
   const lpoptionsArgs: string[] = [];
 
   if (deviceName) {
@@ -65,7 +63,7 @@ export async function getPrinterOptions(
   lpoptionsArgs.push('-l'); // -l == list
 
   debug('calling lpoptions with args=%o', lpoptionsArgs);
-  const { stdout, stderr } = await exec('lpoptions', lpoptionsArgs);
+  const { stdout, stderr } = exec('lpoptions', lpoptionsArgs);
   debug('lpoptions returned stdout=%s, stderr=%s', stdout, stderr);
 
   const options = parsePrinterOptions(stdout);

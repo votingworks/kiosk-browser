@@ -9,8 +9,8 @@ jest.mock('./configurePrinter');
 jest.mock('./getConnectedDeviceURIs');
 jest.mock('./getPrinterDeviceURI');
 
-test('device not matching a known printer', async () => {
-  await configurePrinterFromDevice(
+test('device not matching a known printer', () => {
+  configurePrinterFromDevice(
     {
       printerName: 'VxPrinter',
       printers: [],
@@ -21,10 +21,10 @@ test('device not matching a known printer', async () => {
   expect(configurePrinter).not.toHaveBeenCalled();
 });
 
-test('device matching a known printer but not matching a connected device URI', async () => {
-  mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set());
+test('device matching a known printer but not matching a connected device URI', () => {
+  mockOf(getConnectedDeviceURIs).mockReturnValueOnce(new Set());
 
-  await configurePrinterFromDevice(
+  configurePrinterFromDevice(
     {
       printerName: 'VxPrinter',
       printers: [
@@ -43,12 +43,12 @@ test('device matching a known printer but not matching a connected device URI', 
   expect(configurePrinter).not.toHaveBeenCalled();
 });
 
-test('device matching a known printer and a connected device URI', async () => {
-  mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
+test('device matching a known printer and a connected device URI', () => {
+  mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
     new Set(['usb://HP/LaserSomething?serial=abc123']),
   );
 
-  await configurePrinterFromDevice(
+  configurePrinterFromDevice(
     {
       printerName: 'VxPrinter',
       printers: [

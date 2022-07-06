@@ -7,7 +7,7 @@ export const channel = 'reboot';
  * Reboot the machine
  */
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async () => {
-    await exec('reboot');
+  ipcMain.handle(channel, () => {
+    exec('reboot');
   });
 }

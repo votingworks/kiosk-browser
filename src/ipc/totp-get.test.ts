@@ -8,14 +8,14 @@ jest.mock('../utils/exec');
 
 beforeEach(() => {
   execMock.mockReset();
-  execMock.mockResolvedValue({ stdout: '', stderr: '' });
+  execMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 const { ipcMain, ipcRenderer } = fakeIpc();
 register(ipcMain);
 
 test('call to totp calls appropriate shell command and returns the right data', async () => {
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '2021-09-10 14:35:02: 932549',
     stderr: '',
   });
@@ -38,7 +38,7 @@ test('call to totp calls appropriate shell command and returns the right data', 
 });
 
 test('when error in exec, return undefined', async () => {
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: 'TPM is nowhere to be found',
   });

@@ -59,13 +59,13 @@ interface PrintDataParameters extends PrintOptions {
   data: Buffer;
 }
 
-async function printData({
+function printData({
   data,
   deviceName,
   paperSource,
   copies,
   sides = PrintSides.TwoSidedLongEdge,
-}: PrintDataParameters): Promise<void> {
+}: PrintDataParameters): void {
   const lprOptions: string[] = [];
 
   if (deviceName) {
@@ -86,7 +86,7 @@ async function printData({
 
   debug('printing via lpr with args=%o', lprOptions);
   debug('data length is %d', data.length);
-  const { stdout, stderr } = await exec('lpr', lprOptions, data);
+  const { stdout, stderr } = exec('lpr', lprOptions, data);
   debug('`lpr` succeeded with stdout=%s stderr=%s', stdout, stderr);
 }
 
@@ -106,7 +106,7 @@ export default function register(ipcMain: IpcMain): void {
       });
       debug('printed to PDF, size=%d', data.length);
 
-      await printData({
+      printData({
         data,
         deviceName:
           deviceName ??

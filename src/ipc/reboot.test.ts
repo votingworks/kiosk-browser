@@ -8,7 +8,7 @@ jest.mock('../utils/exec');
 
 beforeEach(() => {
   execMock.mockReset();
-  execMock.mockResolvedValue({ stdout: '', stderr: '' });
+  execMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 test('reboot', async () => {

@@ -53,20 +53,18 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
     );
 
     // get the block device info, including mount point
-    const usbDrives = await Promise.all(
-      devices.map(async (device) => {
-        const { stdout } = await exec('lsblk', ['-J', '-n', '-l', device]);
+    const usbDrives = devices.map((device) => {
+      const { stdout } = exec('lsblk', ['-J', '-n', '-l', device]);
 
-        const rawData = JSON.parse(stdout) as RawDataReturn;
-        return {
-          deviceName: rawData.blockdevices[0].name,
-          mountPoint: rawData.blockdevices[0].mountpoint ?? undefined,
-        };
-      }),
-    );
+      const rawData = JSON.parse(stdout) as RawDataReturn;
+      return {
+        deviceName: rawData.blockdevices[0].name,
+        mountPoint: rawData.blockdevices[0].mountpoint ?? undefined,
+      };
+    });
 
     // Find any phantom usb drives that were improperly removed and need to be unmounted
-    const { stdout } = await exec('findmnt', ['--json', '--list']);
+    const { stdout } = exec('findmnt', ['--json', '--list']);
     if (stdout !== '') {
       const rawData = JSON.parse(stdout) as FindMntRawDataReturn;
       await Promise.all(
@@ -80,7 +78,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
                 target,
                 source,
               );
-              await exec('pumount', [target]);
+              exec('pumount', [target]);
             }
           }
         }),

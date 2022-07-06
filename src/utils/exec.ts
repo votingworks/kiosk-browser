@@ -10,7 +10,7 @@ export default function exec(
   file: string,
   args: readonly string[] = [],
   input?: string | Buffer,
-): Promise<{ stdout: string; stderr: string }> {
+): { stdout: string; stderr: string } {
   debug('running command=%s args=%o stdin=%s', file, args, typeof input);
   const {
     stdout: stdoutBuffer,
@@ -33,19 +33,17 @@ export default function exec(
   const stdout = stdoutBuffer.toString();
   const stderr = stderrBuffer.toString();
   if (error) {
-    return Promise.reject(error);
+    throw error;
   } else if (status !== 0) {
-    return Promise.reject(
-      makeExecError({
-        code: status ?? undefined,
-        signal,
-        stdout,
-        stderr,
-        cmd: `${file} ${args.join(' ')}`,
-      }),
-    );
+    throw makeExecError({
+      code: status ?? undefined,
+      signal,
+      stdout,
+      stderr,
+      cmd: `${file} ${args.join(' ')}`,
+    });
   }
-  return Promise.resolve({ stdout, stderr });
+  return { stdout, stderr };
 }
 
 export interface ExecError {

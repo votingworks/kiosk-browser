@@ -13,7 +13,7 @@ test('mount-usb-drive', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -36,7 +36,7 @@ test('mount-usb-drive with custom label', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });

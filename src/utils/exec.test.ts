@@ -1,8 +1,6 @@
 import { spawnSync, SpawnSyncReturns } from 'child_process';
 import exec from './exec';
 import mockOf from '../../test/mockOf';
-import { EventEmitter } from 'events';
-import MemoryStream from 'memorystream';
 
 jest.mock('child_process');
 
@@ -20,31 +18,30 @@ function mockSpawnSync(results: Partial<SpawnSyncReturns<string>> = {}): void {
   });
 }
 
-test('command with no args', async () => {
+test('command with no args', () => {
   mockSpawnSync();
-  const execPromise = exec('ls');
-  expect(await execPromise).toEqual({ stdout: '', stderr: '' });
+  const execResults = exec('ls');
+  expect(execResults).toEqual({ stdout: '', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', [], { input: undefined });
 });
 
-test('command with args', async () => {
+test('command with args', () => {
   mockSpawnSync();
-  const execPromise = exec('ls', ['-la']);
-  expect(await execPromise).toEqual({ stdout: '', stderr: '' });
+  const execResults = exec('ls', ['-la']);
+  expect(execResults).toEqual({ stdout: '', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', ['-la'], { input: undefined });
 });
 
-test('command printing stdout', async () => {
+test('command printing stdout', () => {
   mockSpawnSync({ stdout: 'README.md\n' });
-  const execPromise = exec('ls', ['-la']);
-  expect(await execPromise).toEqual({ stdout: 'README.md\n', stderr: '' });
+  const execResults = exec('ls', ['-la']);
+  expect(execResults).toEqual({ stdout: 'README.md\n', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', ['-la'], { input: undefined });
 });
 
-test('failed command printing stderr', async () => {
+test('failed command printing stderr', () => {
   mockSpawnSync({ status: 1, stderr: 'unknown option "-x"' });
-  const execPromise = exec('ls', ['-x']);
-  await expect(execPromise).rejects.toThrowError(
+  expect(() => exec('ls', ['-x'])).toThrowError(
     expect.objectContaining({
       stderr: 'unknown option "-x"',
       code: 1,
@@ -53,19 +50,17 @@ test('failed command printing stderr', async () => {
   expect(spawnSync).toHaveBeenCalledWith('ls', ['-x'], { input: undefined });
 });
 
-test('command with stdin', async () => {
+test('command with stdin', () => {
   mockSpawnSync();
-  const execPromise = exec('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print');
-  await execPromise;
+  exec('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print');
   expect(spawnSync).toHaveBeenCalledWith('lpr', ['-P', 'VxPrinter'], {
     input: 'foobarbaz to print',
   });
 });
 
-test('unknown command', async () => {
+test('unknown command', () => {
   mockSpawnSync({ error: new Error('Error: spawnSync not-a-command ENOENT') });
-  const execPromise = exec('not-a-command');
-  await expect(execPromise).rejects.toThrowError(
+  expect(() => exec('not-a-command')).toThrowError(
     'Error: spawnSync not-a-command ENOENT',
   );
 });

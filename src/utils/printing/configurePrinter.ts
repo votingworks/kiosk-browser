@@ -5,7 +5,7 @@ import exec from '../exec';
  * Configures a printer at a given device URI with a name and PPD. Optionally
  * sets the printer as the default printer too.
  */
-export default async function configurePrinter({
+export default function configurePrinter({
   printerName,
   deviceURI,
   ppd,
@@ -15,7 +15,7 @@ export default async function configurePrinter({
   deviceURI: string;
   ppd: PostScriptPrinterDefinition;
   setDefault?: boolean;
-}): Promise<boolean | void> {
+}): boolean | void {
   const lpadminConfigureArgs = ['-p', printerName, '-v', deviceURI, '-E'];
 
   if ('path' in ppd) {
@@ -25,7 +25,7 @@ export default async function configurePrinter({
   }
 
   debug('configuring printer with lpadmin: args=%o', lpadminConfigureArgs);
-  await exec('lpadmin', lpadminConfigureArgs);
+  exec('lpadmin', lpadminConfigureArgs);
 
   if (setDefault) {
     const lpadminSetDefaultArgs = ['-d', printerName];
@@ -33,6 +33,6 @@ export default async function configurePrinter({
       'setting printer as default with lpadmin: args=%o',
       lpadminSetDefaultArgs,
     );
-    await exec('lpadmin', lpadminSetDefaultArgs);
+    exec('lpadmin', lpadminSetDefaultArgs);
   }
 }

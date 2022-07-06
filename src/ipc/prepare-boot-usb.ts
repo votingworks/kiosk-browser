@@ -67,10 +67,10 @@ function parseEfiBootMgrOutput(output: string): BootOption[] {
  * Attempts to update set the boot manager to boot from a usb device. Returns true
  * if successful, returns false if there are either 0 or more then 1 bootable usb drives available.
  */
-async function prepareToBootFromUsb(): Promise<boolean> {
-  const { stdout: bootStdout } = await exec('efibootmgr', ['-v']);
+function prepareToBootFromUsb(): boolean {
+  const { stdout: bootStdout } = exec('efibootmgr', ['-v']);
   const bootOptions = parseEfiBootMgrOutput(bootStdout);
-  const { stdout: lsblkStdout } = await exec('lsblk', [
+  const { stdout: lsblkStdout } = exec('lsblk', [
     '-o',
     'partuuid,name',
     '-J',
@@ -108,12 +108,7 @@ async function prepareToBootFromUsb(): Promise<boolean> {
   debug(
     'The USB boot option was properly located setting it to be next in the boot order…',
   );
-  await exec('sudo', [
-    '-n',
-    '/bin/efibootmgr',
-    '-n',
-    bootableUsbOption.bootNumber,
-  ]);
+  exec('sudo', ['-n', '/bin/efibootmgr', '-n', bootableUsbOption.bootNumber]);
   return true;
 }
 
@@ -121,7 +116,5 @@ async function prepareToBootFromUsb(): Promise<boolean> {
  * Registers a handler to set the boot order to boot from the given usb device next.
  */
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, async () => {
-    return await prepareToBootFromUsb();
-  });
+  ipcMain.handle(channel, () => prepareToBootFromUsb());
 }

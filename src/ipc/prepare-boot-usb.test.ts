@@ -17,7 +17,7 @@ test('prepare-boot-usb returns false when no bootable usbs', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0005
 Timeout: 0 seconds
 BootOrder: 0005,0002,0001,0003,0000,0004
@@ -30,7 +30,7 @@ Boot0005* debian	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/F
     `,
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"7dd453ac-01"}]}',
     stderr: '',
   });
@@ -55,7 +55,7 @@ test('prepare-boot-usb returns false when there are more than one bootable usbs'
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -68,7 +68,7 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout:
       '{"blockdevices": [{"name": "sda1", "partuuid":"123d08f-01"}, {"name": "sdb1", "partuuid":"314d08f-01"}]}',
     stderr: '',
@@ -94,7 +94,7 @@ test('prepare-boot-usb returns true when expected and sets correct boot order', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -106,11 +106,11 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -140,7 +140,7 @@ test('prepare-boot-usb returns true when there is a fallback Boot Menu option', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -152,11 +152,11 @@ Boot200E  Boot Menu	RC
        `,
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });

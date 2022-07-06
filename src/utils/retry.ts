@@ -6,17 +6,14 @@ interface RetryOptions {
  * Retries a given async function up to `options.tries` times if an error is
  * thrown.
  */
-export async function retry<T>(
-  action: () => Promise<T>,
-  options: RetryOptions,
-): Promise<T> {
+export function retry<T>(action: () => T, options: RetryOptions): T {
   const { tries } = options;
   if (tries <= 1) {
     throw Error('retry requires at least 2 tries');
   }
-  async function retryHelper(triesLeft: number): Promise<T> {
+  function retryHelper(triesLeft: number): T {
     try {
-      return await action();
+      return action();
     } catch (error) {
       if (triesLeft > 0) {
         return retryHelper(triesLeft - 1);
@@ -24,7 +21,7 @@ export async function retry<T>(
       throw error;
     }
   }
-  return await retryHelper(tries - 1);
+  return retryHelper(tries - 1);
 }
 
 interface RetryUntilOptions<T> extends RetryOptions {
@@ -43,16 +40,16 @@ export class NoMoreTries extends Error {}
  * `options.returnLastResult` is true, then the last result will be returned
  * instead.
  */
-export async function retryUntil<T>(
-  action: () => Promise<T>,
+export function retryUntil<T>(
+  action: () => T,
   options: RetryUntilOptions<T>,
-): Promise<T> {
+): T {
   const { until, tries, returnLastResult } = options;
   if (tries <= 1) {
     throw Error('retry requires at least 2 tries');
   }
-  async function retryHelper(triesLeft: number): Promise<T> {
-    const result = await action();
+  function retryHelper(triesLeft: number): T {
+    const result = action();
     if (until(result)) {
       return result;
     }
@@ -64,5 +61,5 @@ export async function retryUntil<T>(
     }
     throw new NoMoreTries();
   }
-  return await retryHelper(tries - 1);
+  return retryHelper(tries - 1);
 }

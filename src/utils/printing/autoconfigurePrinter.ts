@@ -11,22 +11,23 @@ export default function autoconfigurePrinter(
       list: Iterable<KioskBrowser.Device>,
     ): void {
       for (const device of list) {
-        configurePrinterFromDevice(config, device)
-          .then((configured) => {
-            if (configured) {
-              debug(
-                'yielding printer configure event after configuring printer: %o',
-                device,
-              );
-              subscriber.next();
-            } else {
-              debug(
-                'newly added device was not configured as a printer: %o',
-                device,
-              );
-            }
-          })
-          .catch((error) => subscriber.error(error));
+        try {
+          const configured = configurePrinterFromDevice(config, device);
+          if (configured) {
+            debug(
+              'yielding printer configure event after configuring printer: %o',
+              device,
+            );
+            subscriber.next();
+          } else {
+            debug(
+              'newly added device was not configured as a printer: %o',
+              device,
+            );
+          }
+        } catch (error) {
+          subscriber.error(error);
+        }
       }
     }),
   );
