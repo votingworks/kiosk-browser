@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawnSync } from 'child_process';
 import makeDebug from 'debug';
 
 const debug = makeDebug('kiosk-browser:exec');
@@ -6,63 +6,46 @@ const debug = makeDebug('kiosk-browser:exec');
 /**
  * Like `child_process.exec`, but with easy stdin.
  */
-export default async function exec(
+export default function exec(
   file: string,
   args: readonly string[] = [],
-  stdin?: string | Buffer,
+  input?: string | Buffer,
 ): Promise<{ stdout: string; stderr: string }> {
-  const child = spawn(file, args);
-  let stdout = '';
-  let stderr = '';
-
+  debug('running command=%s args=%o stdin=%s', file, args, typeof input);
+  const {
+    stdout: stdoutBuffer,
+    stderr: stderrBuffer,
+    status,
+    signal,
+    error,
+    pid,
+  } = spawnSync(file, args, {
+    input,
+  });
   debug(
-    'running command=%s args=%o stdin=%s pid=%d',
+    'process %d exited with code=%d, signal=%s (command=%s args=%o)',
+    pid,
+    status,
+    signal,
     file,
     args,
-    typeof stdin,
-    child.pid,
   );
-
-  child.stdout.on('data', (chunk) => {
-    stdout += chunk;
-  });
-
-  child.stderr.on('data', (chunk) => {
-    stderr += chunk;
-  });
-
-  if (stdin) {
-    debug('stdin passed to exec, feeding it in now.');
-    child.stdin.write(stdin);
-    child.stdin.end();
-  }
-
-  return new Promise((resolve, reject) => {
-    child.on('exit', (code, signal) => {
-      debug(
-        'process %d exited with code=%d, signal=%s (command=%s args=%o)',
-        child.pid,
-        code,
+  const stdout = stdoutBuffer.toString();
+  const stderr = stderrBuffer.toString();
+  if (error) {
+    return Promise.reject(error);
+  } else if (status !== 0) {
+    return Promise.reject(
+      makeExecError({
+        code: status ?? undefined,
         signal,
-        file,
-        args,
-      );
-
-      if (code === 0) {
-        resolve({ stdout, stderr });
-      } else {
-        reject(
-          makeExecError({
-            code: code ?? undefined,
-            signal,
-            stdout,
-            stderr,
-            cmd: `${file} ${args.join(' ')}`,
-          }),
-        );
-      }
-    });
-  });
+        stdout,
+        stderr,
+        cmd: `${file} ${args.join(' ')}`,
+      }),
+    );
+  }
+  return Promise.resolve({ stdout, stderr });
 }
 
 export interface ExecError {
