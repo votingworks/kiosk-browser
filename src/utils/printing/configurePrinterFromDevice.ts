@@ -5,10 +5,10 @@ import getConnectedDeviceURIs from './getConnectedDeviceURIs';
 import getPrinterDeviceURI from './getPrinterDeviceURI';
 import { debug, PrintConfig } from '.';
 
-export default async function configurePrinterFromDevice(
+export default function configurePrinterFromDevice(
   config: PrintConfig,
   device: KioskBrowser.Device,
-): Promise<boolean> {
+): boolean {
   const printer = getPrinterConfigForDevice(config, device);
 
   if (!printer) {
@@ -16,7 +16,7 @@ export default async function configurePrinterFromDevice(
     return false;
   }
 
-  const deviceURIs = await getConnectedDeviceURIs(new Set(['usb']));
+  const deviceURIs = getConnectedDeviceURIs(new Set(['usb']));
   const deviceURI = findDeviceURIMatchingPrinterConfig(printer, deviceURIs);
 
   if (!deviceURI) {
@@ -28,14 +28,14 @@ export default async function configurePrinterFromDevice(
     return false;
   }
 
-  const namedPrinterDeviceURI = await getPrinterDeviceURI(config.printerName);
+  const namedPrinterDeviceURI = getPrinterDeviceURI(config.printerName);
 
   if (namedPrinterDeviceURI === deviceURI) {
     debug('printer "%s" is already configured, skipping', config.printerName);
     return false;
   }
 
-  await configurePrinter({
+  configurePrinter({
     printerName: config.printerName,
     ppd: printer.ppd,
     deviceURI,

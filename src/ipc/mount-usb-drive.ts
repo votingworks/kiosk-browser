@@ -9,8 +9,8 @@ export interface Options {
   label?: string;
 }
 
-async function mountUsbDrive(options: Options): Promise<void> {
-  await exec('pmount', [
+function mountUsbDrive(options: Options): void {
+  exec('pmount', [
     '-w',
     '-u',
     '000',
@@ -20,10 +20,7 @@ async function mountUsbDrive(options: Options): Promise<void> {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(
-    channel,
-    async (event: IpcMainInvokeEvent, options: Options) => {
-      await mountUsbDrive(options);
-    },
-  );
+  ipcMain.handle(channel, (event: IpcMainInvokeEvent, options: Options) => {
+    mountUsbDrive(options);
+  });
 }

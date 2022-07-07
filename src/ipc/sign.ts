@@ -12,10 +12,10 @@ export interface SignParams {
   payload: string;
 }
 
-async function sign(
+function sign(
   { signatureType, payload }: SignParams,
   signifySecretKey?: string,
-): Promise<string | undefined> {
+): string | undefined {
   if (!signifySecretKey) {
     debug('could not sign because no secret key');
     return;
@@ -29,7 +29,7 @@ async function sign(
   const rawPayloadToSign = `${signatureType}.${payload}`;
 
   try {
-    const { stdout, stderr } = await exec(
+    const { stdout, stderr } = exec(
       'signify-openbsd',
       ['-S', '-s', signifySecretKey, '-m', '-', '-x', '-'],
       rawPayloadToSign,
@@ -49,11 +49,8 @@ async function sign(
 }
 
 const register: RegisterIpcHandler = (ipcMain: IpcMain, { options }): void => {
-  ipcMain.handle(
-    channel,
-    async (event: IpcMainInvokeEvent, params: SignParams) => {
-      return await sign(params, options.signifySecretKey);
-    },
+  ipcMain.handle(channel, (event: IpcMainInvokeEvent, params: SignParams) =>
+    sign(params, options.signifySecretKey),
   );
 };
 

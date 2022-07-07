@@ -36,7 +36,7 @@ test('get-usb-drives', async () => {
   ]);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
   readlinkMock.mockResolvedValueOnce('../../sdc1');
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -52,7 +52,7 @@ test('get-usb-drives', async () => {
     }),
     stderr: '',
   });
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -69,7 +69,7 @@ test('get-usb-drives', async () => {
     stderr: '',
   });
 
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       filesystems: [
         {
@@ -118,7 +118,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
 
   readdirMock.mockResolvedValueOnce(['usb-foobar-part23']);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -135,7 +135,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
     stderr: '',
   });
 
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });

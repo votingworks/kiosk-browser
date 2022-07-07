@@ -18,7 +18,7 @@ test('mount-usb-drive', async () => {
   // Things should be registered as expected.
   expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
 
-  execMock.mockResolvedValueOnce({
+  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });

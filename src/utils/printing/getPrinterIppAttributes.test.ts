@@ -8,20 +8,20 @@ jest.mock('../exec');
 const ippUri = 'ipp://localhost:60000/ipp/print';
 
 describe('getPrinterIppAttributes', () => {
-  it('uses ipptool to query and parse printer atttributes', async () => {
-    mockOf(exec).mockResolvedValueOnce({
+  it('uses ipptool to query and parse printer atttributes', () => {
+    mockOf(exec).mockReturnValueOnce({
       stdout: fakeIpptoolStdout(),
       stderr: '',
     });
-    expect(await getPrinterIppAttributes(ippUri)).toEqual({
+    expect(getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['none'],
       markerInfos: [fakeMarkerInfo],
     });
   });
 
-  it('parses multiple marker infos', async () => {
-    mockOf(exec).mockResolvedValueOnce({
+  it('parses multiple marker infos', () => {
+    mockOf(exec).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'marker-names':
           '(1setOf nameWithoutLanguage) = black cartridge,color cartridge',
@@ -33,7 +33,7 @@ describe('getPrinterIppAttributes', () => {
       }),
       stderr: '',
     });
-    expect(await getPrinterIppAttributes(ippUri)).toEqual({
+    expect(getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['none'],
       markerInfos: [
@@ -50,8 +50,8 @@ describe('getPrinterIppAttributes', () => {
     });
   });
 
-  it('parses multiple printer-state-reasons', async () => {
-    mockOf(exec).mockResolvedValueOnce({
+  it('parses multiple printer-state-reasons', () => {
+    mockOf(exec).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'printer-state': '(enum) = stopped',
         'printer-state-reasons':
@@ -59,7 +59,7 @@ describe('getPrinterIppAttributes', () => {
       }),
       stderr: '',
     });
-    expect(await getPrinterIppAttributes(ippUri)).toEqual({
+    expect(getPrinterIppAttributes(ippUri)).toEqual({
       state: 'stopped',
       stateReasons: [
         'media-empty-error',
@@ -70,53 +70,55 @@ describe('getPrinterIppAttributes', () => {
     });
   });
 
-  it('creates a special printer-state-reason if HP sleep mode detected', async () => {
-    mockOf(exec).mockResolvedValueOnce({
+  it('creates a special printer-state-reason if HP sleep mode detected', () => {
+    mockOf(exec).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'printer-alert-description':
           '(1setOf textWithoutLanguage) = ,Ready,Sleep Mode',
       }),
       stderr: '',
     });
-    expect(await getPrinterIppAttributes(ippUri)).toEqual({
+    expect(getPrinterIppAttributes(ippUri)).toEqual({
       state: 'idle',
       stateReasons: ['sleep-mode'],
       markerInfos: [fakeMarkerInfo],
     });
   });
 
-  it('throws an error if ipptool fails', async () => {
-    mockOf(exec).mockRejectedValueOnce(new Error('ipptool failed'));
-    await expect(getPrinterIppAttributes(ippUri)).rejects.toThrow(
+  it('throws an error if ipptool fails', () => {
+    mockOf(exec).mockImplementationOnce(() => {
+      throw new Error('ipptool failed');
+    });
+    expect(() => getPrinterIppAttributes(ippUri)).toThrow(
       new Error('ipptool failed'),
     );
   });
 
-  it('throws an error if ipptool output cannot be parsed', async () => {
+  it('throws an error if ipptool output cannot be parsed', () => {
     const badOutput = [
       ['', 'Unsuccessful ipptool response: '],
       [
         `"/tmp/tmp-122141-YkVU4ekfP1Eg":
-  Get-Printer-Attributes:
-      attributes-charset (charset) = utf-8
-      attributes-natural-language (naturalLanguage) = en
-      printer-uri (uri) = ipp://localhost:60000/ipp/print
-      requested-attributes (1setOf keyword) = printer-state,printer-state-reasons,marker-names,marker-colors,marker-types,marker-low-levels,marker-high-levels,marker-levels,printer-alert-description
-  /tmp/tmp-122141-YkVU4ekfP1Eg                                         [PASS]
-      RECEIVED: 395 bytes in response
-      status-code = successful-ok ((null))
-`,
+        Get-Printer-Attributes:
+            attributes-charset (charset) = utf-8
+            attributes-natural-language (naturalLanguage) = en
+            printer-uri (uri) = ipp://localhost:60000/ipp/print
+            requested-attributes (1setOf keyword) = printer-state,printer-state-reasons,marker-names,marker-colors,marker-types,marker-low-levels,marker-high-levels,marker-levels,printer-alert-description
+        /tmp/tmp-122141-YkVU4ekfP1Eg                                         [PASS]
+            RECEIVED: 395 bytes in response
+            status-code = successful-ok ((null))
+      `,
         'Unsuccessful ipptool response: status-code = successful-ok ((null))',
       ],
       [
         `"/tmp/tmp-122141-YkVU4ekfP1Eg":
-  Get-Printer-Attributes:
-      attributes-charset (charset) = utf-8
-      attributes-natural-language (naturalLanguage) = en
-      printer-uri (uri) = ipp://localhost:60000/ipp/print
-      requested-attributes (1setOf keyword) = printer-state,printer-state-reasons,marker-names,marker-colors,marker-types,marker-low-levels,marker-high-levels,marker-levels,printer-alert-description
-  /tmp/tmp-122141-YkVU4ekfP1Eg                                         [PASS]
-      RECEIVED: 395 bytes in response`,
+        Get-Printer-Attributes:
+            attributes-charset (charset) = utf-8
+            attributes-natural-language (naturalLanguage) = en
+            printer-uri (uri) = ipp://localhost:60000/ipp/print
+            requested-attributes (1setOf keyword) = printer-state,printer-state-reasons,marker-names,marker-colors,marker-types,marker-low-levels,marker-high-levels,marker-levels,printer-alert-description
+        /tmp/tmp-122141-YkVU4ekfP1Eg                                         [PASS]
+            RECEIVED: 395 bytes in response`,
         'Unsuccessful ipptool response: <empty>',
       ],
       [
@@ -154,8 +156,8 @@ describe('getPrinterIppAttributes', () => {
       ],
     ];
     for (const [stdout, expectedError] of badOutput) {
-      mockOf(exec).mockResolvedValueOnce({ stdout, stderr: '' });
-      await expect(getPrinterIppAttributes(ippUri)).rejects.toThrow(
+      mockOf(exec).mockReturnValueOnce({ stdout, stderr: '' });
+      expect(() => getPrinterIppAttributes(ippUri)).toThrow(
         new Error(expectedError),
       );
     }

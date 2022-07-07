@@ -12,9 +12,7 @@ import register, {
 
 jest.mock('./get-printer-info');
 
-const getPrinterInfoMock = mockOf(getPrinterInfo).mockRejectedValue(
-  new Error('no mocks ready'),
-);
+const getPrinterInfoMock = mockOf(getPrinterInfo);
 
 test('printer observer triggers on devices change', async () => {
   const onDevicesChange = new Subject<void>();
@@ -30,7 +28,7 @@ test('printer observer triggers on devices change', async () => {
   expect(callback).not.toHaveBeenCalled();
 
   // Trigger change and wait for promises.
-  getPrinterInfoMock.mockResolvedValueOnce([printer]);
+  getPrinterInfoMock.mockReturnValueOnce([printer]);
   onDevicesChange.next();
 
   // wait for promises to resolve twice, once for each `switchMap/from`
@@ -54,7 +52,7 @@ test('printer observer triggers on printer configure', async () => {
   expect(callback).not.toHaveBeenCalled();
 
   // Trigger change and wait for promises.
-  getPrinterInfoMock.mockResolvedValueOnce([printer]);
+  getPrinterInfoMock.mockReturnValueOnce([printer]);
   onPrinterConfigure.next();
 
   // wait for promises to resolve twice, once for each `switchMap/from`
@@ -78,7 +76,7 @@ test('printer observer triggers multiple times', async () => {
   expect(callback).not.toHaveBeenCalled();
 
   // Trigger change and wait for promises.
-  getPrinterInfoMock.mockResolvedValueOnce([printer]);
+  getPrinterInfoMock.mockReturnValueOnce([printer]);
   onDevicesChange.next();
 
   // wait for promises to resolve twice, once for each `switchMap/from`
@@ -86,7 +84,7 @@ test('printer observer triggers multiple times', async () => {
   await Promise.resolve();
 
   // Trigger change and wait for promises.
-  getPrinterInfoMock.mockResolvedValueOnce([printer]);
+  getPrinterInfoMock.mockReturnValueOnce([printer]);
   onPrinterConfigure.next();
 
   // wait for promises to resolve twice, once for each `switchMap/from`
@@ -116,9 +114,9 @@ test('registering a subscription handler hooks up to both USB devices and autoco
   await ipcRenderer.invoke(printerSubscriptionChannel, { subscribe: true });
 
   expect(webContents.send).not.toHaveBeenCalled();
-  getPrinterInfoMock.mockImplementationOnce(() => {
+  getPrinterInfoMock.mockImplementation(() => {
     resolve();
-    return Promise.resolve([printer]);
+    return [printer];
   });
 
   // Trigger device change and wait.
@@ -154,7 +152,7 @@ test('unsubscribe', async () => {
 
   getPrinterInfoMock.mockImplementationOnce(() => {
     resolve();
-    return Promise.resolve([printer]);
+    return [printer];
   });
 
   // Trigger device change and wait.
@@ -190,7 +188,7 @@ test('unsubscribe on webContents teardown', async () => {
 
   getPrinterInfoMock.mockImplementationOnce(() => {
     resolve();
-    return Promise.resolve([printer]);
+    return [printer];
   });
 
   // Trigger device change and wait.
