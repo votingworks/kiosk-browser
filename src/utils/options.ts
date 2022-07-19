@@ -17,7 +17,6 @@ export interface Options {
   autoconfigurePrintConfig?: PrintConfig;
   allowDevtools?: boolean;
   originFilePermissions: OriginFilePermission[];
-  signifySecretKey?: string;
   signingScriptPath?: string;
 }
 
@@ -40,7 +39,6 @@ async function parseOptionsWithoutTryCatch(
   let helpArg: string | undefined;
   let allowDevtoolsArg: boolean | undefined;
   let originFilePermissions: OriginFilePermission[] | undefined;
-  let signifySecretKey: string | undefined;
   let signingScriptPath: string | undefined;
   const warnings: string[] = [];
 
@@ -69,14 +67,6 @@ async function parseOptionsWithoutTryCatch(
         ...(originFilePermissions ?? []),
         parseOriginFilePermissionString(value),
       ];
-    } else if (arg === '--signify-secret-key') {
-      i++;
-      const value = argv[i];
-      debug('got option for %s: %s', arg, value);
-      if (!value || value.startsWith('-')) {
-        return { error: new Error(`expected value for option: ${arg}`) };
-      }
-      signifySecretKey = value;
     } else if (arg === '--signing-script-path') {
       i++;
       const value = argv[i];
@@ -126,7 +116,6 @@ async function parseOptionsWithoutTryCatch(
         parseOriginFilePermissionString,
       ) ??
       [],
-    signifySecretKey: signifySecretKey ?? env.KIOSK_BROWSER_SIGNIFY_SECRET_KEY,
     signingScriptPath:
       signingScriptPath ?? env.KIOSK_BROWSER_SIGNING_SCRIPT_PATH,
   };
