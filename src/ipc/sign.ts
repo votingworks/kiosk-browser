@@ -14,10 +14,10 @@ export interface SignParams {
 
 function sign(
   { signatureType, payload }: SignParams,
-  signifySecretKey?: string,
+  signingScriptPath?: string,
 ): string | undefined {
-  if (!signifySecretKey) {
-    debug('could not sign because no secret key');
+  if (!signingScriptPath) {
+    debug('could not sign because no signing script specified!');
     return;
   }
 
@@ -30,8 +30,9 @@ function sign(
 
   try {
     const { stdout, stderr } = exec(
-      'signify-openbsd',
-      ['-S', '-s', signifySecretKey, '-m', '-', '-x', '-'],
+      // TODO this feels really dangerous, is there a better way?
+      signingScriptPath,
+      [],
       rawPayloadToSign,
     );
 
@@ -43,14 +44,14 @@ function sign(
     // the first line is a comment, the second is the signature
     return stdout.split('\n')[1];
   } catch (err) {
-    debug('could not call signify-openbsd: %s', err);
+    debug('could not call signing script: %s', err);
     return;
   }
 }
 
 const register: RegisterIpcHandler = (ipcMain: IpcMain, { options }): void => {
   ipcMain.handle(channel, (event: IpcMainInvokeEvent, params: SignParams) =>
-    sign(params, options.signifySecretKey),
+    sign(params, options.signingScriptPath),
   );
 };
 

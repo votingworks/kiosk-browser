@@ -15,13 +15,13 @@ beforeEach(() => {
 const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
 const autoconfiguredPrinter = new Subject<void>();
 
-test('call to sign invokes the right signify command, but only if signatureType is well-formed', async () => {
+test('call to sign invokes the right signing script command, but only if signatureType is well-formed', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
   register(ipcMain, {
     changedDevices,
     autoconfiguredPrinter,
     options: {
-      signifySecretKey: '/tmp/key.sec',
+      signingScriptPath: '/tmp/sign.sh',
       url: new URL('about:blank'),
       originFilePermissions: [],
     },
@@ -37,12 +37,7 @@ test('call to sign invokes the right signify command, but only if signatureType 
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenNthCalledWith(
-    1,
-    'signify-openbsd',
-    ['-S', '-s', '/tmp/key.sec', '-m', '-', '-x', '-'],
-    'test.hello',
-  );
+  expect(execMock).toHaveBeenNthCalledWith(1, '/tmp/sign.sh', [], 'test.hello');
 
   expect(signResult).toBe('FAKESIGNATURERIGHTHERE==');
 
@@ -85,7 +80,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     changedDevices,
     autoconfiguredPrinter,
     options: {
-      signifySecretKey: '/tmp/key.sec',
+      signingScriptPath: '/tmp/sign.sh',
       url: new URL('about:blank'),
       originFilePermissions: [],
     },

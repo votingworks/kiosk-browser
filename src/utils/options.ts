@@ -18,6 +18,7 @@ export interface Options {
   allowDevtools?: boolean;
   originFilePermissions: OriginFilePermission[];
   signifySecretKey?: string;
+  signingScriptPath?: string;
 }
 
 export interface Help {
@@ -40,6 +41,7 @@ async function parseOptionsWithoutTryCatch(
   let allowDevtoolsArg: boolean | undefined;
   let originFilePermissions: OriginFilePermission[] | undefined;
   let signifySecretKey: string | undefined;
+  let signingScriptPath: string | undefined;
   const warnings: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
@@ -75,6 +77,14 @@ async function parseOptionsWithoutTryCatch(
         return { error: new Error(`expected value for option: ${arg}`) };
       }
       signifySecretKey = value;
+    } else if (arg === '--signing-script-path') {
+      i++;
+      const value = argv[i];
+      debug('got option for %s: %s', arg, value);
+      if (!value || value.startsWith('-')) {
+        return { error: new Error(`expected value for option: ${arg}`) };
+      }
+      signingScriptPath = value;
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg;
     } else if (!arg.startsWith('-')) {
@@ -117,6 +127,8 @@ async function parseOptionsWithoutTryCatch(
       ) ??
       [],
     signifySecretKey: signifySecretKey ?? env.KIOSK_BROWSER_SIGNIFY_SECRET_KEY,
+    signingScriptPath:
+      signingScriptPath ?? env.KIOSK_BROWSER_SIGNING_SCRIPT_PATH,
   };
 
   debug('parsed options: %O', options);
