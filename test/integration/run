@@ -18,7 +18,8 @@ TEST_SERVER_URL="http://localhost:${PORT}"
 export \
   DISPLAY=${DISPLAY:-:0} \
   KIOSK_BROWSER_URL="${TEST_SERVER_URL}" \
-  KIOSK_BROWSER_FILE_PERMISSIONS="o=${TEST_SERVER_URL},p=/**/*,rw"
+  KIOSK_BROWSER_FILE_PERMISSIONS="o=${TEST_SERVER_URL},p=/**/*,rw" \
+  DBUS_SESSION_BUS_ADDRESS="autolaunch:" # as per https://github.com/electron/electron/issues/31981
 
 # run test server and `kiosk-browser` concurrently, exiting when either exits
 # and providing the exit code from the test server
