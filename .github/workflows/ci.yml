@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
 
     env:
       CI: true
