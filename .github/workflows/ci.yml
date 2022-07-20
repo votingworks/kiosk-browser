@@ -8,6 +8,7 @@ jobs:
 
     env:
       CI: true
+      DBUS_SESSION_BUS_ADDRESS: "autolaunch:"
 
     steps:
       - uses: actions/checkout@v2
