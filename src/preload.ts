@@ -33,6 +33,8 @@ import { channel as storageRemoveChannel } from './ipc/storage-remove';
 import { channel as storageSetChannel } from './ipc/storage-set';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
+import { channel as syncUsbDriveChannel } from './ipc/sync-usb-drive';
+
 import buildDevicesObservable from './utils/buildDevicesObservable';
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable';
 import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter';
@@ -110,6 +112,11 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async unmountUsbDrive(device: string): Promise<void> {
       debug('forwarding `unmountUsbDrive` to main process');
       await ipcRenderer.invoke(unmountUsbDriveChannel, device);
+    },
+
+    async syncUsbDrive(mountPoint: string): Promise<void> {
+      debug('forwarding `syncUsbDrive` to main process');
+      await ipcRenderer.invoke(syncUsbDriveChannel, mountPoint);
     },
 
     async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
