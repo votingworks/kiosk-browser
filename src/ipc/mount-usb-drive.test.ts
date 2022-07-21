@@ -22,6 +22,7 @@ test('mount-usb-drive', async () => {
   await ipcRenderer.invoke(channel, { device: 'sdb1' });
 
   expect(execMock).toHaveBeenCalledWith('pmount', [
+    '-s',
     '-w',
     '-u',
     '000',
@@ -45,6 +46,7 @@ test('mount-usb-drive with custom label', async () => {
   await ipcRenderer.invoke(channel, { device: 'sdb1', label: 'usb-drive' });
 
   expect(execMock).toHaveBeenCalledWith('pmount', [
+    '-s',
     '-w',
     '-u',
     '000',

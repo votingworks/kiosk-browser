@@ -11,6 +11,7 @@ export interface Options {
 
 function mountUsbDrive(options: Options): void {
   exec('pmount', [
+    '-s',
     '-w',
     '-u',
     '000',
