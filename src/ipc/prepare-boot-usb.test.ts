@@ -30,62 +30,13 @@ Boot0005* debian	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/F
     `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
-    stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"7dd453ac-01"}]}',
-    stderr: '',
-  });
 
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(false);
 
-  expect(execMock).toBeCalledTimes(2);
+  expect(execMock).toBeCalledTimes(1);
   expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
-    '-o',
-    'partuuid,name',
-    '-J',
-    '-l',
-  ]);
-});
-
-test('prepare-boot-usb returns false when there are more than one bootable usbs', async () => {
-  // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain);
-
-  // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
-    stdout: `BootCurrent: 0000
-Timeout: 0 seconds
-BootOrder: 0000
-Boot0000* ubuntu	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(somefile.efi)
-Boot0001* Linpus Lite	HD(1,MDR,0x314d08f,0x800,0x100000)/File(\\EFI\\boot\\grubx64.efi)RC
-Boot0002* Linpus Lite	HD(1,MDR,0x123d08f,0x800,0x100000)/File(\\EFI\\boot\\grubx64.efi)RC
-Boot2001* EFI USB Device	RC
-Boot2002* EFI DVD/CDROM	RC
-Boot2003* EFI Network	RC
-       `,
-    stderr: '',
-  });
-  execMock.mockReturnValueOnce({
-    stdout:
-      '{"blockdevices": [{"name": "sda1", "partuuid":"123d08f-01"}, {"name": "sdb1", "partuuid":"314d08f-01"}]}',
-    stderr: '',
-  });
-
-  // Is the handler wired up right?
-  const result = (await ipcRenderer.invoke(channel)) as boolean;
-  expect(result).toBe(false);
-
-  expect(execMock).toBeCalledTimes(2);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
-    '-o',
-    'partuuid,name',
-    '-J',
-    '-l',
-  ]);
 });
 
 test('prepare-boot-usb returns true when expected and sets correct boot order', async () => {
@@ -107,7 +58,38 @@ Boot2003* EFI Network	RC
     stderr: '',
   });
   execMock.mockReturnValueOnce({
-    stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
+    stdout: '',
+    stderr: '',
+  });
+
+  // Is the handler wired up right?
+  const result = (await ipcRenderer.invoke(channel)) as boolean;
+  expect(result).toBe(true);
+  expect(execMock).toBeCalledTimes(2);
+  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
+  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+    '-n',
+    '/bin/efibootmgr',
+    '-n',
+    '0001',
+  ]);
+});
+
+test('prepare-boot-usb returns true with a USB HDD entry that has a GPT partition and a long UUID', async () => {
+  // Register our handler.
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain);
+
+  // Things should be registered as expected.
+  execMock.mockReturnValueOnce({
+    stdout: `BootCurrent: 0000
+Timeout: 0 seconds
+BootOrder: 0000
+Boot0000* USB HDD 	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/File(somefile.efi)
+Boot2001* EFI USB Device	RC
+Boot2002* EFI DVD/CDROM	RC
+Boot2003* EFI Network	RC
+       `,
     stderr: '',
   });
   execMock.mockReturnValueOnce({
@@ -118,19 +100,13 @@ Boot2003* EFI Network	RC
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(true);
-  expect(execMock).toBeCalledTimes(3);
+  expect(execMock).toBeCalledTimes(2);
   expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
-    '-o',
-    'partuuid,name',
-    '-J',
-    '-l',
-  ]);
-  expect(execMock).toHaveBeenNthCalledWith(3, 'sudo', [
+  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
-    '0001',
+    '0000',
   ]);
 });
 
@@ -153,10 +129,6 @@ Boot200E  Boot Menu	RC
     stderr: '',
   });
   execMock.mockReturnValueOnce({
-    stdout: '{"blockdevices": [{"name": "sda1", "partuuid":"314d08f-01"}]}',
-    stderr: '',
-  });
-  execMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -164,15 +136,9 @@ Boot200E  Boot Menu	RC
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(true);
-  expect(execMock).toBeCalledTimes(3);
+  expect(execMock).toBeCalledTimes(2);
   expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'lsblk', [
-    '-o',
-    'partuuid,name',
-    '-J',
-    '-l',
-  ]);
-  expect(execMock).toHaveBeenNthCalledWith(3, 'sudo', [
+  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
