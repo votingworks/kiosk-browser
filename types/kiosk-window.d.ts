@@ -237,6 +237,8 @@ declare namespace KioskBrowser {
 
     reboot(): Promise<void>;
 
+    rebootToBIOS(): Promise<void>;
+
     prepareToBootFromUsb(): Promise<boolean>;
   }
 }
