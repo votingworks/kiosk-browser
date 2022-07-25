@@ -27,7 +27,7 @@ import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSignHandler from './ipc/sign';
 import registerRebootHandler from './ipc/reboot';
-import registerRebootToBIOSHandler from './ipc/reboot-to-bios';
+import registerRebootToBiosHandler from './ipc/reboot-to-bios';
 import registerPrepareBootUsb from './ipc/prepare-boot-usb';
 import parseOptions, { Options, printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
@@ -131,7 +131,7 @@ async function createWindow(): Promise<void> {
     registerSignHandler,
     registerRebootHandler,
     registerPrepareBootUsb,
-    registerRebootToBIOSHandler,
+    registerRebootToBiosHandler,
   ];
 
   const handlerCleanups = handlers

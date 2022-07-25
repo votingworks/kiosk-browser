@@ -24,7 +24,7 @@ import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
 import { channel as quitChannel } from './ipc/quit';
 import { channel as rebootChannel } from './ipc/reboot';
-import { channel as rebootToBIOSChannel } from './ipc/reboot-to-bios';
+import { channel as rebootToBiosChannel } from './ipc/reboot-to-bios';
 import { PromptToSaveOptions } from './ipc/saveAs';
 import { channel as signChannel, SignParams } from './ipc/sign';
 import { channel as storageClearChannel } from './ipc/storage-clear';
@@ -246,9 +246,9 @@ function makeKiosk(): KioskBrowser.Kiosk {
       await ipcRenderer.invoke(rebootChannel);
     },
 
-    async rebootToBIOS(): Promise<void> {
-      debug('forwarding `rebootToBIOS` to the main process');
-      await ipcRenderer.invoke(rebootToBIOSChannel);
+    async rebootToBios(): Promise<void> {
+      debug('forwarding `rebootToBios` to the main process');
+      await ipcRenderer.invoke(rebootToBiosChannel);
     },
   };
 }
