@@ -1,14 +1,14 @@
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel as setClockChannel } from './clock';
 
-const execMock = mockOf(exec);
-jest.mock('../utils/exec');
+const execSyncMock = mockOf(execSync);
+jest.mock('../utils/execSync');
 
 beforeEach(() => {
-  execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execSyncMock.mockReset();
+  execSyncMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 const { ipcMain, ipcRenderer } = fakeIpc();
@@ -20,14 +20,14 @@ test('set datetime works in daylights savings', async () => {
     IANAZone: 'America/Chicago',
   });
 
-  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     'timedatectl',
     'set-timezone',
     'America/Chicago',
   ]);
 
-  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     'timedatectl',
     'set-time',
@@ -41,14 +41,14 @@ test('set datetime works in non- daylights savings', async () => {
     IANAZone: 'America/Chicago',
   });
 
-  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     'timedatectl',
     'set-timezone',
     'America/Chicago',
   ]);
 
-  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     'timedatectl',
     'set-time',
@@ -57,7 +57,7 @@ test('set datetime works in non- daylights savings', async () => {
 });
 
 test('set datetime fails when NTP is enabled', async () => {
-  execMock.mockImplementationOnce(() => {
+  execSyncMock.mockImplementationOnce(() => {
     throw new Error(
       'Failed to set time: Automatic time synchronization is enabled',
     );

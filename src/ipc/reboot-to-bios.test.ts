@@ -1,14 +1,14 @@
 import { fakeIpc } from '../../test/ipc';
 import register, { channel } from './reboot-to-bios';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
-const execMock = mockOf(exec);
-jest.mock('../utils/exec');
+const execSyncMock = mockOf(execSync);
+jest.mock('../utils/execSync');
 
 beforeEach(() => {
-  execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execSyncMock.mockReset();
+  execSyncMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 test('reboot to bios', async () => {
@@ -17,8 +17,8 @@ test('reboot to bios', async () => {
   register(ipcMain);
 
   await ipcRenderer.invoke(channel);
-  expect(execMock).toHaveBeenCalledTimes(1);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'systemctl', [
+  expect(execSyncMock).toHaveBeenCalledTimes(1);
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'systemctl', [
     'reboot',
     '--firmware-setup',
   ]);

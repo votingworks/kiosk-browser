@@ -1,4 +1,4 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import { debug } from '.';
 import assert from 'assert';
 import tmp from 'tmp';
@@ -88,7 +88,7 @@ export function getPrinterIppAttributes(
   debug('getting printer IPP attributes from ipptool, args=%o', ipptoolArgs);
   let ipptoolResult: { stdout: string; stderr: string };
   try {
-    ipptoolResult = exec(`ipptool`, ipptoolArgs);
+    ipptoolResult = execSync(`ipptool`, ipptoolArgs);
     debug('ipptool stdout:\n%s', ipptoolResult.stdout);
     debug('ipptool stderr:\n%s', ipptoolResult.stderr);
 

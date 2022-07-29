@@ -1,13 +1,13 @@
-import exec from './exec';
+import execSync from './execSync';
 import mockOf from '../../test/mockOf';
 import { getMainScreen } from './screen';
 
-jest.mock('./exec', () => jest.fn());
+jest.mock('./execSync', () => jest.fn());
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
 test('`getMainScreen` gets screen information for the first connected screen', () => {
-  execMock.mockReturnValue({
+  execSyncMock.mockReturnValue({
     stdout: `Screen 0: minimum 0 x 0, current 1314 x 760, maximum 8196 x 8196
 Virtual1 disconnected
 Virtual2 connected primary 1314x760+0+0 0mm x 0mm
@@ -55,7 +55,7 @@ Virtual6 disconnected`,
 });
 
 test('`getMainScreen` returns nothing if there are no connected screens', () => {
-  execMock.mockReturnValue({
+  execSyncMock.mockReturnValue({
     stdout: '',
     stderr: '',
   });

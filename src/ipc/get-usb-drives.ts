@@ -2,7 +2,7 @@ import makeDebug from 'debug';
 import { IpcMain } from 'electron';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 const debug = makeDebug('kiosk-browser:get-usb-drives');
 
@@ -54,7 +54,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
 
     // get the block device info, including mount point
     const usbDrives = devices.map((device) => {
-      const { stdout } = exec('lsblk', ['-J', '-n', '-l', device]);
+      const { stdout } = execSync('lsblk', ['-J', '-n', '-l', device]);
 
       const rawData = JSON.parse(stdout) as RawDataReturn;
       return {
@@ -64,7 +64,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
     });
 
     // Find any phantom usb drives that were improperly removed and need to be unmounted
-    const { stdout } = exec('findmnt', ['--json', '--list']);
+    const { stdout } = execSync('findmnt', ['--json', '--list']);
     if (stdout !== '') {
       const rawData = JSON.parse(stdout) as FindMntRawDataReturn;
       await Promise.all(
@@ -78,7 +78,7 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
                 target,
                 source,
               );
-              exec('pumount', [target]);
+              execSync('pumount', [target]);
             }
           }
         }),

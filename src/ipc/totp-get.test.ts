@@ -1,28 +1,28 @@
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel as totpGetChannel, TotpInfo } from './totp-get';
 
-const execMock = mockOf(exec);
-jest.mock('../utils/exec');
+const execSyncMock = mockOf(execSync);
+jest.mock('../utils/execSync');
 
 beforeEach(() => {
-  execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execSyncMock.mockReset();
+  execSyncMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 const { ipcMain, ipcRenderer } = fakeIpc();
 register(ipcMain);
 
 test('call to totp calls appropriate shell command and returns the right data', async () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '2021-09-10 14:35:02: 932549',
     stderr: '',
   });
 
   const totpResult = (await ipcRenderer.invoke(totpGetChannel)) as TotpInfo;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
     '-t',
@@ -37,15 +37,15 @@ test('call to totp calls appropriate shell command and returns the right data', 
   });
 });
 
-test('when error in exec, return undefined', async () => {
-  execMock.mockReturnValueOnce({
+test('when error in execSync, return undefined', async () => {
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: 'TPM is nowhere to be found',
   });
 
   const totpResult = (await ipcRenderer.invoke(totpGetChannel)) as TotpInfo;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
     '-t',
@@ -55,14 +55,14 @@ test('when error in exec, return undefined', async () => {
   expect(totpResult).toEqual(undefined);
 });
 
-test('when exec throws, return undefined', async () => {
-  execMock.mockImplementation(() => {
+test('when execSync throws, return undefined', async () => {
+  execSyncMock.mockImplementation(() => {
     throw new Error("I don't know what's going on");
   });
 
   const totpResult = (await ipcRenderer.invoke(totpGetChannel)) as TotpInfo;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, 'sudo', [
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'sudo', [
     '-n',
     '/usr/local/bin/tpm2-totp',
     '-t',

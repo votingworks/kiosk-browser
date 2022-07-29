@@ -1,11 +1,11 @@
-import exec from './exec';
+import execSync from './execSync';
 import xrandrParse, { Screen } from 'xrandr-parse';
 
 /**
  * Gets information about the main screen.
  */
 export function getMainScreen(): Screen | undefined {
-  const { stdout } = exec('xrandr', ['--query']);
+  const { stdout } = execSync('xrandr', ['--query']);
   const screens = xrandrParse(
     stdout.replace(/connected primary/g, 'connected'),
   ); // xrandr-parse doesn't understand "primary"

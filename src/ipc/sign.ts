@@ -1,7 +1,7 @@
 import makeDebug from 'debug';
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { RegisterIpcHandler } from '..';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'sign';
 
@@ -29,7 +29,7 @@ function sign(
   const rawPayloadToSign = `${signatureType}.${payload}`;
 
   try {
-    const { stdout, stderr } = exec(
+    const { stdout, stderr } = execSync(
       // TODO this feels really dangerous, is there a better way?
       signingScriptPath,
       [],

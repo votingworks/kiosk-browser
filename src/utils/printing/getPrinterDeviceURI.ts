@@ -1,4 +1,4 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import { debug } from '.';
 import { ok } from '../assert';
 
@@ -14,7 +14,7 @@ export default function getPrinterDeviceURI(
   let stderr: string;
 
   try {
-    ({ stdout, stderr } = exec('lpstat', ['-v', printerName]));
+    ({ stdout, stderr } = execSync('lpstat', ['-v', printerName]));
   } catch (error) {
     debug('`lpstat` failed with error: %O', error);
     return undefined;

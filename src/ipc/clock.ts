@@ -1,6 +1,6 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { DateTime } from 'luxon';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'setClock';
 
@@ -11,8 +11,8 @@ function clockSet({
   const datetimeString = DateTime.fromISO(isoDatetime, {
     zone: IANAZone,
   }).toFormat('yyyy-LL-dd TT');
-  exec('sudo', ['-n', 'timedatectl', 'set-timezone', IANAZone]);
-  exec('sudo', ['-n', 'timedatectl', 'set-time', datetimeString]);
+  execSync('sudo', ['-n', 'timedatectl', 'set-timezone', IANAZone]);
+  execSync('sudo', ['-n', 'timedatectl', 'set-time', datetimeString]);
 }
 
 export default function register(ipcMain: IpcMain): void {

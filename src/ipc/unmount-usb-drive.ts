@@ -1,11 +1,11 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { join } from 'path';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'unmountUsbDrive';
 
 function unmountUsbDrive(device: string): void {
-  exec('pumount', [join('/dev', device)]);
+  execSync('pumount', [join('/dev', device)]);
 }
 
 export default function register(ipcMain: IpcMain): void {

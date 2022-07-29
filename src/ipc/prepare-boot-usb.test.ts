@@ -1,14 +1,14 @@
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel } from './prepare-boot-usb';
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 
 beforeEach(() => {
-  execMock.mockClear();
+  execSyncMock.mockClear();
 });
 
 test('prepare-boot-usb returns false when no bootable usbs', async () => {
@@ -17,7 +17,7 @@ test('prepare-boot-usb returns false when no bootable usbs', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0005
 Timeout: 0 seconds
 BootOrder: 0005,0002,0001,0003,0000,0004
@@ -35,8 +35,8 @@ Boot0005* debian	HD(1,GPT,7dd453ac-2e62-44f6-be51-5f6bcaa85a61,0x800,0x100000)/F
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(false);
 
-  expect(execMock).toBeCalledTimes(1);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
+  expect(execSyncMock).toBeCalledTimes(1);
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
 });
 
 test('prepare-boot-usb returns true when expected and sets correct boot order', async () => {
@@ -45,7 +45,7 @@ test('prepare-boot-usb returns true when expected and sets correct boot order', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -57,7 +57,7 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -65,9 +65,9 @@ Boot2003* EFI Network	RC
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(true);
-  expect(execMock).toBeCalledTimes(2);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+  expect(execSyncMock).toBeCalledTimes(2);
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
+  expect(execSyncMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
@@ -81,7 +81,7 @@ test('prepare-boot-usb returns true with a USB HDD entry that has a GPT partitio
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -92,7 +92,7 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -100,9 +100,9 @@ Boot2003* EFI Network	RC
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(true);
-  expect(execMock).toBeCalledTimes(2);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+  expect(execSyncMock).toBeCalledTimes(2);
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
+  expect(execSyncMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',
@@ -116,7 +116,7 @@ test('prepare-boot-usb returns true when there is a fallback Boot Menu option', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -128,7 +128,7 @@ Boot200E  Boot Menu	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -136,9 +136,9 @@ Boot200E  Boot Menu	RC
   // Is the handler wired up right?
   const result = (await ipcRenderer.invoke(channel)) as boolean;
   expect(result).toBe(true);
-  expect(execMock).toBeCalledTimes(2);
-  expect(execMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
-  expect(execMock).toHaveBeenNthCalledWith(2, 'sudo', [
+  expect(execSyncMock).toBeCalledTimes(2);
+  expect(execSyncMock).toHaveBeenNthCalledWith(1, 'efibootmgr', ['-v']);
+  expect(execSyncMock).toHaveBeenNthCalledWith(2, 'sudo', [
     '-n',
     '/bin/efibootmgr',
     '-n',

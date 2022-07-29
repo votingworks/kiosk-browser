@@ -1,8 +1,8 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import configurePrinter from './configurePrinter';
 import { PostScriptPrinterDefinition } from '.';
 
-jest.mock('../exec');
+jest.mock('../execSync');
 
 test('configure with PPD file', () => {
   const printerName = 'Example_Printer';
@@ -11,8 +11,8 @@ test('configure with PPD file', () => {
 
   configurePrinter({ printerName, deviceURI, ppd });
 
-  expect(exec).toHaveBeenCalledTimes(1);
-  expect(exec).toHaveBeenCalledWith('lpadmin', [
+  expect(execSync).toHaveBeenCalledTimes(1);
+  expect(execSync).toHaveBeenCalledWith('lpadmin', [
     '-p',
     printerName,
     '-v',
@@ -32,8 +32,8 @@ test('configure with PPD model', () => {
 
   configurePrinter({ printerName, deviceURI, ppd });
 
-  expect(exec).toHaveBeenCalledTimes(1);
-  expect(exec).toHaveBeenCalledWith('lpadmin', [
+  expect(execSync).toHaveBeenCalledTimes(1);
+  expect(execSync).toHaveBeenCalledWith('lpadmin', [
     '-p',
     printerName,
     '-v',
@@ -51,6 +51,6 @@ test('configure as default', () => {
 
   configurePrinter({ printerName, deviceURI, ppd, setDefault: true });
 
-  expect(exec).toHaveBeenCalledTimes(2);
-  expect(exec).toHaveBeenNthCalledWith(2, 'lpadmin', ['-d', printerName]);
+  expect(execSync).toHaveBeenCalledTimes(2);
+  expect(execSync).toHaveBeenNthCalledWith(2, 'lpadmin', ['-d', printerName]);
 });

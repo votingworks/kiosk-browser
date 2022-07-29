@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import { IpcMain } from 'electron';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'prepare-boot-usb';
 const debug = makeDebug('kiosk-browser:prepare-boot-usb');
@@ -51,7 +51,7 @@ function parseEfiBootMgrOutput(output: string): BootOption[] {
  * if successful, returns false if there are either 0 or more then 1 bootable usb drives available.
  */
 function prepareToBootFromUsb(): boolean {
-  const { stdout: bootStdout } = exec('efibootmgr', ['-v']);
+  const { stdout: bootStdout } = execSync('efibootmgr', ['-v']);
   const bootOptions = parseEfiBootMgrOutput(bootStdout);
   const linpusBootOption = bootOptions.find((bootOption) =>
     bootOption.restOfEntry.includes('Linpus'),
@@ -71,7 +71,7 @@ function prepareToBootFromUsb(): boolean {
   debug(
     'The USB boot option was properly located setting it to be next in the boot order…',
   );
-  exec('sudo', ['-n', '/bin/efibootmgr', '-n', nextBoot.bootNumber]);
+  execSync('sudo', ['-n', '/bin/efibootmgr', '-n', nextBoot.bootNumber]);
   return true;
 }
 

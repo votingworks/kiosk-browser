@@ -12,10 +12,10 @@ import register, {
   channel as getPrinterInfoChannel,
   getPrinterInfo,
 } from './get-printer-info';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 jest.mock('../utils/printing/getConnectedDeviceURIs');
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 
 describe('getPrinterInfo', () => {
   it('expands the printer info with connected=true if lpinfo shows the device', () => {
@@ -71,7 +71,7 @@ describe('getPrinterInfo', () => {
     mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
-    mockOf(exec).mockReturnValue({
+    mockOf(execSync).mockReturnValue({
       stdout: fakeIpptoolStdout(),
       stderr: '',
     });
@@ -108,7 +108,7 @@ describe('getPrinterInfo', () => {
     mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
-    mockOf(exec).mockImplementation(() => {
+    mockOf(execSync).mockImplementation(() => {
       throw new Error('ipptool failed');
     });
 
@@ -133,7 +133,7 @@ describe('getPrinterInfo', () => {
     mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
-    mockOf(exec)
+    mockOf(execSync)
       .mockImplementationOnce(() => {
         throw new Error('ipptool failed');
       })

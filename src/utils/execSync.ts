@@ -4,9 +4,11 @@ import makeDebug from 'debug';
 const debug = makeDebug('kiosk-browser:exec');
 
 /**
- * Like `child_process.exec`, but with easy stdin.
+ * The native `child_process.execSync` function does not do input sanitization
+ * so is vulnerable to injection attacks. This implementation uses
+ * `child_process.spawnSync` under the hood, which does sanitize input.
  */
-export default function exec(
+export default function execSync(
   file: string,
   args: readonly string[] = [],
   input?: string | Buffer,

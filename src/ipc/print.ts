@@ -1,6 +1,6 @@
 import { IpcMain, IpcMainInvokeEvent, PrinterInfo } from 'electron';
 import * as z from 'zod';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import getPreferredPrinter from '../utils/getPreferredPrinter';
 import { debug } from '../utils/printing';
 
@@ -86,7 +86,7 @@ function printData({
 
   debug('printing via lpr with args=%o', lprOptions);
   debug('data length is %d', data.length);
-  const { stdout, stderr } = exec('lpr', lprOptions, data);
+  const { stdout, stderr } = execSync('lpr', lprOptions, data);
   debug('`lpr` succeeded with stdout=%s stderr=%s', stdout, stderr);
 }
 

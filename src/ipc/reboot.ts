@@ -1,5 +1,5 @@
 import { IpcMain } from 'electron';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'reboot';
 
@@ -8,6 +8,6 @@ export const channel = 'reboot';
  */
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(channel, () => {
-    exec('reboot');
+    execSync('reboot');
   });
 }

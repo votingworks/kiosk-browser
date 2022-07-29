@@ -1,4 +1,4 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import { debug } from '.';
 
 export interface PrinterOption {
@@ -63,7 +63,7 @@ export function getPrinterOptions(deviceName?: string): PrinterOptionMap {
   lpoptionsArgs.push('-l'); // -l == list
 
   debug('calling lpoptions with args=%o', lpoptionsArgs);
-  const { stdout, stderr } = exec('lpoptions', lpoptionsArgs);
+  const { stdout, stderr } = execSync('lpoptions', lpoptionsArgs);
   debug('lpoptions returned stdout=%s, stderr=%s', stdout, stderr);
 
   const options = parsePrinterOptions(stdout);

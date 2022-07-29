@@ -1,13 +1,13 @@
 import { parsePrinterOptions, getPrinterOptions } from './options';
-import exec from '../exec';
+import execSync from '../execSync';
 import mockOf from '../../../test/mockOf';
 
-jest.mock('../exec');
+jest.mock('../execSync');
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
 beforeEach(() => {
-  execMock.mockRestore();
+  execSyncMock.mockRestore();
 });
 
 test('parse empty options', () => {
@@ -251,7 +251,7 @@ HPFTDigit/Fourth Digit: *0 1 2 3 4 5 6 7 8 9
 });
 
 test('options for default printer', () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
   });
@@ -264,11 +264,11 @@ test('options for default printer', () => {
     },
   });
 
-  expect(exec).toHaveBeenCalledWith('lpoptions', ['-l']);
+  expect(execSync).toHaveBeenCalledWith('lpoptions', ['-l']);
 });
 
 test('options for named printer', () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
   });
@@ -281,5 +281,5 @@ test('options for named printer', () => {
     },
   });
 
-  expect(exec).toHaveBeenCalledWith('lpoptions', ['-p', 'VxPrinter', '-l']);
+  expect(execSync).toHaveBeenCalledWith('lpoptions', ['-p', 'VxPrinter', '-l']);
 });

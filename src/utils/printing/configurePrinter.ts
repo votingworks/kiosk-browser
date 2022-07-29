@@ -1,5 +1,5 @@
 import { debug, PostScriptPrinterDefinition } from '.';
-import exec from '../exec';
+import execSync from '../execSync';
 
 /**
  * Configures a printer at a given device URI with a name and PPD. Optionally
@@ -25,7 +25,7 @@ export default function configurePrinter({
   }
 
   debug('configuring printer with lpadmin: args=%o', lpadminConfigureArgs);
-  exec('lpadmin', lpadminConfigureArgs);
+  execSync('lpadmin', lpadminConfigureArgs);
 
   if (setDefault) {
     const lpadminSetDefaultArgs = ['-d', printerName];
@@ -33,6 +33,6 @@ export default function configurePrinter({
       'setting printer as default with lpadmin: args=%o',
       lpadminSetDefaultArgs,
     );
-    exec('lpadmin', lpadminSetDefaultArgs);
+    execSync('lpadmin', lpadminSetDefaultArgs);
   }
 }

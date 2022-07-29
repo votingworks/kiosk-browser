@@ -1,5 +1,5 @@
 import { IpcMain } from 'electron';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'reboot-to-bios';
 
@@ -8,6 +8,6 @@ export const channel = 'reboot-to-bios';
  */
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(channel, () => {
-    exec('systemctl', ['reboot', '--firmware-setup']);
+    execSync('systemctl', ['reboot', '--firmware-setup']);
   });
 }

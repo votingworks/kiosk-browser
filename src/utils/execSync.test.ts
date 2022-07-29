@@ -1,5 +1,5 @@
 import { spawnSync, SpawnSyncReturns } from 'child_process';
-import exec from './exec';
+import execSync from './execSync';
 import mockOf from '../../test/mockOf';
 
 jest.mock('child_process');
@@ -20,28 +20,28 @@ function mockSpawnSync(results: Partial<SpawnSyncReturns<string>> = {}): void {
 
 test('command with no args', () => {
   mockSpawnSync();
-  const execResults = exec('ls');
+  const execResults = execSync('ls');
   expect(execResults).toEqual({ stdout: '', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', [], { input: undefined });
 });
 
 test('command with args', () => {
   mockSpawnSync();
-  const execResults = exec('ls', ['-la']);
+  const execResults = execSync('ls', ['-la']);
   expect(execResults).toEqual({ stdout: '', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', ['-la'], { input: undefined });
 });
 
 test('command printing stdout', () => {
   mockSpawnSync({ stdout: 'README.md\n' });
-  const execResults = exec('ls', ['-la']);
+  const execResults = execSync('ls', ['-la']);
   expect(execResults).toEqual({ stdout: 'README.md\n', stderr: '' });
   expect(spawnSync).toHaveBeenCalledWith('ls', ['-la'], { input: undefined });
 });
 
 test('failed command printing stderr', () => {
   mockSpawnSync({ status: 1, stderr: 'unknown option "-x"' });
-  expect(() => exec('ls', ['-x'])).toThrowError(
+  expect(() => execSync('ls', ['-x'])).toThrowError(
     expect.objectContaining({
       stderr: 'unknown option "-x"',
       code: 1,
@@ -52,7 +52,7 @@ test('failed command printing stderr', () => {
 
 test('command with stdin', () => {
   mockSpawnSync();
-  exec('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print');
+  execSync('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print');
   expect(spawnSync).toHaveBeenCalledWith('lpr', ['-P', 'VxPrinter'], {
     input: 'foobarbaz to print',
   });
@@ -60,7 +60,7 @@ test('command with stdin', () => {
 
 test('unknown command', () => {
   mockSpawnSync({ error: new Error('Error: spawnSync not-a-command ENOENT') });
-  expect(() => exec('not-a-command')).toThrowError(
+  expect(() => execSync('not-a-command')).toThrowError(
     'Error: spawnSync not-a-command ENOENT',
   );
 });

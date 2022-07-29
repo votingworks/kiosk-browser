@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import { IpcMain } from 'electron';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'totpGet';
 
@@ -13,7 +13,7 @@ export interface TotpInfo {
 
 function totpGet(): TotpInfo | undefined {
   try {
-    const { stdout, stderr } = exec('sudo', [
+    const { stdout, stderr } = execSync('sudo', [
       '-n',
       '/usr/local/bin/tpm2-totp',
       '-t',

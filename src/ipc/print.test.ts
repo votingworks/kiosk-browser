@@ -2,19 +2,19 @@ import { WebContents } from 'electron';
 import { fakeElectronPrinter } from '../../test/fakePrinter';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import getPreferredPrinter from '../utils/getPreferredPrinter';
 import register, { channel as printChannel, PrintSides } from './print';
 
 const getPreferredPrinterMock = mockOf(getPreferredPrinter);
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 jest.mock('../utils/getPreferredPrinter', () => jest.fn());
 
 beforeEach(() => {
   getPreferredPrinterMock.mockReset();
-  execMock.mockReset();
+  execSyncMock.mockReset();
 });
 
 test('registers a handler to trigger a print', async () => {
@@ -26,7 +26,7 @@ test('registers a handler to trigger a print', async () => {
 
   register(ipcMain);
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, {
     deviceName: 'mainprinter',
@@ -37,7 +37,7 @@ test('registers a handler to trigger a print', async () => {
     printBackground: true,
   });
 
-  expect(execMock).toHaveBeenCalledWith(
+  expect(execSyncMock).toHaveBeenCalledWith(
     'lpr',
     ['-P', 'mainprinter', '-o', 'sides=two-sided-long-edge', 'InputSlot=Tray3'],
     expect.anything(),
@@ -57,13 +57,13 @@ test('uses the preferred printer if none is provided', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel);
 
   expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true });
 
-  expect(execMock).toHaveBeenCalledWith(
+  expect(execSyncMock).toHaveBeenCalledWith(
     'lpr',
     ['-P', 'main printer', '-o', 'sides=two-sided-long-edge'],
     expect.anything(),
@@ -98,13 +98,13 @@ test('prints a specified number of copies', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, { copies: 123 });
 
   expect(sender.printToPDF).toHaveBeenCalledWith({ printBackground: true });
 
-  expect(execMock).toHaveBeenCalledWith(
+  expect(execSyncMock).toHaveBeenCalledWith(
     'lpr',
     ['-P', 'main printer', '-o', 'sides=two-sided-long-edge', '-#', '123'],
     expect.anything(),
@@ -124,14 +124,14 @@ test('does not allow fractional copies', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await expect(
     ipcRenderer.invoke(printChannel, { copies: 1.23 }),
   ).rejects.toThrowError();
 
   expect(sender.printToPDF).not.toHaveBeenCalled();
-  expect(execMock).not.toHaveBeenCalled();
+  expect(execSyncMock).not.toHaveBeenCalled();
 });
 
 test('allows specifying one-sided duplex', async () => {
@@ -147,11 +147,11 @@ test('allows specifying one-sided duplex', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, { sides: PrintSides.OneSided });
 
-  expect(execMock).toHaveBeenCalledWith(
+  expect(execSyncMock).toHaveBeenCalledWith(
     'lpr',
     ['-P', 'main printer', '-o', 'sides=one-sided'],
     expect.anything(),
@@ -171,13 +171,13 @@ test('allows specifying two-sided-short-edge duplex', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execSyncMock.mockReturnValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, {
     sides: PrintSides.TwoSidedShortEdge,
   });
 
-  expect(execMock).toHaveBeenCalledWith(
+  expect(execSyncMock).toHaveBeenCalledWith(
     'lpr',
     ['-P', 'main printer', '-o', 'sides=two-sided-short-edge'],
     expect.anything(),

@@ -1,11 +1,11 @@
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel } from './mount-usb-drive';
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 
 test('mount-usb-drive', async () => {
   // Register our handler.
@@ -13,7 +13,7 @@ test('mount-usb-drive', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -21,7 +21,7 @@ test('mount-usb-drive', async () => {
   // Is the handler wired up right?
   await ipcRenderer.invoke(channel, { device: 'sdb1' });
 
-  expect(execMock).toHaveBeenCalledWith('pmount', [
+  expect(execSyncMock).toHaveBeenCalledWith('pmount', [
     '-w',
     '-u',
     '000',
@@ -36,7 +36,7 @@ test('mount-usb-drive with custom label', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -44,7 +44,7 @@ test('mount-usb-drive with custom label', async () => {
   // Is the handler wired up right?
   await ipcRenderer.invoke(channel, { device: 'sdb1', label: 'usb-drive' });
 
-  expect(execMock).toHaveBeenCalledWith('pmount', [
+  expect(execSyncMock).toHaveBeenCalledWith('pmount', [
     '-w',
     '-u',
     '000',

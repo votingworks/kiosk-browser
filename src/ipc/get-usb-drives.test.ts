@@ -1,10 +1,10 @@
 import { IpcMain, IpcMainEvent } from 'electron';
 import { promises as fs } from 'fs';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel, UsbDrive } from './get-usb-drives';
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
 const readdirMock = fs.readdir as unknown as jest.Mock<Promise<string[]>>;
 const readlinkMock = fs.readlink as unknown as jest.Mock<Promise<string>>;
@@ -16,7 +16,7 @@ jest.mock('fs', () => ({
     readlink: jest.fn(),
   },
 }));
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 
 test('get-usb-drives', async () => {
   // Register our handler.
@@ -36,7 +36,7 @@ test('get-usb-drives', async () => {
   ]);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
   readlinkMock.mockResolvedValueOnce('../../sdc1');
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -52,7 +52,7 @@ test('get-usb-drives', async () => {
     }),
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -69,7 +69,7 @@ test('get-usb-drives', async () => {
     stderr: '',
   });
 
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       filesystems: [
         {
@@ -95,8 +95,8 @@ test('get-usb-drives', async () => {
   const [, handler] = handle.mock.calls[0];
   const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
 
-  expect(execMock).toHaveBeenCalledTimes(4);
-  expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
+  expect(execSyncMock).toHaveBeenCalledTimes(4);
+  expect(execSyncMock).toHaveBeenNthCalledWith(4, 'pumount', [
     '/media/usb-drive-sdz1',
   ]);
   expect(devices).toEqual([
@@ -118,7 +118,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
 
   readdirMock.mockResolvedValueOnce(['usb-foobar-part23']);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
         {
@@ -135,7 +135,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
     stderr: '',
   });
 
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -144,8 +144,8 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
   const [, handler] = handle.mock.calls[0];
   const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
 
-  expect(execMock).toHaveBeenCalledTimes(2);
-  expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list']);
+  expect(execSyncMock).toHaveBeenCalledTimes(2);
+  expect(execSyncMock).toHaveBeenCalledWith('findmnt', ['--json', '--list']);
   expect(devices).toEqual([
     { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
   ]);

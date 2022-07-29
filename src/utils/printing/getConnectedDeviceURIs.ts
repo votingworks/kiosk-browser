@@ -1,4 +1,4 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import { debug } from '.';
 
 /**
@@ -20,7 +20,7 @@ export default function getConnectedDeviceURIs(
   lpinfoArgs.push('-v');
 
   debug('getting connected device URIs from lpinfo, args=%o', lpinfoArgs);
-  const { stdout, stderr } = exec('lpinfo', lpinfoArgs);
+  const { stdout, stderr } = execSync('lpinfo', lpinfoArgs);
   debug('lpinfo stdout:\n%s', stdout);
   debug('lpinfo stderr:\n%s', stderr);
 

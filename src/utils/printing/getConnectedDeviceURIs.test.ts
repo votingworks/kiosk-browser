@@ -1,14 +1,14 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import mockOf from '../../../test/mockOf';
 import getConnectedDeviceURIs from './getConnectedDeviceURIs';
 
-jest.mock('../exec', () => jest.fn());
+jest.mock('../execSync', () => jest.fn());
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
 describe('getConnectedDeviceURIs', () => {
   it('calls out to lpinfo without any schemes', () => {
-    execMock.mockReturnValue({
+    execSyncMock.mockReturnValue({
       stdout: 'direct usb://HP/Color%20LaserJet?serial=1234',
       stderr: '',
     });
@@ -17,11 +17,11 @@ describe('getConnectedDeviceURIs', () => {
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
 
-    expect(execMock).toHaveBeenCalledWith('lpinfo', ['-v']);
+    expect(execSyncMock).toHaveBeenCalledWith('lpinfo', ['-v']);
   });
 
   it('calls out to lpinfo with schemes', () => {
-    execMock.mockReturnValue({
+    execSyncMock.mockReturnValue({
       stdout: 'direct usb://HP/Color%20LaserJet?serial=1234',
       stderr: '',
     });
@@ -30,7 +30,7 @@ describe('getConnectedDeviceURIs', () => {
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
 
-    expect(execMock).toHaveBeenCalledWith('lpinfo', [
+    expect(execSyncMock).toHaveBeenCalledWith('lpinfo', [
       '--include-schemes',
       'usb,ippusb',
       '-v',

@@ -1,15 +1,15 @@
 import { Subject } from 'rxjs';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel as signChannel } from './sign';
 
-const execMock = mockOf(exec);
-jest.mock('../utils/exec');
+const execSyncMock = mockOf(execSync);
+jest.mock('../utils/execSync');
 
 beforeEach(() => {
-  execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execSyncMock.mockReset();
+  execSyncMock.mockReturnValue({ stdout: '', stderr: '' });
 });
 
 const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
@@ -27,7 +27,7 @@ test('call to sign invokes the right signing script command, but only if signatu
     },
   });
 
-  execMock.mockReturnValue({
+  execSyncMock.mockReturnValue({
     stderr: '',
     stdout: 'untrusted comment: hello\nFAKESIGNATURERIGHTHERE==\n',
   });
@@ -37,18 +37,23 @@ test('call to sign invokes the right signing script command, but only if signatu
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, '/tmp/sign.sh', [], 'test.hello');
+  expect(execSyncMock).toHaveBeenNthCalledWith(
+    1,
+    '/tmp/sign.sh',
+    [],
+    'test.hello',
+  );
 
   expect(signResult).toBe('FAKESIGNATURERIGHTHERE==');
 
-  execMock.mockReset();
+  execSyncMock.mockReset();
 
   const badTypeSignResult = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'this.hasperiodsandthatisbad',
     payload: 'hello',
   })) as string;
 
-  expect(execMock).not.toHaveBeenCalled();
+  expect(execSyncMock).not.toHaveBeenCalled();
 
   expect(badTypeSignResult).toBeUndefined();
 });
@@ -69,7 +74,7 @@ test('call to sign when no key is registered returns undefined', async () => {
     payload: 'hello',
   })) as string;
 
-  expect(execMock).not.toHaveBeenCalled();
+  expect(execSyncMock).not.toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 });
@@ -86,7 +91,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     },
   });
 
-  execMock.mockReturnValue({
+  execSyncMock.mockReturnValue({
     stderr: 'oopsie daisy',
     stdout:
       'untrusted comment: hello\nFAKESIGNATURERIGHTHERETHATSHOULDNOTBERETURNEDBECAUSESTDERR==\n',
@@ -97,13 +102,13 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenCalled();
+  expect(execSyncMock).toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 
-  execMock.mockReset();
+  execSyncMock.mockReset();
 
-  execMock.mockImplementationOnce(() => {
+  execSyncMock.mockImplementationOnce(() => {
     throw new Error('throwing cause I feel like it');
   });
 
@@ -112,7 +117,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenCalled();
+  expect(execSyncMock).toHaveBeenCalled();
 
   expect(signResultWithThrow).toBeUndefined();
 });

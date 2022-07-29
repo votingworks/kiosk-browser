@@ -1,15 +1,15 @@
-import exec from '../exec';
+import execSync from '../execSync';
 import mockOf from '../../../test/mockOf';
 import { fakeIpptoolStdout, fakeMarkerInfo } from '../../../test/fakePrinter';
 import { getPrinterIppAttributes } from './getPrinterIppAttributes';
 
-jest.mock('../exec');
+jest.mock('../execSync');
 
 const ippUri = 'ipp://localhost:60000/ipp/print';
 
 describe('getPrinterIppAttributes', () => {
   it('uses ipptool to query and parse printer atttributes', () => {
-    mockOf(exec).mockReturnValueOnce({
+    mockOf(execSync).mockReturnValueOnce({
       stdout: fakeIpptoolStdout(),
       stderr: '',
     });
@@ -21,7 +21,7 @@ describe('getPrinterIppAttributes', () => {
   });
 
   it('parses multiple marker infos', () => {
-    mockOf(exec).mockReturnValueOnce({
+    mockOf(execSync).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'marker-names':
           '(1setOf nameWithoutLanguage) = black cartridge,color cartridge',
@@ -51,7 +51,7 @@ describe('getPrinterIppAttributes', () => {
   });
 
   it('parses multiple printer-state-reasons', () => {
-    mockOf(exec).mockReturnValueOnce({
+    mockOf(execSync).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'printer-state': '(enum) = stopped',
         'printer-state-reasons':
@@ -71,7 +71,7 @@ describe('getPrinterIppAttributes', () => {
   });
 
   it('creates a special printer-state-reason if HP sleep mode detected', () => {
-    mockOf(exec).mockReturnValueOnce({
+    mockOf(execSync).mockReturnValueOnce({
       stdout: fakeIpptoolStdout({
         'printer-alert-description':
           '(1setOf textWithoutLanguage) = ,Ready,Sleep Mode',
@@ -86,7 +86,7 @@ describe('getPrinterIppAttributes', () => {
   });
 
   it('throws an error if ipptool fails', () => {
-    mockOf(exec).mockImplementationOnce(() => {
+    mockOf(execSync).mockImplementationOnce(() => {
       throw new Error('ipptool failed');
     });
     expect(() => getPrinterIppAttributes(ippUri)).toThrow(
@@ -156,7 +156,7 @@ describe('getPrinterIppAttributes', () => {
       ],
     ];
     for (const [stdout, expectedError] of badOutput) {
-      mockOf(exec).mockReturnValueOnce({ stdout, stderr: '' });
+      mockOf(execSync).mockReturnValueOnce({ stdout, stderr: '' });
       expect(() => getPrinterIppAttributes(ippUri)).toThrow(
         new Error(expectedError),
       );

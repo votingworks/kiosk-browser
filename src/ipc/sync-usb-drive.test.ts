@@ -3,7 +3,7 @@ import mockOf from '../../test/mockOf';
 import promisifiedExec from '../utils/promisifiedExec';
 import register, { channel } from './sync-usb-drive';
 
-const promisifiedExecMock = mockOf(promisifiedExec);
+const promisifiedexecSyncMock = mockOf(promisifiedExec);
 
 jest.mock('../utils/promisifiedExec');
 
@@ -22,5 +22,7 @@ test('sync-usb-drive', async () => {
   const [, handler] = handle.mock.calls[0];
   await handler({} as IpcMainEvent, '/media/vx/drive');
 
-  expect(promisifiedExecMock).toHaveBeenCalledWith('sync -f /media/vx/drive');
+  expect(promisifiedexecSyncMock).toHaveBeenCalledWith(
+    'sync -f /media/vx/drive',
+  );
 });

@@ -1,11 +1,11 @@
 import { IpcMain, IpcMainEvent } from 'electron';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 import register, { channel } from './unmount-usb-drive';
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execSync');
 
 test('mount-usb-drive', async () => {
   // Register our handler.
@@ -18,7 +18,7 @@ test('mount-usb-drive', async () => {
   // Things should be registered as expected.
   expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
 
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -27,5 +27,5 @@ test('mount-usb-drive', async () => {
   const [, handler] = handle.mock.calls[0];
   await handler({} as IpcMainEvent, 'sdb1');
 
-  expect(execMock).toHaveBeenCalledWith('pumount', ['/dev/sdb1']);
+  expect(execSyncMock).toHaveBeenCalledWith('pumount', ['/dev/sdb1']);
 });

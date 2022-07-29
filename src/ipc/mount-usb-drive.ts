@@ -1,6 +1,6 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { join } from 'path';
-import exec from '../utils/exec';
+import execSync from '../utils/execSync';
 
 export const channel = 'mountUsbDrive';
 
@@ -10,7 +10,7 @@ export interface Options {
 }
 
 function mountUsbDrive(options: Options): void {
-  exec('pmount', [
+  execSync('pmount', [
     '-w',
     '-u',
     '000',

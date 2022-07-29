@@ -1,13 +1,13 @@
-import exec, { makeExecError } from '../exec';
+import execSync, { makeExecError } from '../execSync';
 import mockOf from '../../../test/mockOf';
 import getPrinterDeviceURI from './getPrinterDeviceURI';
 
-jest.mock('../exec');
+jest.mock('../execSync');
 
-const execMock = mockOf(exec);
+const execSyncMock = mockOf(execSync);
 
 test('missing printer', () => {
-  execMock.mockImplementationOnce(() => {
+  execSyncMock.mockImplementationOnce(() => {
     throw makeExecError({
       cmd: 'lpstat -v missing-printer',
       stderr: 'lpstat: Invalid destination name in list "missing-printer".',
@@ -15,21 +15,24 @@ test('missing printer', () => {
   });
 
   expect(getPrinterDeviceURI('missing-printer')).toBeUndefined();
-  expect(execMock).toHaveBeenCalledWith('lpstat', ['-v', 'missing-printer']);
+  expect(execSyncMock).toHaveBeenCalledWith('lpstat', [
+    '-v',
+    'missing-printer',
+  ]);
 });
 
 test('printer configured with valid destination', () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: 'device for valid-printer: usb://HP/Something\n',
     stderr: '',
   });
 
   expect(getPrinterDeviceURI('valid-printer')).toEqual('usb://HP/Something');
-  expect(execMock).toHaveBeenCalledWith('lpstat', ['-v', 'valid-printer']);
+  expect(execSyncMock).toHaveBeenCalledWith('lpstat', ['-v', 'valid-printer']);
 });
 
 test('different printer returned from `lpstat`', () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: 'device for another-printer: usb://HP/Something\n',
     stderr: '',
   });
@@ -37,11 +40,11 @@ test('different printer returned from `lpstat`', () => {
   expect(() => getPrinterDeviceURI('a-printer')).toThrowError(
     'lpstat returned a different printer than requested: another-printer != a-printer',
   );
-  expect(execMock).toHaveBeenCalledWith('lpstat', ['-v', 'a-printer']);
+  expect(execSyncMock).toHaveBeenCalledWith('lpstat', ['-v', 'a-printer']);
 });
 
 test('`lpstat` gibberish', () => {
-  execMock.mockReturnValueOnce({
+  execSyncMock.mockReturnValueOnce({
     stdout: 'abba gazabba',
     stderr: '',
   });
