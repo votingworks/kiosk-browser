@@ -1,4 +1,5 @@
-import execSync, { makeExecError } from '../execSync';
+import execSync from '../execSync';
+import { makeExecError } from '../execTypes';
 import mockOf from '../../../test/mockOf';
 import getPrinterDeviceURI from './getPrinterDeviceURI';
 

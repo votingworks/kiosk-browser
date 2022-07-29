@@ -1,7 +1,8 @@
 import { spawnSync } from 'child_process';
+import { ExecResult, makeExecError } from './execTypes';
 import makeDebug from 'debug';
 
-const debug = makeDebug('kiosk-browser:exec');
+const debug = makeDebug('kiosk-browser:exec:sync');
 
 /**
  * The native `child_process.execSync` function does not do input sanitization
@@ -12,7 +13,7 @@ export default function execSync(
   file: string,
   args: readonly string[] = [],
   input?: string | Buffer,
-): { stdout: string; stderr: string } {
+): ExecResult {
   debug('running command=%s args=%o stdin=%s', file, args, typeof input);
   const {
     stdout: stdoutBuffer,
@@ -46,54 +47,4 @@ export default function execSync(
     });
   }
   return { stdout, stderr };
-}
-
-export interface ExecError {
-  code: number;
-  killed: boolean;
-  signal: string | null;
-  stdout: string;
-  stderr: string;
-  cmd: string;
-}
-
-export function makeExecError({
-  code = 1,
-  signal = null,
-  killed = false,
-  stdout = '',
-  stderr = '',
-  cmd = '',
-}: Partial<ExecError> = {}): ExecError & Error {
-  const error = new Error(
-    `Error: Command failed: ${cmd} (stdout=${stdout} stderr=${stderr})`,
-  ) as unknown as ExecError & Error;
-
-  Object.defineProperties(error, {
-    killed: {
-      value: killed,
-    },
-
-    code: {
-      value: code,
-    },
-
-    signal: {
-      value: signal,
-    },
-
-    cmd: {
-      value: cmd,
-    },
-
-    stdout: {
-      value: stdout,
-    },
-
-    stderr: {
-      value: stderr,
-    },
-  });
-
-  return error;
 }
