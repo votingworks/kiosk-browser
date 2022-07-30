@@ -8,6 +8,6 @@ export const channel = 'reboot-to-bios';
  */
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(channel, () => {
-    exec('systemctl', ['reboot', '--firmware-setup']);
+    void exec('systemctl', ['reboot', '--firmware-setup']);
   });
 }

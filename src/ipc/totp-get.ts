@@ -11,9 +11,9 @@ export interface TotpInfo {
   code: string;
 }
 
-function totpGet(): TotpInfo | undefined {
+async function totpGet(): Promise<TotpInfo | undefined> {
   try {
-    const { stdout, stderr } = exec('sudo', [
+    const { stdout, stderr } = await exec('sudo', [
       '-n',
       '/usr/local/bin/tpm2-totp',
       '-t',
@@ -35,5 +35,5 @@ function totpGet(): TotpInfo | undefined {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, () => totpGet());
+  ipcMain.handle(channel, async () => totpGet());
 }

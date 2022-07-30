@@ -9,7 +9,7 @@ jest.mock('../utils/exec');
 
 beforeEach(() => {
   execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
 
 const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
@@ -27,7 +27,7 @@ test('call to sign invokes the right signing script command, but only if signatu
     },
   });
 
-  execMock.mockReturnValue({
+  execMock.mockResolvedValue({
     stderr: '',
     stdout: 'untrusted comment: hello\nFAKESIGNATURERIGHTHERE==\n',
   });
@@ -86,7 +86,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     },
   });
 
-  execMock.mockReturnValue({
+  execMock.mockResolvedValue({
     stderr: 'oopsie daisy',
     stdout:
       'untrusted comment: hello\nFAKESIGNATURERIGHTHERETHATSHOULDNOTBERETURNEDBECAUSESTDERR==\n',
@@ -103,9 +103,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
 
   execMock.mockReset();
 
-  execMock.mockImplementationOnce(() => {
-    throw new Error('throwing cause I feel like it');
-  });
+  execMock.mockRejectedValueOnce('throwing cause I feel like it');
 
   const signResultWithThrow = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'test',

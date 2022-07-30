@@ -6,8 +6,8 @@ jest.mock('./exec', () => jest.fn());
 
 const execMock = mockOf(exec);
 
-test('`getMainScreen` gets screen information for the first connected screen', () => {
-  execMock.mockReturnValue({
+test('`getMainScreen` gets screen information for the first connected screen', async () => {
+  execMock.mockResolvedValue({
     stdout: `Screen 0: minimum 0 x 0, current 1314 x 760, maximum 8196 x 8196
 Virtual1 disconnected
 Virtual2 connected primary 1314x760+0+0 0mm x 0mm
@@ -22,7 +22,7 @@ Virtual6 disconnected`,
     stderr: '',
   });
 
-  expect(getMainScreen()).toMatchInlineSnapshot(`
+  expect(await getMainScreen()).toMatchInlineSnapshot(`
     Object {
       "connected": true,
       "height": 760,
@@ -54,11 +54,11 @@ Virtual6 disconnected`,
   `);
 });
 
-test('`getMainScreen` returns nothing if there are no connected screens', () => {
-  execMock.mockReturnValue({
+test('`getMainScreen` returns nothing if there are no connected screens', async () => {
+  execMock.mockResolvedValue({
     stdout: '',
     stderr: '',
   });
 
-  expect(getMainScreen()).toBeUndefined();
+  expect(await getMainScreen()).toBeUndefined();
 });

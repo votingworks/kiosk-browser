@@ -4,23 +4,23 @@ import exec from '../utils/exec';
 
 export const channel = 'setClock';
 
-function clockSet({
+async function clockSet({
   isoDatetime,
   IANAZone,
-}: KioskBrowser.SetClockParams): void {
+}: KioskBrowser.SetClockParams): Promise<void> {
   const datetimeString = DateTime.fromISO(isoDatetime, {
     zone: IANAZone,
   }).toFormat('yyyy-LL-dd TT');
-  exec('sudo', ['-n', 'timedatectl', 'set-timezone', IANAZone]);
-  exec('sudo', ['-n', 'timedatectl', 'set-time', datetimeString]);
+  await exec('sudo', ['-n', 'timedatectl', 'set-timezone', IANAZone]);
+  await exec('sudo', ['-n', 'timedatectl', 'set-time', datetimeString]);
 }
 
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
-    (event: IpcMainInvokeEvent, params: KioskBrowser.SetClockParams) => {
+    async (event: IpcMainInvokeEvent, params: KioskBrowser.SetClockParams) => {
       try {
-        clockSet(params);
+        await clockSet(params);
       } catch (err) {
         const error = err as Error;
         if ('stderr' in error) {

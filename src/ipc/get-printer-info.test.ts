@@ -18,13 +18,13 @@ jest.mock('../utils/printing/getConnectedDeviceURIs');
 jest.mock('../utils/exec');
 
 describe('getPrinterInfo', () => {
-  it('expands the printer info with connected=true if lpinfo shows the device', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  it('expands the printer info with connected=true if lpinfo shows the device', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter(),
         fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
@@ -36,11 +36,11 @@ describe('getPrinterInfo', () => {
     ]);
   });
 
-  it('expands the printer info with connected=false if lpinfo does not show the device', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValue(new Set());
+  it('expands the printer info with connected=false if lpinfo does not show the device', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValue(new Set());
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
@@ -48,14 +48,14 @@ describe('getPrinterInfo', () => {
     ).toEqual([expect.objectContaining({ connected: false })]);
   });
 
-  it('expands the printer info with connected=true if lpinfo shows the device after a momentary blip', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(new Set());
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  it('expands the printer info with connected=true if lpinfo shows the device after a momentary blip', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(new Set());
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter(),
         fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
@@ -67,17 +67,17 @@ describe('getPrinterInfo', () => {
     ]);
   });
 
-  it('adds IPP attributes for connected printers', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  it('adds IPP attributes for connected printers', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
-    mockOf(exec).mockReturnValue({
+    mockOf(exec).mockResolvedValue({
       stdout: fakeIpptoolStdout(),
       stderr: '',
     });
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter(),
         fakeElectronPrinter({
           name: 'other printer',
@@ -104,16 +104,14 @@ describe('getPrinterInfo', () => {
     ]);
   });
 
-  it('adds empty IPP attributes if ipptool fails', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  it('adds empty IPP attributes if ipptool fails', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
-    mockOf(exec).mockImplementation(() => {
-      throw new Error('ipptool failed');
-    });
+    mockOf(exec).mockRejectedValue(new Error('ipptool failed'));
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
@@ -129,18 +127,16 @@ describe('getPrinterInfo', () => {
     ]);
   });
 
-  it('retries if ipptool fails', () => {
-    mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  it('retries if ipptool fails', async () => {
+    mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
       new Set(['usb://HP/Color%20LaserJet?serial=1234']),
     );
     mockOf(exec)
-      .mockImplementationOnce(() => {
-        throw new Error('ipptool failed');
-      })
-      .mockReturnValueOnce({ stdout: fakeIpptoolStdout(), stderr: '' });
+      .mockRejectedValueOnce(new Error('ipptool failed'))
+      .mockResolvedValueOnce({ stdout: fakeIpptoolStdout(), stderr: '' });
 
     expect(
-      getPrinterInfo([
+      await getPrinterInfo([
         fakeElectronPrinter({
           options: { 'device-uri': 'usb://HP/Color%20LaserJet?serial=1234' },
         }),
@@ -170,7 +166,7 @@ test('registers an IPC handler for getting printer info', async () => {
 
   register(ipcMain);
 
-  mockOf(getConnectedDeviceURIs).mockReturnValueOnce(
+  mockOf(getConnectedDeviceURIs).mockResolvedValueOnce(
     new Set(['usb://HP/Color%20LaserJet?serial=1234']),
   );
 

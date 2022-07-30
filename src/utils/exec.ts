@@ -1,4 +1,4 @@
-import { spawnSync } from 'child_process';
+import { spawn } from 'child_process';
 import makeDebug from 'debug';
 
 const debug = makeDebug('kiosk-browser:exec');
@@ -6,44 +6,63 @@ const debug = makeDebug('kiosk-browser:exec');
 /**
  * Like `child_process.exec`, but with easy stdin.
  */
-export default function exec(
+export default async function exec(
   file: string,
   args: readonly string[] = [],
-  input?: string | Buffer,
-): { stdout: string; stderr: string } {
-  debug('running command=%s args=%o stdin=%s', file, args, typeof input);
-  const {
-    stdout: stdoutBuffer,
-    stderr: stderrBuffer,
-    status,
-    signal,
-    error,
-    pid,
-  } = spawnSync(file, args, {
-    input,
-  });
+  stdin?: string | Buffer,
+): Promise<{ stdout: string; stderr: string }> {
+  const child = spawn(file, args);
+  let stdout = '';
+  let stderr = '';
+
   debug(
-    'process %d exited with code=%d, signal=%s (command=%s args=%o)',
-    pid,
-    status,
-    signal,
+    'running command=%s args=%o stdin=%s pid=%d',
     file,
     args,
+    typeof stdin,
+    child.pid,
   );
-  const stdout = stdoutBuffer.toString();
-  const stderr = stderrBuffer.toString();
-  if (error) {
-    throw error;
-  } else if (status !== 0) {
-    throw makeExecError({
-      code: status ?? undefined,
-      signal,
-      stdout,
-      stderr,
-      cmd: `${file} ${args.join(' ')}`,
-    });
+
+  child.stdout.on('data', (chunk) => {
+    stdout += chunk;
+  });
+
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk;
+  });
+
+  if (stdin) {
+    debug('stdin passed to exec, feeding it in now.');
+    child.stdin.write(stdin);
+    child.stdin.end();
   }
-  return { stdout, stderr };
+
+  return new Promise((resolve, reject) => {
+    child.on('exit', (code, signal) => {
+      debug(
+        'process %d exited with code=%d, signal=%s (command=%s args=%o)',
+        child.pid,
+        code,
+        signal,
+        file,
+        args,
+      );
+
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(
+          makeExecError({
+            code: code ?? undefined,
+            signal,
+            stdout,
+            stderr,
+            cmd: `${file} ${args.join(' ')}`,
+          }),
+        );
+      }
+    });
+  });
 }
 
 export interface ExecError {

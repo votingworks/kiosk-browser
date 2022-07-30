@@ -85,7 +85,7 @@ async function createWindow(): Promise<void> {
   const autoconfigurePrinterSubscription =
     autoconfigurePrinterObservable?.subscribe();
 
-  const mainScreen = getMainScreen();
+  const mainScreen = await getMainScreen();
 
   // Create the browser window.
   mainWindow = new BrowserWindow({

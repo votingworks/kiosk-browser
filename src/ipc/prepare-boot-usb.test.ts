@@ -17,7 +17,7 @@ test('prepare-boot-usb returns false when no bootable usbs', async () => {
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: `BootCurrent: 0005
 Timeout: 0 seconds
 BootOrder: 0005,0002,0001,0003,0000,0004
@@ -45,7 +45,7 @@ test('prepare-boot-usb returns true when expected and sets correct boot order', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -57,7 +57,7 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -81,7 +81,7 @@ test('prepare-boot-usb returns true with a USB HDD entry that has a GPT partitio
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -92,7 +92,7 @@ Boot2003* EFI Network	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
@@ -116,7 +116,7 @@ test('prepare-boot-usb returns true when there is a fallback Boot Menu option', 
   register(ipcMain);
 
   // Things should be registered as expected.
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: `BootCurrent: 0000
 Timeout: 0 seconds
 BootOrder: 0000
@@ -128,7 +128,7 @@ Boot200E  Boot Menu	RC
        `,
     stderr: '',
   });
-  execMock.mockReturnValueOnce({
+  execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });

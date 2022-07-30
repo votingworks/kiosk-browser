@@ -50,8 +50,8 @@ function parseEfiBootMgrOutput(output: string): BootOption[] {
  * Attempts to update set the boot manager to boot from a usb device. Returns true
  * if successful, returns false if there are either 0 or more then 1 bootable usb drives available.
  */
-function prepareToBootFromUsb(): boolean {
-  const { stdout: bootStdout } = exec('efibootmgr', ['-v']);
+async function prepareToBootFromUsb(): Promise<boolean> {
+  const { stdout: bootStdout } = await exec('efibootmgr', ['-v']);
   const bootOptions = parseEfiBootMgrOutput(bootStdout);
   const linpusBootOption = bootOptions.find((bootOption) =>
     bootOption.restOfEntry.includes('Linpus'),
@@ -71,7 +71,7 @@ function prepareToBootFromUsb(): boolean {
   debug(
     'The USB boot option was properly located setting it to be next in the boot order…',
   );
-  exec('sudo', ['-n', '/bin/efibootmgr', '-n', nextBoot.bootNumber]);
+  await exec('sudo', ['-n', '/bin/efibootmgr', '-n', nextBoot.bootNumber]);
   return true;
 }
 
@@ -79,5 +79,7 @@ function prepareToBootFromUsb(): boolean {
  * Registers a handler to set the boot order to boot from the given usb device next.
  */
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, () => prepareToBootFromUsb());
+  ipcMain.handle(channel, async () => {
+    return await prepareToBootFromUsb();
+  });
 }

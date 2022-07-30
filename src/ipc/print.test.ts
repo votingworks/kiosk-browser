@@ -26,7 +26,7 @@ test('registers a handler to trigger a print', async () => {
 
   register(ipcMain);
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, {
     deviceName: 'mainprinter',
@@ -57,7 +57,7 @@ test('uses the preferred printer if none is provided', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel);
 
@@ -98,7 +98,7 @@ test('prints a specified number of copies', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, { copies: 123 });
 
@@ -124,7 +124,7 @@ test('does not allow fractional copies', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await expect(
     ipcRenderer.invoke(printChannel, { copies: 1.23 }),
@@ -147,7 +147,7 @@ test('allows specifying one-sided duplex', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, { sides: PrintSides.OneSided });
 
@@ -171,7 +171,7 @@ test('allows specifying two-sided-short-edge duplex', async () => {
     fakeElectronPrinter({ name: 'main printer' }),
   );
 
-  execMock.mockReturnValueOnce({ stdout: '', stderr: '' });
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
 
   await ipcRenderer.invoke(printChannel, {
     sides: PrintSides.TwoSidedShortEdge,

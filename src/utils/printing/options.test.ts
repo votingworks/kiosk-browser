@@ -250,13 +250,13 @@ HPFTDigit/Fourth Digit: *0 1 2 3 4 5 6 7 8 9
   `);
 });
 
-test('options for default printer', () => {
-  execMock.mockReturnValueOnce({
+test('options for default printer', async () => {
+  execMock.mockResolvedValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
   });
 
-  expect(getPrinterOptions()).toEqual({
+  expect(await getPrinterOptions()).toEqual({
     Opt: {
       key: 'Opt',
       label: 'Option Name',
@@ -267,13 +267,13 @@ test('options for default printer', () => {
   expect(exec).toHaveBeenCalledWith('lpoptions', ['-l']);
 });
 
-test('options for named printer', () => {
-  execMock.mockReturnValueOnce({
+test('options for named printer', async () => {
+  execMock.mockResolvedValueOnce({
     stdout: 'Opt/Option Name: A B',
     stderr: '',
   });
 
-  expect(getPrinterOptions('VxPrinter')).toEqual({
+  expect(await getPrinterOptions('VxPrinter')).toEqual({
     Opt: {
       key: 'Opt',
       label: 'Option Name',

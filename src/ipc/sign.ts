@@ -12,10 +12,10 @@ export interface SignParams {
   payload: string;
 }
 
-function sign(
+async function sign(
   { signatureType, payload }: SignParams,
   signingScriptPath?: string,
-): string | undefined {
+): Promise<string | undefined> {
   if (!signingScriptPath) {
     debug('could not sign because no signing script specified!');
     return;
@@ -29,7 +29,7 @@ function sign(
   const rawPayloadToSign = `${signatureType}.${payload}`;
 
   try {
-    const { stdout, stderr } = exec(
+    const { stdout, stderr } = await exec(
       // TODO this feels really dangerous, is there a better way?
       signingScriptPath,
       [],
@@ -50,8 +50,11 @@ function sign(
 }
 
 const register: RegisterIpcHandler = (ipcMain: IpcMain, { options }): void => {
-  ipcMain.handle(channel, (event: IpcMainInvokeEvent, params: SignParams) =>
-    sign(params, options.signingScriptPath),
+  ipcMain.handle(
+    channel,
+    async (event: IpcMainInvokeEvent, params: SignParams) => {
+      return await sign(params, options.signingScriptPath);
+    },
   );
 };
 

@@ -4,9 +4,9 @@ import { debug } from '.';
 /**
  * Gets the URIs of any connected printers matching the given schemes.
  */
-export default function getConnectedDeviceURIs(
+export default async function getConnectedDeviceURIs(
   schemes?: Set<string>,
-): Set<string> {
+): Promise<Set<string>> {
   const lpinfoArgs: string[] = [];
 
   if (schemes?.size) {
@@ -20,7 +20,7 @@ export default function getConnectedDeviceURIs(
   lpinfoArgs.push('-v');
 
   debug('getting connected device URIs from lpinfo, args=%o', lpinfoArgs);
-  const { stdout, stderr } = exec('lpinfo', lpinfoArgs);
+  const { stdout, stderr } = await exec('lpinfo', lpinfoArgs);
   debug('lpinfo stdout:\n%s', stdout);
   debug('lpinfo stderr:\n%s', stderr);
 
