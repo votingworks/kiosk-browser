@@ -38,7 +38,7 @@ export default async function exec(
   }
 
   return new Promise((resolve, reject) => {
-    child.on('exit', (code, signal) => {
+    child.on('close', (code, signal) => {
       debug(
         'process %d exited with code=%d, signal=%s (command=%s args=%o)',
         child.pid,
