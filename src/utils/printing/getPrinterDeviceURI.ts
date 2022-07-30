@@ -4,9 +4,9 @@ import { ok } from '../assert';
 
 const lpstatDeviceLinePattern = /^device for (.+): (.+)$/;
 
-export default function getPrinterDeviceURI(
+export default async function getPrinterDeviceURI(
   printerName: string,
-): string | undefined {
+): Promise<string | undefined> {
   const lpstatArgs = ['-v', printerName];
   debug('getting printer device URI from `lpstat` with args=%o', lpstatArgs);
 
@@ -14,7 +14,7 @@ export default function getPrinterDeviceURI(
   let stderr: string;
 
   try {
-    ({ stdout, stderr } = exec('lpstat', ['-v', printerName]));
+    ({ stdout, stderr } = await exec('lpstat', ['-v', printerName]));
   } catch (error) {
     debug('`lpstat` failed with error: %O', error);
     return undefined;

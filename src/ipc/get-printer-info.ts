@@ -26,12 +26,12 @@ export type PrinterInfo = Omit<Electron.PrinterInfo, 'status'> &
 /**
  * Get information about all known printers, including connection status.
  */
-export function getPrinterInfo(
+export async function getPrinterInfo(
   printers: Electron.PrinterInfo[],
-): PrinterInfo[] {
-  const printersWithConnectionStatus = retryUntil(
-    () => {
-      const connectedDeviceURIs = getConnectedDeviceURIs(
+): Promise<PrinterInfo[]> {
+  const printersWithConnectionStatus = await retryUntil(
+    async () => {
+      const connectedDeviceURIs = await getConnectedDeviceURIs(
         printerSchemes(printers),
       );
       return printers.map((printer) => {
@@ -56,7 +56,7 @@ export function getPrinterInfo(
     // one printer is connected and use this URI to query its IPP attributes.
     // https://wiki.debian.org/CUPSDriverlessPrinting#IPP-over-USB:_Investigation_and_Troubleshooting
     try {
-      ippAttributes = retry(
+      ippAttributes = await retry(
         () => getPrinterIppAttributes('ipp://localhost:60000/ipp/print'),
         { tries: IPP_ATTRIBUTES_NUM_TRIES },
       );

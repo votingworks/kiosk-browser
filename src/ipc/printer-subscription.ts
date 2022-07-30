@@ -1,5 +1,5 @@
 import { IpcMainInvokeEvent, WebContents } from 'electron';
-import { from, merge, Observable, of, Subscription } from 'rxjs';
+import { from, merge, Observable, Subscription } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { RegisterIpcHandler } from '..';
 import { debug } from '../utils/printing';
@@ -22,7 +22,7 @@ export function buildPrinterObserver(
     ),
   ).pipe(
     switchMap(() => from(getPrinters())),
-    switchMap((printers) => of(getPrinterInfo(printers))),
+    switchMap((printers) => from(getPrinterInfo(printers))),
   );
 }
 

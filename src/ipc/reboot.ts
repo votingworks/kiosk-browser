@@ -8,6 +8,6 @@ export const channel = 'reboot';
  */
 export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(channel, () => {
-    exec('reboot');
+    void exec('reboot');
   });
 }

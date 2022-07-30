@@ -7,8 +7,11 @@ import deferred from '../deferred';
 
 jest.mock('./configurePrinterFromDevice');
 
-test('configurable device added', () => {
-  mockOf(configurePrinterFromDevice).mockReturnValueOnce(true);
+test('configurable device added', async () => {
+  const configurePrinterDeferred = deferred<boolean>();
+  mockOf(configurePrinterFromDevice).mockReturnValueOnce(
+    configurePrinterDeferred.promise,
+  );
 
   const observable = new Subject<Iterable<KioskBrowser.Device>>();
   const config = {
@@ -26,17 +29,24 @@ test('configurable device added', () => {
 
   // Device added.
   observable.next([addedDevice]);
+  expect(callback).not.toHaveBeenCalled();
 
   // We try to configure it.
   expect(configurePrinterFromDevice).toHaveBeenCalledWith(config, addedDevice);
 
   // Configuration succeeded.
+  configurePrinterDeferred.resolve(true);
+  await configurePrinterDeferred.promise;
+
   // Output observable yields on success.
   expect(callback).toHaveBeenCalledTimes(1);
 });
 
-test('unconfigurable device added', () => {
-  mockOf(configurePrinterFromDevice).mockReturnValueOnce(false);
+test('unconfigurable device added', async () => {
+  const configurePrinterDeferred = deferred<boolean>();
+  mockOf(configurePrinterFromDevice).mockReturnValueOnce(
+    configurePrinterDeferred.promise,
+  );
 
   const observable = new Subject<Iterable<KioskBrowser.Device>>();
   const config = {
@@ -54,11 +64,15 @@ test('unconfigurable device added', () => {
 
   // Device added.
   observable.next([addedDevice]);
+  expect(callback).not.toHaveBeenCalled();
 
   // We try to configure it.
   expect(configurePrinterFromDevice).toHaveBeenCalledWith(config, addedDevice);
 
   // Configuration failed.
+  configurePrinterDeferred.resolve(false);
+  await configurePrinterDeferred.promise;
+
   // Output observable does not yield on failure.
   expect(callback).not.toHaveBeenCalled();
 });

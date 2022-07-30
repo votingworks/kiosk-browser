@@ -41,7 +41,7 @@
     "luxon": "^1.25.0",
     "multimatch": "^4.0.0",
     "rxjs": "^6.5.4",
-    "tmp": "^0.2.1",
+    "tmp-promise": "^3.0.3",
     "usb-detection": "^4.14.1",
     "uuid": "^8.3.1",
     "xrandr-parse": "^1.0.0",

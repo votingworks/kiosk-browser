@@ -4,8 +4,8 @@ import xrandrParse, { Screen } from 'xrandr-parse';
 /**
  * Gets information about the main screen.
  */
-export function getMainScreen(): Screen | undefined {
-  const { stdout } = exec('xrandr', ['--query']);
+export async function getMainScreen(): Promise<Screen | undefined> {
+  const { stdout } = await exec('xrandr', ['--query']);
   const screens = xrandrParse(
     stdout.replace(/connected primary/g, 'connected'),
   ); // xrandr-parse doesn't understand "primary"

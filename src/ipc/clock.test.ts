@@ -8,7 +8,7 @@ jest.mock('../utils/exec');
 
 beforeEach(() => {
   execMock.mockReset();
-  execMock.mockReturnValue({ stdout: '', stderr: '' });
+  execMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
 
 const { ipcMain, ipcRenderer } = fakeIpc();
@@ -57,11 +57,9 @@ test('set datetime works in non- daylights savings', async () => {
 });
 
 test('set datetime fails when NTP is enabled', async () => {
-  execMock.mockImplementationOnce(() => {
-    throw new Error(
-      'Failed to set time: Automatic time synchronization is enabled',
-    );
-  });
+  execMock.mockRejectedValueOnce(
+    new Error('Failed to set time: Automatic time synchronization is enabled'),
+  );
 
   await expect(
     ipcRenderer.invoke(setClockChannel, {

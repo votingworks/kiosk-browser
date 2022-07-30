@@ -1,7 +1,7 @@
 import exec from '../exec';
 import { debug } from '.';
 import assert from 'assert';
-import tmp from 'tmp';
+import tmp from 'tmp-promise';
 import fs from 'fs';
 
 /**
@@ -76,19 +76,19 @@ const ippQuery = `{
 /**
  * Query the printer for its status via IPP.
  */
-export function getPrinterIppAttributes(
+export async function getPrinterIppAttributes(
   printerIppUri: string,
-): PrinterIppAttributes {
+): Promise<PrinterIppAttributes> {
   // ipptool takes a file to specify the query to make, so we write a temporary
   // file with the query text
-  const queryFile = tmp.fileSync();
-  fs.writeFileSync(queryFile.name, ippQuery);
+  const queryFile = await tmp.file();
+  await fs.promises.writeFile(queryFile.path, ippQuery);
 
-  const ipptoolArgs = ['-T', '1', '-tv', printerIppUri, queryFile.name];
+  const ipptoolArgs = ['-T', '1', '-tv', printerIppUri, queryFile.path];
   debug('getting printer IPP attributes from ipptool, args=%o', ipptoolArgs);
   let ipptoolResult: { stdout: string; stderr: string };
   try {
-    ipptoolResult = exec(`ipptool`, ipptoolArgs);
+    ipptoolResult = await exec(`ipptool`, ipptoolArgs);
     debug('ipptool stdout:\n%s', ipptoolResult.stdout);
     debug('ipptool stderr:\n%s', ipptoolResult.stderr);
 
@@ -134,6 +134,8 @@ export function getPrinterIppAttributes(
   } catch (error) {
     debug('ipptool error: %o', error);
     throw error;
+  } finally {
+    void queryFile.cleanup();
   }
 }
 
