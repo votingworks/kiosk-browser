@@ -59,7 +59,7 @@ test('command with no args', async () => {
 
   // Start and finish child process.
   const execPromise = exec('ls');
-  child.emit('exit', 0, null);
+  child.emit('close', 0, null);
 
   // Check the results.
   expect(await execPromise).toEqual({ stdout: '', stderr: '' });
@@ -73,7 +73,7 @@ test('command with args', async () => {
 
   // Start and finish child process.
   const execPromise = exec('ls', ['-la']);
-  child.emit('exit', 0, null);
+  child.emit('close', 0, null);
 
   // Check the results.
   expect(await execPromise).toEqual({ stdout: '', stderr: '' });
@@ -88,7 +88,7 @@ test('command printing stdout', async () => {
   // Start and finish child process.
   const execPromise = exec('ls', ['-la']);
   await child.endStdout('README.md\n');
-  child.emit('exit', 0, null);
+  child.emit('close', 0, null);
 
   // Check the results.
   expect(await execPromise).toEqual({ stdout: 'README.md\n', stderr: '' });
@@ -103,7 +103,7 @@ test('failed command printing stderr', async () => {
   // Start and finish child process.
   const execPromise = exec('ls', ['-x']);
   await child.endStderr('unknown option "-x"');
-  child.emit('exit', 1, null);
+  child.emit('close', 1, null);
 
   // Check the results.
   await expect(execPromise).rejects.toThrowError(
@@ -123,7 +123,7 @@ test('failed command printing stderr', async () => {
   // Start and finish child process.
   const execPromise = exec('ls', ['-x']);
   await child.endStderr('unknown option "-x"');
-  child.emit('exit', 1, null);
+  child.emit('close', 1, null);
 
   // Check the results.
   await expect(execPromise).rejects.toThrowError(
@@ -145,7 +145,7 @@ test('command with stdin', async () => {
 
   // Start and finish child process.
   const execPromise = exec('lpr', ['-P', 'VxPrinter'], 'foobarbaz to print');
-  child.emit('exit', 0, null);
+  child.emit('close', 0, null);
   await execPromise;
 
   // Check the results.
