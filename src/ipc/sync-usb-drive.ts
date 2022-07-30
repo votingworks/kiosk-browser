@@ -1,10 +1,10 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
-import promisifiedExec from '../utils/promisifiedExec';
+import exec from '../utils/exec';
 
 export const channel = 'syncUsbDrive';
 
 async function syncUsbDrive(mountPoint: string): Promise<void> {
-  await promisifiedExec(`sync -f ${mountPoint}`);
+  await exec('sync', ['-f', mountPoint]);
 }
 
 export default function register(ipcMain: IpcMain): void {
