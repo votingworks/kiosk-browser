@@ -1,11 +1,11 @@
 import { IpcMain, IpcMainEvent } from 'electron';
 import mockOf from '../../test/mockOf';
-import promisifiedExec from '../utils/promisifiedExec';
+import exec from '../utils/exec';
 import register, { channel } from './sync-usb-drive';
 
-const promisifiedExecMock = mockOf(promisifiedExec);
+const execMock = mockOf(exec);
 
-jest.mock('../utils/promisifiedExec');
+jest.mock('../utils/exec');
 
 test('sync-usb-drive', async () => {
   // Register our handler.
@@ -22,5 +22,5 @@ test('sync-usb-drive', async () => {
   const [, handler] = handle.mock.calls[0];
   await handler({} as IpcMainEvent, '/media/vx/drive');
 
-  expect(promisifiedExecMock).toHaveBeenCalledWith('sync -f /media/vx/drive');
+  expect(execMock).toHaveBeenCalledWith('sync', ['-f', '/media/vx/drive']);
 });
