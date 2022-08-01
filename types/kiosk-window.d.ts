@@ -171,6 +171,10 @@ declare namespace KioskBrowser {
     subscribe(callback: (value: T) => void): () => void;
   }
 
+  export interface SpeakOptions {
+    volume: number;
+  }
+
   export interface Kiosk {
     print(options?: PrintOptions): Promise<void>;
     getPrinterInfo(): Promise<PrinterInfo[]>;
@@ -235,6 +239,9 @@ declare namespace KioskBrowser {
     };
 
     sign(params: SignParams): Promise<string>;
+
+    speak(text: string, options: SpeakOptions): Promise<void>;
+    cancelSpeak(): Promise<void>;
 
     reboot(): Promise<void>;
 

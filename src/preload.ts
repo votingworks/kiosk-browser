@@ -1,6 +1,7 @@
 import makeDebug from 'debug';
 import { contextBridge, ipcRenderer } from 'electron';
 import { MakeDirectoryOptions } from 'fs';
+import { channel as cancelSpeakChannel } from './ipc/cancel-speak';
 import { channel as setClockChannel } from './ipc/clock';
 import {
   channel as fileSystemGetEntriesChannel,
@@ -33,6 +34,7 @@ import { channel as storageRemoveChannel } from './ipc/storage-remove';
 import { channel as storageSetChannel } from './ipc/storage-set';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
+import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as syncUsbDriveChannel } from './ipc/sync-usb-drive';
 
 import buildDevicesObservable from './utils/buildDevicesObservable';
@@ -204,6 +206,16 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async sign(params: SignParams): Promise<string> {
       debug('forwarding `sign` to main process');
       return (await ipcRenderer.invoke(signChannel, params)) as string;
+    },
+
+    async speak(utterance: string, options: SpeakOptions): Promise<void> {
+      debug('forwarding `speak` to main process');
+      await ipcRenderer.invoke(speakChannel, utterance, options);
+    },
+
+    async cancelSpeak(): Promise<void> {
+      debug('forwarding `cancelSpeak` to main process');
+      await ipcRenderer.invoke(cancelSpeakChannel);
     },
 
     async prepareToBootFromUsb(): Promise<boolean> {

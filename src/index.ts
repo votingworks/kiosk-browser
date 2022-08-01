@@ -27,6 +27,8 @@ import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive';
 import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSignHandler from './ipc/sign';
+import registerSpeakHandler from './ipc/speak';
+import registerCancelSpeakHandler from './ipc/cancel-speak';
 import registerRebootHandler from './ipc/reboot';
 import registerRebootToBiosHandler from './ipc/reboot-to-bios';
 import registerPrepareBootUsb from './ipc/prepare-boot-usb';
@@ -131,6 +133,8 @@ async function createWindow(): Promise<void> {
     registerTotpGetHandler,
     registerLogHandler,
     registerSignHandler,
+    registerSpeakHandler,
+    registerCancelSpeakHandler,
     registerRebootHandler,
     registerPrepareBootUsb,
     registerRebootToBiosHandler,
