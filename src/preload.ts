@@ -14,7 +14,7 @@ import {
   channel as getBatteryInfoChannel,
 } from './ipc/get-battery-info';
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
-import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives';
+import { channel as getUsbDrivesChannel } from './ipc/get-usb-drives';
 import { channel as logChannel } from './ipc/log';
 import {
   channel as mountUsbDriveChannel,
@@ -94,9 +94,11 @@ function makeKiosk(): KioskBrowser.Kiosk {
       )) as KioskBrowser.PrinterInfo[];
     },
 
-    async getUsbDrives(): Promise<UsbDrive[]> {
+    async getUsbDrives(): Promise<KioskBrowser.UsbDrive[]> {
       debug('forwarding `getUsbDrives` to main process');
-      return (await ipcRenderer.invoke(getUsbDrivesChannel)) as UsbDrive[];
+      return (await ipcRenderer.invoke(
+        getUsbDrivesChannel,
+      )) as KioskBrowser.UsbDrive[];
     },
 
     async mountUsbDrive(

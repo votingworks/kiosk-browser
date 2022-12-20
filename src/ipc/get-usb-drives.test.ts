@@ -2,7 +2,7 @@ import { IpcMain, IpcMainEvent } from 'electron';
 import { promises as fs } from 'fs';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
-import register, { channel, UsbDrive } from './get-usb-drives';
+import register, { channel } from './get-usb-drives';
 
 const execMock = mockOf(exec);
 const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
@@ -41,12 +41,9 @@ test('get-usb-drives', async () => {
       blockdevices: [
         {
           name: 'sdb1',
-          'maj:min': '8:3',
-          rm: '0',
-          size: '93.9M',
-          ro: '1',
-          type: 'part',
           mountpoint: '/media/usb-drive-sdb1',
+          fstype: 'vfat',
+          fsver: 'FAT32',
         },
       ],
     }),
@@ -57,12 +54,9 @@ test('get-usb-drives', async () => {
       blockdevices: [
         {
           name: 'sdc1',
-          'maj:min': '8:3',
-          rm: '0',
-          size: '73.2M',
-          ro: '1',
-          type: 'part',
           mountpoint: null,
+          fstype: 'exfat',
+          fsver: '1.0',
         },
       ],
     }),
@@ -93,15 +87,22 @@ test('get-usb-drives', async () => {
 
   // Is the handler wired up right?
   const [, handler] = handle.mock.calls[0];
-  const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
+  const devices = (await handler(
+    {} as IpcMainEvent,
+  )) as KioskBrowser.UsbDrive[];
 
   expect(execMock).toHaveBeenCalledTimes(4);
   expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
     '/media/usb-drive-sdz1',
   ]);
   expect(devices).toEqual([
-    { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
-    { deviceName: 'sdc1' },
+    {
+      deviceName: 'sdb1',
+      mountPoint: '/media/usb-drive-sdb1',
+      fsType: 'vfat',
+      fsVersion: 'FAT32',
+    },
+    { deviceName: 'sdc1', fsType: 'exfat', fsVersion: '1.0' },
   ]);
 });
 
@@ -123,12 +124,9 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
       blockdevices: [
         {
           name: 'sdb1',
-          'maj:min': '8:3',
-          rm: '0',
-          size: '93.9M',
-          ro: '1',
-          type: 'part',
           mountpoint: '/media/usb-drive-sdb1',
+          fstype: 'vfat',
+          fsver: 'FAT32',
         },
       ],
     }),
@@ -142,11 +140,18 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
 
   // Is the handler wired up right?
   const [, handler] = handle.mock.calls[0];
-  const devices = (await handler({} as IpcMainEvent)) as UsbDrive[];
+  const devices = (await handler(
+    {} as IpcMainEvent,
+  )) as KioskBrowser.UsbDrive[];
 
   expect(execMock).toHaveBeenCalledTimes(2);
   expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list']);
   expect(devices).toEqual([
-    { deviceName: 'sdb1', mountPoint: '/media/usb-drive-sdb1' },
+    {
+      deviceName: 'sdb1',
+      mountPoint: '/media/usb-drive-sdb1',
+      fsType: 'vfat',
+      fsVersion: 'FAT32',
+    },
   ]);
 });

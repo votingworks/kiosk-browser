@@ -96,6 +96,8 @@ declare namespace KioskBrowser {
   export interface UsbDrive {
     deviceName: string;
     mountPoint?: string;
+    fsType?: string;
+    fsVersion?: string;
   }
 
   export interface SaveAsOptions {
