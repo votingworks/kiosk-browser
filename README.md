@@ -7,7 +7,7 @@ Generic kiosk-mode browser.
 1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
 1. Install native package dependencies with `make install`.
 1. Build a Debian/Ubuntu package with `make build`.
-1. Install it with `sudo dpkg -i dist/kiosk-browser_*.deb`. 
+1. Install it with `sudo dpkg -i dist/kiosk-browser_*.deb`.
 1. Run with the URL you want to visit as a CLI argument (e.g. `kiosk-browser https://example.com/`) or with an environment variable (e.g. `KIOSK_BROWSER_URL=https://example.com/ kiosk-browser`).
 
 ## Kiosk Page API
@@ -30,7 +30,7 @@ Prints the current page using the default printer. This is different from `windo
 
 Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting origin must be allowed to write to disk.
 
-`kiosk.`**`getUsbDrives`**`(): Promise<{ deviceName: string; mountPoint?: string }>`
+`kiosk.`**`getUsbDriveInfo`**`(): Promise<UsbDriveInfo[]>`
 
 Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, pass its device name to `kiosk.mountUsbDrive` or `kiosk.unmountUsbDrive`.
 

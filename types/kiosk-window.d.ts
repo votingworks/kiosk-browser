@@ -93,7 +93,7 @@ declare namespace KioskBrowser {
     deviceAddress: number;
   }
 
-  export interface UsbDrive {
+  export interface UsbDriveInfo {
     deviceName: string;
     mountPoint?: string;
     fsType?: string;
@@ -216,7 +216,7 @@ declare namespace KioskBrowser {
     makeDirectory(path: string, options?: MakeDirectoryOptions): Promise<void>;
 
     // USB sticks
-    getUsbDrives(): Promise<UsbDrive[]>;
+    getUsbDriveInfo(): Promise<UsbDriveInfo[]>;
     mountUsbDrive(device: string): Promise<void>;
     unmountUsbDrive(device: string): Promise<void>;
     formatUsbDrive(device: string, format: FormatUsbOptions): Promise<void>;

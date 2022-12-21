@@ -11,7 +11,7 @@ import registerFileSystemReadFileHandler from './ipc/file-system-read-file';
 import registerFileSystemWriteFileHandler from './ipc/file-system-write-file';
 import registerGetBatteryInfoHandler from './ipc/get-battery-info';
 import registerGetPrinterInfoHandler from './ipc/get-printer-info';
-import registerGetUsbDrivesHandler from './ipc/get-usb-drives';
+import registerGetUsbDriveInfoHandler from './ipc/get-usb-drive-info';
 import registerMountUsbDriveHandler from './ipc/mount-usb-drive';
 import registerPrintHandler from './ipc/print';
 import registerPrinterSubscription from './ipc/printer-subscription';
@@ -122,7 +122,7 @@ async function createWindow(): Promise<void> {
     registerFileSystemMakeDirectoryHandler,
     registerFileSystemReadFileHandler,
     registerFileSystemWriteFileHandler,
-    registerGetUsbDrivesHandler,
+    registerGetUsbDriveInfoHandler,
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,
     registerFormatUsbDrive,

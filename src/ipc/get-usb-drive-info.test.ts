@@ -2,7 +2,7 @@ import { IpcMain, IpcMainEvent } from 'electron';
 import { promises as fs } from 'fs';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
-import register, { channel } from './get-usb-drives';
+import register, { channel } from './get-usb-drive-info';
 
 const execMock = mockOf(exec);
 const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
@@ -89,7 +89,7 @@ test('get-usb-drives', async () => {
   const [, handler] = handle.mock.calls[0];
   const devices = (await handler(
     {} as IpcMainEvent,
-  )) as KioskBrowser.UsbDrive[];
+  )) as KioskBrowser.UsbDriveInfo[];
 
   expect(execMock).toHaveBeenCalledTimes(4);
   expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
@@ -142,7 +142,7 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
   const [, handler] = handle.mock.calls[0];
   const devices = (await handler(
     {} as IpcMainEvent,
-  )) as KioskBrowser.UsbDrive[];
+  )) as KioskBrowser.UsbDriveInfo[];
 
   expect(execMock).toHaveBeenCalledTimes(2);
   expect(execMock).toHaveBeenCalledWith('findmnt', ['--json', '--list']);

@@ -6,7 +6,7 @@ import exec from '../utils/exec';
 
 const debug = makeDebug('kiosk-browser:get-usb-drives');
 
-export const channel = 'getUsbDrives';
+export const channel = 'getUsbDriveInfo';
 
 const lsblkOutputs = ['NAME', 'MOUNTPOINT', 'FSTYPE', 'FSVER'];
 
@@ -33,7 +33,7 @@ interface FindMntRawDataReturn {
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/';
 const USB_REGEXP = /^usb(.+)part(.*)$/;
 
-async function getUsbDrives(): Promise<KioskBrowser.UsbDrive[]> {
+async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
   try {
     // only the USB partitions
     const devicesById = (await fs.readdir(DEVICE_PATH_PREFIX)).filter((name) =>
@@ -102,5 +102,5 @@ async function getUsbDrives(): Promise<KioskBrowser.UsbDrive[]> {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, () => getUsbDrives());
+  ipcMain.handle(channel, () => getUsbDriveInfo());
 }
