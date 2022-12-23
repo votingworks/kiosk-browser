@@ -36,6 +36,7 @@ test('get-usb-drives', async () => {
   ]);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
   readlinkMock.mockResolvedValueOnce('../../sdc1');
+
   execMock.mockResolvedValueOnce({
     stdout: JSON.stringify({
       blockdevices: [
@@ -44,6 +45,7 @@ test('get-usb-drives', async () => {
           mountpoint: '/media/usb-drive-sdb1',
           fstype: 'vfat',
           fsver: 'FAT32',
+          label: 'VxUSB-00000',
         },
       ],
     }),
@@ -57,6 +59,7 @@ test('get-usb-drives', async () => {
           mountpoint: null,
           fstype: 'exfat',
           fsver: '1.0',
+          label: 'Samsung USB',
         },
       ],
     }),
@@ -101,8 +104,14 @@ test('get-usb-drives', async () => {
       mountPoint: '/media/usb-drive-sdb1',
       fsType: 'vfat',
       fsVersion: 'FAT32',
+      label: 'VxUSB-00000',
     },
-    { deviceName: 'sdc1', fsType: 'exfat', fsVersion: '1.0' },
+    {
+      deviceName: 'sdc1',
+      fsType: 'exfat',
+      fsVersion: '1.0',
+      label: 'Samsung USB',
+    },
   ]);
 });
 

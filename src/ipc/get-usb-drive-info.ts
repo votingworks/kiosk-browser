@@ -15,6 +15,7 @@ export interface BlockDevice {
   mountpoint: string | null;
   fstype: string | null;
   fsver: string | null;
+  label: string | null;
 }
 
 export interface RawDataReturn {
@@ -63,12 +64,14 @@ async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
         ]);
 
         const rawData = JSON.parse(stdout) as RawDataReturn;
-        const { name, mountpoint, fstype, fsver } = rawData.blockdevices[0];
+        const { name, mountpoint, fstype, fsver, label } =
+          rawData.blockdevices[0];
         return {
           deviceName: name,
           mountPoint: mountpoint ?? undefined,
           fsType: fstype ?? undefined,
           fsVersion: fsver ?? undefined,
+          label: label ?? undefined,
         };
       }),
     );

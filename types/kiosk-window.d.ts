@@ -98,6 +98,7 @@ declare namespace KioskBrowser {
     mountPoint?: string;
     fsType?: string;
     fsVersion?: string;
+    fsLabel?: string;
   }
 
   export type UsbFormat = 'fat32' | 'exfat';
