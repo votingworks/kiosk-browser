@@ -14,7 +14,7 @@ import {
   channel as getBatteryInfoChannel,
 } from './ipc/get-battery-info';
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
-import { channel as getUsbDrivesChannel, UsbDrive } from './ipc/get-usb-drives';
+import { channel as getUsbDriveInfoChannel } from './ipc/get-usb-drive-info';
 import { channel as logChannel } from './ipc/log';
 import {
   channel as mountUsbDriveChannel,
@@ -34,6 +34,7 @@ import { channel as storageRemoveChannel } from './ipc/storage-remove';
 import { channel as storageSetChannel } from './ipc/storage-set';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
+import { channel as formatUsbDriveChannel } from './ipc/format-usb-drive';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as syncUsbDriveChannel } from './ipc/sync-usb-drive';
 
@@ -94,9 +95,11 @@ function makeKiosk(): KioskBrowser.Kiosk {
       )) as KioskBrowser.PrinterInfo[];
     },
 
-    async getUsbDrives(): Promise<UsbDrive[]> {
-      debug('forwarding `getUsbDrives` to main process');
-      return (await ipcRenderer.invoke(getUsbDrivesChannel)) as UsbDrive[];
+    async getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
+      debug('forwarding `getUsbDriveInfo` to main process');
+      return (await ipcRenderer.invoke(
+        getUsbDriveInfoChannel,
+      )) as KioskBrowser.UsbDriveInfo[];
     },
 
     async mountUsbDrive(
@@ -114,6 +117,14 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async unmountUsbDrive(device: string): Promise<void> {
       debug('forwarding `unmountUsbDrive` to main process');
       await ipcRenderer.invoke(unmountUsbDriveChannel, device);
+    },
+
+    async formatUsbDrive(
+      device: string,
+      options: KioskBrowser.FormatUsbOptions,
+    ): Promise<void> {
+      debug('forwarding `formatUsbDrive` to main process');
+      await ipcRenderer.invoke(formatUsbDriveChannel, device, options);
     },
 
     async syncUsbDrive(mountPoint: string): Promise<void> {

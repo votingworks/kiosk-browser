@@ -6,17 +6,16 @@ import exec from '../utils/exec';
 
 const debug = makeDebug('kiosk-browser:get-usb-drives');
 
-export const channel = 'getUsbDrives';
+export const channel = 'getUsbDriveInfo';
 
-export interface UsbDrive {
-  deviceName: string;
-  mountPoint?: string;
-}
+const lsblkOutputs = ['NAME', 'MOUNTPOINT', 'FSTYPE', 'FSVER'];
 
 export interface BlockDevice {
   name: string;
   mountpoint: string | null;
-  partuuid?: string | null;
+  fstype: string | null;
+  fsver: string | null;
+  label: string | null;
 }
 
 export interface RawDataReturn {
@@ -35,7 +34,7 @@ interface FindMntRawDataReturn {
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/';
 const USB_REGEXP = /^usb(.+)part(.*)$/;
 
-async function getUsbDrives(): Promise<UsbDrive[]> {
+async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
   try {
     // only the USB partitions
     const devicesById = (await fs.readdir(DEVICE_PATH_PREFIX)).filter((name) =>
@@ -55,12 +54,24 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
     // get the block device info, including mount point
     const usbDrives = await Promise.all(
       devices.map(async (device) => {
-        const { stdout } = await exec('lsblk', ['-J', '-n', '-l', device]);
+        const { stdout } = await exec('lsblk', [
+          '-J',
+          '-n',
+          '-l',
+          '-o',
+          lsblkOutputs.join(','),
+          device,
+        ]);
 
         const rawData = JSON.parse(stdout) as RawDataReturn;
+        const { name, mountpoint, fstype, fsver, label } =
+          rawData.blockdevices[0];
         return {
-          deviceName: rawData.blockdevices[0].name,
-          mountPoint: rawData.blockdevices[0].mountpoint ?? undefined,
+          deviceName: name,
+          mountPoint: mountpoint ?? undefined,
+          fsType: fstype ?? undefined,
+          fsVersion: fsver ?? undefined,
+          label: label ?? undefined,
         };
       }),
     );
@@ -94,5 +105,5 @@ async function getUsbDrives(): Promise<UsbDrive[]> {
 }
 
 export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, () => getUsbDrives());
+  ipcMain.handle(channel, () => getUsbDriveInfo());
 }

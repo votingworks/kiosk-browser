@@ -11,7 +11,7 @@ import registerFileSystemReadFileHandler from './ipc/file-system-read-file';
 import registerFileSystemWriteFileHandler from './ipc/file-system-write-file';
 import registerGetBatteryInfoHandler from './ipc/get-battery-info';
 import registerGetPrinterInfoHandler from './ipc/get-printer-info';
-import registerGetUsbDrivesHandler from './ipc/get-usb-drives';
+import registerGetUsbDriveInfoHandler from './ipc/get-usb-drive-info';
 import registerMountUsbDriveHandler from './ipc/mount-usb-drive';
 import registerPrintHandler from './ipc/print';
 import registerPrinterSubscription from './ipc/printer-subscription';
@@ -24,6 +24,7 @@ import registerStorageRemoveHandler from './ipc/storage-remove';
 import registerStorageSetHandler from './ipc/storage-set';
 import registerSyncUsbDriveHandler from './ipc/sync-usb-drive';
 import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive';
+import registerFormatUsbDrive from './ipc/format-usb-drive';
 import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSignHandler from './ipc/sign';
@@ -121,9 +122,10 @@ async function createWindow(): Promise<void> {
     registerFileSystemMakeDirectoryHandler,
     registerFileSystemReadFileHandler,
     registerFileSystemWriteFileHandler,
-    registerGetUsbDrivesHandler,
+    registerGetUsbDriveInfoHandler,
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,
+    registerFormatUsbDrive,
     registerSyncUsbDriveHandler,
     registerStorageSetHandler,
     registerStorageGetHandler,
