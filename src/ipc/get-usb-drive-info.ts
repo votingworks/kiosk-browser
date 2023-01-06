@@ -8,7 +8,7 @@ const debug = makeDebug('kiosk-browser:get-usb-drives');
 
 export const channel = 'getUsbDriveInfo';
 
-const lsblkOutputs = ['NAME', 'MOUNTPOINT', 'FSTYPE', 'FSVER'];
+const lsblkOutputs = ['NAME', 'MOUNTPOINT', 'FSTYPE', 'FSVER', 'LABEL'];
 
 export interface BlockDevice {
   name: string;
