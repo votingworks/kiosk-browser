@@ -66,11 +66,11 @@ test('devices', async () => {
   unsubscribe();
 });
 
-// TODO: remove `.skip` once we've figured out why this test causes a crash:
+// TODO: Run in CI when we understand why it fails. Fails with the following:
 //
-//   Assertion 'udev->n_ref > 0' failed at src/libudev/libudev.c:106, function udev_unref(). Aborting.
+//   [6434:0111/214247.890907:INFO:electron_api_printing.cc(78)] Failed to enumerate printers
 //
-test.skip('printers', async () => {
+(process.env.CI ? test.skip : test)('printers', async () => {
   let printers: KioskBrowser.PrinterInfo[] | undefined;
 
   const unsubscribe = kiosk.printers.subscribe((newPrinters) => {

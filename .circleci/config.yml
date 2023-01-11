@@ -31,6 +31,7 @@ jobs:
           command: yarn test:integration
           environment:
             ELECTRON_ENABLE_LOGGING: true
+            VITE_CI: true
       - save_cache:
           paths:
             - '~/.cache/yarn'
