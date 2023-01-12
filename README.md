@@ -34,6 +34,10 @@ Presents a file save dialog to the user and, if a file is chosen, resolves to an
 
 Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, pass its device name to `kiosk.mountUsbDrive` or `kiosk.unmountUsbDrive`.
 
+## `sudo` Permissions
+
+`kiosk-browser` performs certain actions that require root privileges, and must do so non-interactively i.e. without entering the root password. To grant those privileges to yourself as the running user, you must edit your `sudoers` file at `/etc/sudoers` on Debian. For production VotingWorks systems, these permissions are setup in [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system) when [`./config/sudoers`](https://github.com/votingworks/vxsuite-complete-system/blob/56ac00498ed526b5874ab90231ef83ff84ee92df/config/sudoers) is copied to `/etc/sudoers` during machine setup. To set up the same permissions in your development environment, copy the lines pertaining to `vx-ui` into your `/etc/sudoers` file and replace `vx-ui` with your username.
+
 ## File Access APIs
 
 To access the file system, a host must be granted access with `--add-file-perm [HOST:]PATH[:ACCESS]`. For example, `--add-file-perm localhost:**/*:rw` grants localhost read-write access anywhere. Access modifiers: `rw` (default, read-write), `ro` (read-only), and `wo` (write-only). Note that the order permissions are added is important. If you add a permission that says access to `/media/**/*` is read-only first, then another that says `/media/usb-stick/**/*` is read-write, access to `/media/usb-stick/file.txt` will be read-only because the first permission matches the path. To fix this, reverse the order.
