@@ -5,7 +5,7 @@ import exec from '../utils/exec';
 export const channel = 'unmountUsbDrive';
 
 async function unmountUsbDrive(device: string): Promise<void> {
-  await exec('pumount', [join('/dev', device)]);
+  await exec('sudo', ['-n', 'umount', join('/dev', device)]);
 }
 
 export default function register(ipcMain: IpcMain): void {

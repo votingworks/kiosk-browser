@@ -7,7 +7,7 @@ const execMock = mockOf(exec);
 
 jest.mock('../utils/exec');
 
-test('mount-usb-drive', async () => {
+test('unmount-usb-drive', async () => {
   // Register our handler.
   const handle = jest.fn<
     ReturnType<IpcMain['handle']>,
@@ -27,5 +27,5 @@ test('mount-usb-drive', async () => {
   const [, handler] = handle.mock.calls[0];
   await handler({} as IpcMainEvent, 'sdb1');
 
-  expect(execMock).toHaveBeenCalledWith('pumount', ['/dev/sdb1']);
+  expect(execMock).toHaveBeenCalledWith('sudo', ['-n', 'umount', '/dev/sdb1']);
 });

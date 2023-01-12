@@ -9,13 +9,18 @@ export interface Options {
   label?: string;
 }
 
+const MOUNT_DIRECTORY = '/media/vx/usb-drive';
+const MOUNT_OPTIONS = ['umask=000', 'nosuid', 'nodev', 'noexec'];
+
 async function mountUsbDrive(options: Options): Promise<void> {
-  await exec('pmount', [
+  await exec('sudo', [
+    '-n',
+    'mount',
     '-w',
-    '-u',
-    '000',
+    '-o',
+    MOUNT_OPTIONS.join(','),
     join('/dev', options.device),
-    options.label ?? `usb-drive-${options.device}`,
+    MOUNT_DIRECTORY,
   ]);
 }
 

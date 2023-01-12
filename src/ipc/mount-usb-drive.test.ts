@@ -21,12 +21,14 @@ test('mount-usb-drive', async () => {
   // Is the handler wired up right?
   await ipcRenderer.invoke(channel, { device: 'sdb1' });
 
-  expect(execMock).toHaveBeenCalledWith('pmount', [
+  expect(execMock).toHaveBeenCalledWith('sudo', [
+    '-n',
+    'mount',
     '-w',
-    '-u',
-    '000',
+    '-o',
+    'umask=000,nosuid,nodev,noexec',
     '/dev/sdb1',
-    'usb-drive-sdb1',
+    '/media/vx/usb-drive',
   ]);
 });
 
@@ -44,11 +46,13 @@ test('mount-usb-drive with custom label', async () => {
   // Is the handler wired up right?
   await ipcRenderer.invoke(channel, { device: 'sdb1', label: 'usb-drive' });
 
-  expect(execMock).toHaveBeenCalledWith('pmount', [
+  expect(execMock).toHaveBeenCalledWith('sudo', [
+    '-n',
+    'mount',
     '-w',
-    '-u',
-    '000',
+    '-o',
+    'umask=000,nosuid,nodev,noexec',
     '/dev/sdb1',
-    'usb-drive',
+    '/media/vx/usb-drive',
   ]);
 });

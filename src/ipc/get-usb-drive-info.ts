@@ -91,7 +91,7 @@ async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
                 target,
                 source,
               );
-              await exec('pumount', [target]);
+              await exec('sudo', ['-n', 'umount', target]);
             }
           }
         }),

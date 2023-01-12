@@ -95,7 +95,9 @@ test('get-usb-drives', async () => {
   )) as KioskBrowser.UsbDriveInfo[];
 
   expect(execMock).toHaveBeenCalledTimes(4);
-  expect(execMock).toHaveBeenNthCalledWith(4, 'pumount', [
+  expect(execMock).toHaveBeenNthCalledWith(4, 'sudo', [
+    '-n',
+    'umount',
     '/media/usb-drive-sdz1',
   ]);
   expect(devices).toEqual([
