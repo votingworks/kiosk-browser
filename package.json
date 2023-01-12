@@ -74,7 +74,7 @@
     "sort-package-json": "^1.39.1",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4",
-    "vite": "^2.9.9"
+    "vite": "^2.9.13"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",
