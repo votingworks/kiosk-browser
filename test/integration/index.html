@@ -8,7 +8,8 @@
   globalThis.global = globalThis;
   globalThis.process = {
     env: {
-      NODE_ENV: 'test'
+      CI: import.meta.env.VITE_CI,
+      NODE_ENV: 'test',
     },
 
     cwd: () => '/',
@@ -24,7 +25,7 @@
 
     stderr: {
       isTTY: false,
-    }
+    },
   };
 </script>
 
