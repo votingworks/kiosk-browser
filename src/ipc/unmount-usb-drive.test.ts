@@ -1,4 +1,5 @@
-import { IpcMain, IpcMainEvent } from 'electron';
+import { mockHandlerContext } from '../../test/mockHandlerContext';
+import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
 import register, { channel } from './unmount-usb-drive';
@@ -8,24 +9,34 @@ const execMock = mockOf(exec);
 jest.mock('../utils/exec');
 
 test('unmount-usb-drive', async () => {
-  // Register our handler.
-  const handle = jest.fn<
-    ReturnType<IpcMain['handle']>,
-    Parameters<IpcMain['handle']>
-  >();
-  register({ handle } as unknown as IpcMain);
-
-  // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain, mockHandlerContext());
 
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
-  // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0];
-  await handler({} as IpcMainEvent, 'sdb1');
+  await ipcRenderer.invoke(channel);
+  expect(execMock).toHaveBeenCalledWith('sudo', ['-n', '/tmp/umount.sh']);
+});
 
-  expect(execMock).toHaveBeenCalledWith('sudo', ['-n', 'umount', '/dev/sdb1']);
+test('unmount-usb-drive does nothing if no app scripts directory was provided', async () => {
+  // Register our handler.
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(
+    ipcMain,
+    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  );
+
+  // Things should be registered as expected.
+  execMock.mockResolvedValueOnce({
+    stdout: '',
+    stderr: '',
+  });
+
+  // Is the handler wired up right?
+  await ipcRenderer.invoke(channel);
+
+  expect(execMock).not.toHaveBeenCalled();
 });

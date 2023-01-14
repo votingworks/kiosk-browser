@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
@@ -12,20 +12,9 @@ beforeEach(() => {
   execMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
 
-const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
-const autoconfiguredPrinter = new Subject<void>();
-
 test('call to sign invokes the right signing script command, but only if signatureType is well-formed', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      signingScriptPath: '/tmp/sign.sh',
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(ipcMain, mockHandlerContext());
 
   execMock.mockResolvedValue({
     stderr: '',
@@ -37,7 +26,12 @@ test('call to sign invokes the right signing script command, but only if signatu
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, '/tmp/sign.sh', [], 'test.hello');
+  expect(execMock).toHaveBeenNthCalledWith(
+    1,
+    'sudo',
+    ['-n', '/tmp/sign.sh'],
+    'test.hello',
+  );
 
   expect(signResult).toBe('FAKESIGNATURERIGHTHERE==');
 
@@ -53,16 +47,12 @@ test('call to sign invokes the right signing script command, but only if signatu
   expect(badTypeSignResult).toBeUndefined();
 });
 
-test('call to sign when no key is registered returns undefined', async () => {
+test('call to sign when no script is specified returns undefined', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(
+    ipcMain,
+    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  );
 
   const signResult = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'test',
@@ -76,15 +66,7 @@ test('call to sign when no key is registered returns undefined', async () => {
 
 test('call to sign when error occurs or exception thrown returns undefined', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      signingScriptPath: '/tmp/sign.sh',
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(ipcMain, mockHandlerContext());
 
   execMock.mockResolvedValue({
     stderr: 'oopsie daisy',

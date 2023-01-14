@@ -1,34 +1,36 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
-import { join } from 'path';
+import path, { join } from 'path';
+import makeDebug from 'debug';
+import { Options } from '../utils/options';
 import exec from '../utils/exec';
+
+const debug = makeDebug('kiosk-browser:mount-usb-drive');
 
 export const channel = 'mountUsbDrive';
 
-export interface Options {
-  device: string;
-  label?: string;
-}
+async function mountUsbDrive(
+  device: string,
+  appScriptsDirectory?: string,
+): Promise<void> {
+  if (!appScriptsDirectory) {
+    debug(
+      'could not mount USB drive because no app scripts directory was passed to kiosk-browser',
+    );
+    return;
+  }
 
-const MOUNT_DIRECTORY = '/media/vx/usb-drive';
-const MOUNT_OPTIONS = ['umask=000', 'nosuid', 'nodev', 'noexec'];
-
-async function mountUsbDrive(options: Options): Promise<void> {
   await exec('sudo', [
     '-n',
-    'mount',
-    '-w',
-    '-o',
-    MOUNT_OPTIONS.join(','),
-    join('/dev', options.device),
-    MOUNT_DIRECTORY,
+    path.join(appScriptsDirectory, 'mount.sh'),
+    join('/dev', device),
   ]);
 }
 
-export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(
-    channel,
-    async (event: IpcMainInvokeEvent, options: Options) => {
-      await mountUsbDrive(options);
-    },
-  );
+export default function register(
+  ipcMain: IpcMain,
+  { options: kioskBrowserOptions }: { options: Options },
+): void {
+  ipcMain.handle(channel, async (event: IpcMainInvokeEvent, device: string) => {
+    await mountUsbDrive(device, kioskBrowserOptions.appScriptsDirectory);
+  });
 }

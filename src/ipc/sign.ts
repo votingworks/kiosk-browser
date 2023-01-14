@@ -1,5 +1,6 @@
 import makeDebug from 'debug';
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
+import path from 'path';
 import { RegisterIpcHandler } from '..';
 import exec from '../utils/exec';
 
@@ -14,10 +15,12 @@ export interface SignParams {
 
 async function sign(
   { signatureType, payload }: SignParams,
-  signingScriptPath?: string,
+  appScriptsDirectory?: string,
 ): Promise<string | undefined> {
-  if (!signingScriptPath) {
-    debug('could not sign because no signing script specified!');
+  if (!appScriptsDirectory) {
+    debug(
+      'could not sign because no app scripts directory was passed to kiosk-browser',
+    );
     return;
   }
 
@@ -30,9 +33,8 @@ async function sign(
 
   try {
     const { stdout, stderr } = await exec(
-      // TODO this feels really dangerous, is there a better way?
-      signingScriptPath,
-      [],
+      'sudo',
+      ['-n', path.join(appScriptsDirectory, 'sign.sh')],
       rawPayloadToSign,
     );
 
@@ -53,7 +55,7 @@ const register: RegisterIpcHandler = (ipcMain: IpcMain, { options }): void => {
   ipcMain.handle(
     channel,
     async (event: IpcMainInvokeEvent, params: SignParams) => {
-      return await sign(params, options.signingScriptPath);
+      return await sign(params, options.appScriptsDirectory);
     },
   );
 };

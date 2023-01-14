@@ -1,3 +1,4 @@
+import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
@@ -8,9 +9,8 @@ const execMock = mockOf(exec);
 jest.mock('../utils/exec');
 
 test('mount-usb-drive', async () => {
-  // Register our handler.
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain);
+  register(ipcMain, mockHandlerContext());
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -18,24 +18,21 @@ test('mount-usb-drive', async () => {
     stderr: '',
   });
 
-  // Is the handler wired up right?
-  await ipcRenderer.invoke(channel, { device: 'sdb1' });
-
+  await ipcRenderer.invoke(channel, 'sdb1');
   expect(execMock).toHaveBeenCalledWith('sudo', [
     '-n',
-    'mount',
-    '-w',
-    '-o',
-    'umask=000,nosuid,nodev,noexec',
+    '/tmp/mount.sh',
     '/dev/sdb1',
-    '/media/vx/usb-drive',
   ]);
 });
 
-test('mount-usb-drive with custom label', async () => {
+test('mount-usb-drive does nothing if no app scripts directory was provided', async () => {
   // Register our handler.
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain);
+  register(
+    ipcMain,
+    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  );
 
   // Things should be registered as expected.
   execMock.mockResolvedValueOnce({
@@ -44,15 +41,7 @@ test('mount-usb-drive with custom label', async () => {
   });
 
   // Is the handler wired up right?
-  await ipcRenderer.invoke(channel, { device: 'sdb1', label: 'usb-drive' });
+  await ipcRenderer.invoke(channel, 'sdb1');
 
-  expect(execMock).toHaveBeenCalledWith('sudo', [
-    '-n',
-    'mount',
-    '-w',
-    '-o',
-    'umask=000,nosuid,nodev,noexec',
-    '/dev/sdb1',
-    '/media/vx/usb-drive',
-  ]);
+  expect(execMock).not.toHaveBeenCalled();
 });

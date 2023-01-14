@@ -38,6 +38,12 @@ Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, p
 
 `kiosk-browser` performs certain actions that require root privileges, and must do so non-interactively i.e. without entering the root password. To grant those privileges to yourself as the running user, you must edit your `sudoers` file at `/etc/sudoers` on Debian. For production VotingWorks systems, these permissions are setup in [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system) when [`./config/sudoers`](https://github.com/votingworks/vxsuite-complete-system/blob/56ac00498ed526b5874ab90231ef83ff84ee92df/config/sudoers) is copied to `/etc/sudoers` during machine setup. To set up the same permissions in your development environment, copy the lines pertaining to `vx-ui` into your `/etc/sudoers` file and replace `vx-ui` with your username.
 
+## App Scripts Directory
+
+`kiosk-browser` relies on scripts like `mount.sh`, `umount.sh`, and `sign.sh` for performing restricted actions that require `sudo` permissions without requiring that the running user has `sudo` access to the powerful underlying commands like `mount` or `umount`. `kiosk-browser` looks for these scripts in the app scripts directory, which can be passed with `--app-scripts-directory PATH`. The exact path will depend on where you're running `kiosk-browser` with respect to [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system), where the default app scripts live under `./app-scripts`.
+
+The scripts will require `NOPASSWD` `sudo` permissions as described in the previous section.
+
 ## File Access APIs
 
 To access the file system, a host must be granted access with `--add-file-perm [HOST:]PATH[:ACCESS]`. For example, `--add-file-perm localhost:**/*:rw` grants localhost read-write access anywhere. Access modifiers: `rw` (default, read-write), `ro` (read-only), and `wo` (write-only). Note that the order permissions are added is important. If you add a permission that says access to `/media/**/*` is read-only first, then another that says `/media/usb-stick/**/*` is read-write, access to `/media/usb-stick/file.txt` will be read-only because the first permission matches the path. To fix this, reverse the order.
@@ -68,10 +74,10 @@ If you're working on a bug fix or feature for `kiosk-browser`, here's how to bui
 1. Install native package dependencies with `make install`.
 1. Run with `yarn start`. Changes will not automatically be picked up, so just Ctrl-C the `yarn start` and run it again.
 
-Kiosk browser has a number of command line arguments if you want the permissions and print config to mimic production but have access to devtools you probably want to run `kiosk-browser` locally with the following command:
+Kiosk browser has a number of command line arguments you can use if you want the permissions and print config to mimic production while also having access to devtools. You probably want to run `kiosk-browser` locally with the following command:
 
 ```sh
-DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG=../vxsuite-complete-system/printing/printer-autoconfigure.json yarn start
+DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG=../vxsuite-complete-system/printing/printer-autoconfigure.json KIOSK_BROWSER_APP_SCRIPTS_DIRECTORY=../vxsuite-complete-system/app-scripts yarn start
 ```
 
 ## License
