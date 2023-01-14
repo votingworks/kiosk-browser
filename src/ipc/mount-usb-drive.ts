@@ -1,10 +1,7 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
-import path, { join } from 'path';
-import makeDebug from 'debug';
+import { join } from 'path';
 import { Options } from '../utils/options';
-import exec from '../utils/exec';
-
-const debug = makeDebug('kiosk-browser:mount-usb-drive');
+import execScript from '../utils/execScript';
 
 export const channel = 'mountUsbDrive';
 
@@ -12,16 +9,7 @@ async function mountUsbDrive(
   device: string,
   appScriptsDirectory?: string,
 ): Promise<void> {
-  if (!appScriptsDirectory) {
-    debug(
-      'could not mount USB drive because no app scripts directory was passed to kiosk-browser',
-    );
-    return;
-  }
-
-  await exec('sudo', [
-    '-n',
-    path.join(appScriptsDirectory, 'mount.sh'),
+  await execScript('mount.sh', { appScriptsDirectory, sudo: true }, [
     join('/dev', device),
   ]);
 }

@@ -1,10 +1,13 @@
-import { IpcMain, IpcMainEvent } from 'electron';
 import { promises as fs } from 'fs';
+import { mockHandlerContext } from '../../test/mockHandlerContext';
+import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
+import execScript from '../utils/execScript';
 import register, { channel } from './get-usb-drive-info';
 
 const execMock = mockOf(exec);
+const execScriptMock = mockOf(execScript);
 const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
 const readdirMock = fs.readdir as unknown as jest.Mock<Promise<string[]>>;
 const readlinkMock = fs.readlink as unknown as jest.Mock<Promise<string>>;
@@ -17,17 +20,11 @@ jest.mock('fs', () => ({
   },
 }));
 jest.mock('../utils/exec');
+jest.mock('../utils/execScript');
 
 test('get-usb-drives', async () => {
-  // Register our handler.
-  const handle = jest.fn<
-    ReturnType<IpcMain['handle']>,
-    Parameters<IpcMain['handle']>
-  >();
-  register({ handle } as unknown as IpcMain);
-
-  // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain, mockHandlerContext());
 
   readdirMock.mockResolvedValueOnce([
     'usb-foobar-part23',
@@ -89,17 +86,20 @@ test('get-usb-drives', async () => {
   accessMock.mockResolvedValueOnce().mockRejectedValueOnce(new Error('ENOENT'));
 
   // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0];
-  const devices = (await handler(
-    {} as IpcMainEvent,
+  const devices = (await ipcRenderer.invoke(
+    channel,
   )) as KioskBrowser.UsbDriveInfo[];
 
-  expect(execMock).toHaveBeenCalledTimes(4);
-  expect(execMock).toHaveBeenNthCalledWith(4, 'sudo', [
-    '-n',
-    'umount',
-    '/media/usb-drive-sdz1',
-  ]);
+  expect(execMock).toHaveBeenCalledTimes(3);
+  expect(execScriptMock).toHaveBeenNthCalledWith(
+    1,
+    'umount.sh',
+    {
+      appScriptsDirectory: '/tmp',
+      sudo: true,
+    },
+    [],
+  );
   expect(devices).toEqual([
     {
       deviceName: 'sdb1',
@@ -119,14 +119,11 @@ test('get-usb-drives', async () => {
 
 test('get-usb-drives works when findmnt returns nothing', async () => {
   // Register our handler.
-  const handle = jest.fn<
-    ReturnType<IpcMain['handle']>,
-    Parameters<IpcMain['handle']>
-  >();
-  register({ handle } as unknown as IpcMain);
-
-  // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(
+    ipcMain,
+    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  );
 
   readdirMock.mockResolvedValueOnce(['usb-foobar-part23']);
   readlinkMock.mockResolvedValueOnce('../../sdb1');
@@ -150,9 +147,8 @@ test('get-usb-drives works when findmnt returns nothing', async () => {
   });
 
   // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0];
-  const devices = (await handler(
-    {} as IpcMainEvent,
+  const devices = (await ipcRenderer.invoke(
+    channel,
   )) as KioskBrowser.UsbDriveInfo[];
 
   expect(execMock).toHaveBeenCalledTimes(2);

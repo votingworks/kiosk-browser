@@ -2,7 +2,9 @@ import makeDebug from 'debug';
 import { IpcMain } from 'electron';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import execScript from '../utils/execScript';
 import exec from '../utils/exec';
+import { Options } from '../utils/options';
 
 const debug = makeDebug('kiosk-browser:get-usb-drives');
 
@@ -34,7 +36,9 @@ interface FindMntRawDataReturn {
 const DEVICE_PATH_PREFIX = '/dev/disk/by-id/';
 const USB_REGEXP = /^usb(.+)part(.*)$/;
 
-async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
+async function getUsbDriveInfo(
+  appScriptsDirectory?: string,
+): Promise<KioskBrowser.UsbDriveInfo[]> {
   try {
     // only the USB partitions
     const devicesById = (await fs.readdir(DEVICE_PATH_PREFIX)).filter((name) =>
@@ -91,7 +95,11 @@ async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
                 target,
                 source,
               );
-              await exec('sudo', ['-n', 'umount', target]);
+              await execScript(
+                'umount.sh',
+                { appScriptsDirectory, sudo: true },
+                [],
+              );
             }
           }
         }),
@@ -104,6 +112,11 @@ async function getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
   }
 }
 
-export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(channel, () => getUsbDriveInfo());
+export default function register(
+  ipcMain: IpcMain,
+  { options: kioskBrowserOptions }: { options: Options },
+): void {
+  ipcMain.handle(channel, () =>
+    getUsbDriveInfo(kioskBrowserOptions.appScriptsDirectory),
+  );
 }

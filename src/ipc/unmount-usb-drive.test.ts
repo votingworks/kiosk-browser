@@ -1,42 +1,26 @@
 import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execScript from '../utils/execScript';
 import register, { channel } from './unmount-usb-drive';
 
-const execMock = mockOf(exec);
+const execScriptMock = mockOf(execScript);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execScript');
 
 test('unmount-usb-drive', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
   register(ipcMain, mockHandlerContext());
 
-  execMock.mockResolvedValueOnce({
+  execScriptMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
   await ipcRenderer.invoke(channel);
-  expect(execMock).toHaveBeenCalledWith('sudo', ['-n', '/tmp/umount.sh']);
-});
-
-test('unmount-usb-drive does nothing if no app scripts directory was provided', async () => {
-  // Register our handler.
-  const { ipcMain, ipcRenderer } = fakeIpc();
-  register(
-    ipcMain,
-    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  expect(execScriptMock).toHaveBeenCalledWith(
+    'umount.sh',
+    { appScriptsDirectory: '/tmp', sudo: true },
+    [],
   );
-
-  // Things should be registered as expected.
-  execMock.mockResolvedValueOnce({
-    stdout: '',
-    stderr: '',
-  });
-
-  // Is the handler wired up right?
-  await ipcRenderer.invoke(channel);
-
-  expect(execMock).not.toHaveBeenCalled();
 });
