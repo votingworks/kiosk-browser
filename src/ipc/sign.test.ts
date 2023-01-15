@@ -1,22 +1,22 @@
 import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 import register, { channel as signChannel } from './sign';
 
-const execScriptMock = mockOf(execScript);
-jest.mock('../utils/execScript');
+const execAppScriptMock = mockOf(execAppScript);
+jest.mock('../utils/execAppScript');
 
 beforeEach(() => {
-  execScriptMock.mockReset();
-  execScriptMock.mockResolvedValue({ stdout: '', stderr: '' });
+  execAppScriptMock.mockReset();
+  execAppScriptMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
 
 test('call to sign invokes the right signing script command, but only if signatureType is well-formed', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
   register(ipcMain, mockHandlerContext());
 
-  execScriptMock.mockResolvedValue({
+  execAppScriptMock.mockResolvedValue({
     stderr: '',
     stdout: 'untrusted comment: hello\nFAKESIGNATURERIGHTHERE==\n',
   });
@@ -26,7 +26,7 @@ test('call to sign invokes the right signing script command, but only if signatu
     payload: 'hello',
   })) as string;
 
-  expect(execScriptMock).toHaveBeenNthCalledWith(
+  expect(execAppScriptMock).toHaveBeenNthCalledWith(
     1,
     'sign.sh',
     { appScriptsDirectory: '/tmp', sudo: true },
@@ -36,14 +36,14 @@ test('call to sign invokes the right signing script command, but only if signatu
 
   expect(signResult).toBe('FAKESIGNATURERIGHTHERE==');
 
-  execScriptMock.mockReset();
+  execAppScriptMock.mockReset();
 
   const badTypeSignResult = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'this.hasperiodsandthatisbad',
     payload: 'hello',
   })) as string;
 
-  expect(execScriptMock).not.toHaveBeenCalled();
+  expect(execAppScriptMock).not.toHaveBeenCalled();
 
   expect(badTypeSignResult).toBeUndefined();
 });
@@ -60,7 +60,7 @@ test('call to sign when no script is specified returns undefined', async () => {
     payload: 'hello',
   })) as string;
 
-  expect(execScriptMock).not.toHaveBeenCalled();
+  expect(execAppScriptMock).not.toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 });
@@ -69,7 +69,7 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
   const { ipcMain, ipcRenderer } = fakeIpc();
   register(ipcMain, mockHandlerContext());
 
-  execScriptMock.mockResolvedValue({
+  execAppScriptMock.mockResolvedValue({
     stderr: 'oopsie daisy',
     stdout:
       'untrusted comment: hello\nFAKESIGNATURERIGHTHERETHATSHOULDNOTBERETURNEDBECAUSESTDERR==\n',
@@ -80,20 +80,20 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     payload: 'hello',
   })) as string;
 
-  expect(execScriptMock).toHaveBeenCalled();
+  expect(execAppScriptMock).toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 
-  execScriptMock.mockReset();
+  execAppScriptMock.mockReset();
 
-  execScriptMock.mockRejectedValueOnce('throwing cause I feel like it');
+  execAppScriptMock.mockRejectedValueOnce('throwing cause I feel like it');
 
   const signResultWithThrow = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'test',
     payload: 'hello',
   })) as string;
 
-  expect(execScriptMock).toHaveBeenCalled();
+  expect(execAppScriptMock).toHaveBeenCalled();
 
   expect(signResultWithThrow).toBeUndefined();
 });

@@ -3,11 +3,11 @@ import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
 import exec from '../utils/exec';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 import register, { channel } from './get-usb-drive-info';
 
 const execMock = mockOf(exec);
-const execScriptMock = mockOf(execScript);
+const execAppScriptMock = mockOf(execAppScript);
 const accessMock = fs.access as unknown as jest.Mock<Promise<void>>;
 const readdirMock = fs.readdir as unknown as jest.Mock<Promise<string[]>>;
 const readlinkMock = fs.readlink as unknown as jest.Mock<Promise<string>>;
@@ -20,7 +20,7 @@ jest.mock('fs', () => ({
   },
 }));
 jest.mock('../utils/exec');
-jest.mock('../utils/execScript');
+jest.mock('../utils/execAppScript');
 
 test('get-usb-drives', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
@@ -91,7 +91,7 @@ test('get-usb-drives', async () => {
   )) as KioskBrowser.UsbDriveInfo[];
 
   expect(execMock).toHaveBeenCalledTimes(3);
-  expect(execScriptMock).toHaveBeenNthCalledWith(
+  expect(execAppScriptMock).toHaveBeenNthCalledWith(
     1,
     'umount.sh',
     {

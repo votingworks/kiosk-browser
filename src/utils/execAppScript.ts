@@ -4,7 +4,7 @@ import path from 'path';
 
 const debug = makeDebug('kiosk-browser:exec');
 
-export interface ExecScriptOptions {
+export interface execAppScriptOptions {
   appScriptsDirectory?: string;
   sudo?: boolean;
 }
@@ -13,9 +13,9 @@ export interface ExecScriptOptions {
  * Thin wrapper around `exec` for executing scripts expected in the app scripts
  * directory.
  */
-export default async function execScript(
+export default async function execAppScript(
   script: string,
-  options: ExecScriptOptions,
+  options: execAppScriptOptions,
   args: readonly string[] = [],
   stdin?: string | Buffer,
 ): Promise<{ stdout: string; stderr: string }> {

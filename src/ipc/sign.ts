@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 import { RegisterIpcHandler } from '..';
 
 export const channel = 'sign';
@@ -31,7 +31,7 @@ async function sign(
   const rawPayloadToSign = `${signatureType}.${payload}`;
 
   try {
-    const { stdout, stderr } = await execScript(
+    const { stdout, stderr } = await execAppScript(
       'sign.sh',
       { appScriptsDirectory, sudo: true },
       [],

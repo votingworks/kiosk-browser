@@ -1,25 +1,25 @@
 import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 import register, { channel } from './mount-usb-drive';
 
-const execScriptMock = mockOf(execScript);
+const execAppScriptMock = mockOf(execAppScript);
 
-jest.mock('../utils/execScript');
+jest.mock('../utils/execAppScript');
 
 test('mount-usb-drive', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
   register(ipcMain, mockHandlerContext());
 
   // Things should be registered as expected.
-  execScriptMock.mockResolvedValueOnce({
+  execAppScriptMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
   await ipcRenderer.invoke(channel, 'sdb1');
-  expect(execScriptMock).toHaveBeenCalledWith(
+  expect(execAppScriptMock).toHaveBeenCalledWith(
     'mount.sh',
     {
       appScriptsDirectory: '/tmp',

@@ -1,17 +1,17 @@
 import exec from './exec';
-import execScript from './execScript';
+import execAppScript from './execAppScript';
 import mockOf from '../../test/mockOf';
 
 const execMock = mockOf(exec);
 jest.mock('./exec');
 
-test('execScript with sudo', async () => {
+test('execAppScript with sudo', async () => {
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
-  await execScript(
+  await execAppScript(
     'script.sh',
     { appScriptsDirectory: '/tmp', sudo: true },
     ['arg'],
@@ -25,13 +25,13 @@ test('execScript with sudo', async () => {
   );
 });
 
-test('execScript without sudo', async () => {
+test('execAppScript without sudo', async () => {
   execMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
-  await execScript(
+  await execAppScript(
     'script.sh',
     { appScriptsDirectory: '/tmp' },
     ['arg'],
@@ -42,6 +42,6 @@ test('execScript without sudo', async () => {
 });
 
 test('no appScriptsDirectoryProvided', async () => {
-  await execScript('script.sh', {}, []);
+  await execAppScript('script.sh', {}, []);
   expect(execMock).not.toHaveBeenCalled();
 });

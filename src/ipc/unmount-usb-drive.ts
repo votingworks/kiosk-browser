@@ -1,11 +1,11 @@
 import { IpcMain } from 'electron';
 import { Options } from '../utils/options';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 
 export const channel = 'unmountUsbDrive';
 
 async function unmountUsbDrive(appScriptsDirectory?: string): Promise<void> {
-  await execScript('umount.sh', { appScriptsDirectory, sudo: true }, []);
+  await execAppScript('umount.sh', { appScriptsDirectory, sudo: true }, []);
 }
 
 export default function register(

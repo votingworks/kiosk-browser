@@ -2,7 +2,7 @@ import makeDebug from 'debug';
 import { IpcMain } from 'electron';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import execScript from '../utils/execScript';
+import execAppScript from '../utils/execAppScript';
 import exec from '../utils/exec';
 import { Options } from '../utils/options';
 
@@ -95,7 +95,7 @@ async function getUsbDriveInfo(
                 target,
                 source,
               );
-              await execScript(
+              await execAppScript(
                 'umount.sh',
                 { appScriptsDirectory, sudo: true },
                 [],
