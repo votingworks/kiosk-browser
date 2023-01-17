@@ -16,10 +16,7 @@ import {
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
 import { channel as getUsbDriveInfoChannel } from './ipc/get-usb-drive-info';
 import { channel as logChannel } from './ipc/log';
-import {
-  channel as mountUsbDriveChannel,
-  Options as MountUsbDriveOptions,
-} from './ipc/mount-usb-drive';
+import { channel as mountUsbDriveChannel } from './ipc/mount-usb-drive';
 import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb';
 import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
@@ -102,21 +99,14 @@ function makeKiosk(): KioskBrowser.Kiosk {
       )) as KioskBrowser.UsbDriveInfo[];
     },
 
-    async mountUsbDrive(
-      optionsOrDevice: string | MountUsbDriveOptions,
-    ): Promise<void> {
+    async mountUsbDrive(device: string): Promise<void> {
       debug('forwarding `mountUsbDrive` to main process');
-      await ipcRenderer.invoke(
-        mountUsbDriveChannel,
-        typeof optionsOrDevice === 'string'
-          ? { device: optionsOrDevice }
-          : optionsOrDevice,
-      );
+      await ipcRenderer.invoke(mountUsbDriveChannel, device);
     },
 
-    async unmountUsbDrive(device: string): Promise<void> {
+    async unmountUsbDrive(): Promise<void> {
       debug('forwarding `unmountUsbDrive` to main process');
-      await ipcRenderer.invoke(unmountUsbDriveChannel, device);
+      await ipcRenderer.invoke(unmountUsbDriveChannel);
     },
 
     async formatUsbDrive(

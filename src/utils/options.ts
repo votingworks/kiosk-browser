@@ -17,7 +17,7 @@ export interface Options {
   autoconfigurePrintConfig?: PrintConfig;
   allowDevtools?: boolean;
   originFilePermissions: OriginFilePermission[];
-  signingScriptPath?: string;
+  appScriptsDirectory?: string;
 }
 
 export interface Help {
@@ -39,7 +39,7 @@ async function parseOptionsWithoutTryCatch(
   let helpArg: string | undefined;
   let allowDevtoolsArg: boolean | undefined;
   let originFilePermissions: OriginFilePermission[] | undefined;
-  let signingScriptPath: string | undefined;
+  let appScriptsDirectory: string | undefined;
   const warnings: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
@@ -67,14 +67,14 @@ async function parseOptionsWithoutTryCatch(
         ...(originFilePermissions ?? []),
         parseOriginFilePermissionString(value),
       ];
-    } else if (arg === '--signing-script-path') {
+    } else if (arg === '--app-scripts-directory' || arg === '-a') {
       i++;
       const value = argv[i];
       debug('got option for %s: %s', arg, value);
       if (!value || value.startsWith('-')) {
         return { error: new Error(`expected value for option: ${arg}`) };
       }
-      signingScriptPath = value;
+      appScriptsDirectory = value;
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg;
     } else if (!arg.startsWith('-')) {
@@ -116,8 +116,8 @@ async function parseOptionsWithoutTryCatch(
         parseOriginFilePermissionString,
       ) ??
       [],
-    signingScriptPath:
-      signingScriptPath ?? env.KIOSK_BROWSER_SIGNING_SCRIPT_PATH,
+    appScriptsDirectory:
+      appScriptsDirectory ?? env.KIOSK_BROWSER_APP_SCRIPTS_DIRECTORY,
   };
 
   debug('parsed options: %O', options);
@@ -206,8 +206,8 @@ ${b('Options')}
    -u, --url URL                           Visit this URL on load.
    -p, --autoconfigure-print-config PATH   Automatically configures connected printers according to the given config.
    -v, --add-file-perm PERM                Adds a permission for an origin to read or write certain paths.
+   -a, --app-scripts-directory PATH        Use bash scripts in this directory for actions requiring special permissions.
        --allow-devtools                    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
-
 ${b('Examples')}
 ${c('# Allow localhost to read and write all files.')}
 $ kiosk-browser -v ${jS(

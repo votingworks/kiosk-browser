@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron';
 import storage from 'electron-json-storage';
 import { join } from 'path';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import usbDetection from 'usb-detection';
 import registerSetClock from './ipc/clock';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
@@ -33,22 +33,15 @@ import registerCancelSpeakHandler from './ipc/cancel-speak';
 import registerRebootHandler from './ipc/reboot';
 import registerRebootToBiosHandler from './ipc/reboot-to-bios';
 import registerPrepareBootUsb from './ipc/prepare-boot-usb';
-import parseOptions, { Options, printHelp } from './utils/options';
+import parseOptions, { printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
 import { getMainScreen } from './utils/screen';
 import { USBDetectionManager } from './utils/usb';
+import { HandlerContext } from './handlerContext';
 
 export type RegisterIpcHandler = (
   ipcMain: IpcMain,
-  {
-    options,
-    changedDevices,
-    autoconfiguredPrinter,
-  }: {
-    options: Options;
-    changedDevices: Observable<Iterable<KioskBrowser.Device>>;
-    autoconfiguredPrinter: Observable<void>;
-  },
+  { options, changedDevices, autoconfiguredPrinter }: HandlerContext,
 ) => (() => void) | void;
 
 // Allow use of `speechSynthesis` API.

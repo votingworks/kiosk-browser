@@ -17,7 +17,6 @@ $SUDO apt-get install -y \
   unzip \
   git \
   python \
-  pmount \
   cups-client \
   ruby
 

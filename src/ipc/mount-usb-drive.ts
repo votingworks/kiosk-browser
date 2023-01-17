@@ -1,29 +1,24 @@
 import { IpcMain, IpcMainInvokeEvent } from 'electron';
 import { join } from 'path';
-import exec from '../utils/exec';
+import { Options } from '../utils/options';
+import execAppScript from '../utils/execAppScript';
 
 export const channel = 'mountUsbDrive';
 
-export interface Options {
-  device: string;
-  label?: string;
-}
-
-async function mountUsbDrive(options: Options): Promise<void> {
-  await exec('pmount', [
-    '-w',
-    '-u',
-    '000',
-    join('/dev', options.device),
-    options.label ?? `usb-drive-${options.device}`,
+async function mountUsbDrive(
+  device: string,
+  appScriptsDirectory?: string,
+): Promise<void> {
+  await execAppScript('mount-usb.sh', { appScriptsDirectory, sudo: true }, [
+    join('/dev', device),
   ]);
 }
 
-export default function register(ipcMain: IpcMain): void {
-  ipcMain.handle(
-    channel,
-    async (event: IpcMainInvokeEvent, options: Options) => {
-      await mountUsbDrive(options);
-    },
-  );
+export default function register(
+  ipcMain: IpcMain,
+  { options: kioskBrowserOptions }: { options: Options },
+): void {
+  ipcMain.handle(channel, async (event: IpcMainInvokeEvent, device: string) => {
+    await mountUsbDrive(device, kioskBrowserOptions.appScriptsDirectory);
+  });
 }

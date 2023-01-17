@@ -1,33 +1,22 @@
-import { Subject } from 'rxjs';
+import { mockHandlerContext } from '../../test/mockHandlerContext';
 import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execAppScript from '../utils/execAppScript';
 import register, { channel as signChannel } from './sign';
 
-const execMock = mockOf(exec);
-jest.mock('../utils/exec');
+const execAppScriptMock = mockOf(execAppScript);
+jest.mock('../utils/execAppScript');
 
 beforeEach(() => {
-  execMock.mockReset();
-  execMock.mockResolvedValue({ stdout: '', stderr: '' });
+  execAppScriptMock.mockReset();
+  execAppScriptMock.mockResolvedValue({ stdout: '', stderr: '' });
 });
-
-const changedDevices = new Subject<Iterable<KioskBrowser.Device>>();
-const autoconfiguredPrinter = new Subject<void>();
 
 test('call to sign invokes the right signing script command, but only if signatureType is well-formed', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      signingScriptPath: '/tmp/sign.sh',
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(ipcMain, mockHandlerContext());
 
-  execMock.mockResolvedValue({
+  execAppScriptMock.mockResolvedValue({
     stderr: '',
     stdout: 'untrusted comment: hello\nFAKESIGNATURERIGHTHERE==\n',
   });
@@ -37,56 +26,50 @@ test('call to sign invokes the right signing script command, but only if signatu
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenNthCalledWith(1, '/tmp/sign.sh', [], 'test.hello');
+  expect(execAppScriptMock).toHaveBeenNthCalledWith(
+    1,
+    'sign.sh',
+    { appScriptsDirectory: '/tmp', sudo: true },
+    [],
+    'test.hello',
+  );
 
   expect(signResult).toBe('FAKESIGNATURERIGHTHERE==');
 
-  execMock.mockReset();
+  execAppScriptMock.mockReset();
 
   const badTypeSignResult = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'this.hasperiodsandthatisbad',
     payload: 'hello',
   })) as string;
 
-  expect(execMock).not.toHaveBeenCalled();
+  expect(execAppScriptMock).not.toHaveBeenCalled();
 
   expect(badTypeSignResult).toBeUndefined();
 });
 
-test('call to sign when no key is registered returns undefined', async () => {
+test('call to sign when no script is specified returns undefined', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(
+    ipcMain,
+    mockHandlerContext({ options: { appScriptsDirectory: undefined } }),
+  );
 
   const signResult = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'test',
     payload: 'hello',
   })) as string;
 
-  expect(execMock).not.toHaveBeenCalled();
+  expect(execAppScriptMock).not.toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 });
 
 test('call to sign when error occurs or exception thrown returns undefined', async () => {
   const { ipcMain, ipcRenderer } = fakeIpc();
-  register(ipcMain, {
-    changedDevices,
-    autoconfiguredPrinter,
-    options: {
-      signingScriptPath: '/tmp/sign.sh',
-      url: new URL('about:blank'),
-      originFilePermissions: [],
-    },
-  });
+  register(ipcMain, mockHandlerContext());
 
-  execMock.mockResolvedValue({
+  execAppScriptMock.mockResolvedValue({
     stderr: 'oopsie daisy',
     stdout:
       'untrusted comment: hello\nFAKESIGNATURERIGHTHERETHATSHOULDNOTBERETURNEDBECAUSESTDERR==\n',
@@ -97,20 +80,20 @@ test('call to sign when error occurs or exception thrown returns undefined', asy
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenCalled();
+  expect(execAppScriptMock).toHaveBeenCalled();
 
   expect(signResult).toBeUndefined();
 
-  execMock.mockReset();
+  execAppScriptMock.mockReset();
 
-  execMock.mockRejectedValueOnce('throwing cause I feel like it');
+  execAppScriptMock.mockRejectedValueOnce('throwing cause I feel like it');
 
   const signResultWithThrow = (await ipcRenderer.invoke(signChannel, {
     signatureType: 'test',
     payload: 'hello',
   })) as string;
 
-  expect(execMock).toHaveBeenCalled();
+  expect(execAppScriptMock).toHaveBeenCalled();
 
   expect(signResultWithThrow).toBeUndefined();
 });

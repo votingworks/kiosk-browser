@@ -1,31 +1,26 @@
-import { IpcMain, IpcMainEvent } from 'electron';
+import { mockHandlerContext } from '../../test/mockHandlerContext';
+import { fakeIpc } from '../../test/ipc';
 import mockOf from '../../test/mockOf';
-import exec from '../utils/exec';
+import execAppScript from '../utils/execAppScript';
 import register, { channel } from './unmount-usb-drive';
 
-const execMock = mockOf(exec);
+const execAppScriptMock = mockOf(execAppScript);
 
-jest.mock('../utils/exec');
+jest.mock('../utils/execAppScript');
 
-test('mount-usb-drive', async () => {
-  // Register our handler.
-  const handle = jest.fn<
-    ReturnType<IpcMain['handle']>,
-    Parameters<IpcMain['handle']>
-  >();
-  register({ handle } as unknown as IpcMain);
+test('unmount-usb-drive', async () => {
+  const { ipcMain, ipcRenderer } = fakeIpc();
+  register(ipcMain, mockHandlerContext());
 
-  // Things should be registered as expected.
-  expect(handle).toHaveBeenCalledWith(channel, expect.any(Function));
-
-  execMock.mockResolvedValueOnce({
+  execAppScriptMock.mockResolvedValueOnce({
     stdout: '',
     stderr: '',
   });
 
-  // Is the handler wired up right?
-  const [, handler] = handle.mock.calls[0];
-  await handler({} as IpcMainEvent, 'sdb1');
-
-  expect(execMock).toHaveBeenCalledWith('pumount', ['/dev/sdb1']);
+  await ipcRenderer.invoke(channel);
+  expect(execAppScriptMock).toHaveBeenCalledWith(
+    'unmount-usb.sh',
+    { appScriptsDirectory: '/tmp', sudo: true },
+    [],
+  );
 });
