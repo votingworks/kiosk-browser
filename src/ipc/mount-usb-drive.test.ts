@@ -20,7 +20,7 @@ test('mount-usb-drive', async () => {
 
   await ipcRenderer.invoke(channel, 'sdb1');
   expect(execAppScriptMock).toHaveBeenCalledWith(
-    'mount.sh',
+    'mount-usb.sh',
     {
       appScriptsDirectory: '/tmp',
       sudo: true,

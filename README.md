@@ -40,7 +40,7 @@ Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, p
 
 ## App Scripts Directory
 
-`kiosk-browser` relies on scripts like `mount.sh`, `umount.sh`, and `sign.sh` for performing restricted actions that require `sudo` permissions without requiring that the running user has `sudo` access to the powerful underlying commands like `mount` or `umount`. `kiosk-browser` looks for these scripts in the app scripts directory, which can be passed with `--app-scripts-directory PATH`. The exact path will depend on where you're running `kiosk-browser` with respect to [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system), where the default app scripts live under `./app-scripts`.
+`kiosk-browser` relies on scripts like `mount-usb.sh`, `unmount-usb.sh`, and `sign.sh` for performing restricted actions that require `sudo` permissions without requiring that the running user has `sudo` access to the powerful underlying commands like `mount` or `umount`. `kiosk-browser` looks for these scripts in the app scripts directory, which can be passed with `--app-scripts-directory PATH`. The exact path will depend on where you're running `kiosk-browser` with respect to [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system), where the default app scripts live under `./app-scripts`.
 
 The scripts will require `NOPASSWD` `sudo` permissions as described in the previous section.
 

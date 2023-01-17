@@ -19,7 +19,7 @@ test('unmount-usb-drive', async () => {
 
   await ipcRenderer.invoke(channel);
   expect(execAppScriptMock).toHaveBeenCalledWith(
-    'umount.sh',
+    'unmount-usb.sh',
     { appScriptsDirectory: '/tmp', sudo: true },
     [],
   );

@@ -9,7 +9,7 @@ async function mountUsbDrive(
   device: string,
   appScriptsDirectory?: string,
 ): Promise<void> {
-  await execAppScript('mount.sh', { appScriptsDirectory, sudo: true }, [
+  await execAppScript('mount-usb.sh', { appScriptsDirectory, sudo: true }, [
     join('/dev', device),
   ]);
 }

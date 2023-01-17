@@ -93,7 +93,7 @@ test('get-usb-drives', async () => {
   expect(execMock).toHaveBeenCalledTimes(3);
   expect(execAppScriptMock).toHaveBeenNthCalledWith(
     1,
-    'umount.sh',
+    'unmount-usb.sh',
     {
       appScriptsDirectory: '/tmp',
       sudo: true,

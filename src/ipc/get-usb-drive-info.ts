@@ -96,7 +96,7 @@ async function getUsbDriveInfo(
                 source,
               );
               await execAppScript(
-                'umount.sh',
+                'unmount-usb.sh',
                 { appScriptsDirectory, sudo: true },
                 [],
               );
