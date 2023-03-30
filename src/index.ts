@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import usbDetection from 'usb-detection';
 import registerSetClock from './ipc/clock';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
+import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries';
 import registerFileSystemMakeDirectoryHandler from './ipc/file-system-make-directory';
 import registerFileSystemReadFileHandler from './ipc/file-system-read-file';
@@ -34,6 +35,7 @@ import registerRebootHandler from './ipc/reboot';
 import registerRebootToBiosHandler from './ipc/reboot-to-bios';
 import registerPowerDownHandler from './ipc/power-down';
 import registerPrepareBootUsb from './ipc/prepare-boot-usb';
+import registerCaptureScreenshot from './ipc/capture-screenshot';
 import parseOptions, { printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
 import { getMainScreen } from './utils/screen';
@@ -120,6 +122,7 @@ async function createWindow(): Promise<void> {
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,
     registerFormatUsbDrive,
+    registerShowOpenDialog,
     registerSyncUsbDriveHandler,
     registerStorageSetHandler,
     registerStorageGetHandler,
@@ -135,6 +138,7 @@ async function createWindow(): Promise<void> {
     registerPowerDownHandler,
     registerPrepareBootUsb,
     registerRebootToBiosHandler,
+    registerCaptureScreenshot,
   ];
 
   const handlerCleanups = handlers
