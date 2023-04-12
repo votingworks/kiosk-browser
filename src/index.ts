@@ -32,6 +32,7 @@ import registerSpeakHandler from './ipc/speak';
 import registerCancelSpeakHandler from './ipc/cancel-speak';
 import registerRebootHandler from './ipc/reboot';
 import registerRebootToBiosHandler from './ipc/reboot-to-bios';
+import registerPowerDownHandler from './ipc/power-down';
 import registerPrepareBootUsb from './ipc/prepare-boot-usb';
 import parseOptions, { printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
@@ -131,6 +132,7 @@ async function createWindow(): Promise<void> {
     registerSpeakHandler,
     registerCancelSpeakHandler,
     registerRebootHandler,
+    registerPowerDownHandler,
     registerPrepareBootUsb,
     registerRebootToBiosHandler,
   ];
