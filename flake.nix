@@ -31,13 +31,27 @@
             tsc
           '';
           installPhase =  ''
+
+
+            # TODO: need to build usb-detection
+
+            mkdir -p $out/lib/resources/app/build
+            mkdir $out/bin
+
             # copy electron and files to out directory
             # rename electron to package name
-            # generate asar file for node_modules and src
-            # copy asar file to kiosk-browser/resources/app.asar
+            cp -r ${pkgs.electron_17}/lib/electron/* $out/lib/
+            mv $out/lib/electron $out/lib/kiosk-browser
 
-            mkdir $out
-            mv dist $out/lib
+            ln -sf $out/lib/kiosk-browser $out/bin/kiosk-browser
+
+            # Copy kiosk-browser source to the right place for electron to find it
+            mv build/src $out/lib/resources/app/build/src
+            cp -r ${node-modules}/libexec/kiosk-browser/node_modules $out/lib/resources/app/node_modules
+            mv package.json $out/lib/resources/app/package.json
+
+            # kill off the default app
+            rm $out/lib/resources/default_app.asar
           '';
 
         };
