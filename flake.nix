@@ -16,6 +16,7 @@
           ];
         };
         node-modules = pkgs.mkYarnPackage {
+          # TODO: figure out why running nix build takes so long with this
           name = "node-modules";
           src = ./.;
         };
@@ -24,10 +25,10 @@
           src = ./.;
           buildInputs = [ pkgs.yarn node-modules pkgs.typescript pkgs.systemd pkgs.electron_17 ];
           buildPhase = ''
+            # copy nix-packaged node_modules
+            ln -s ${node-modules}/libexec/kiosk-browser/node_modules node_modules
             # run tsc to generate build directory
             tsc
-
-            yarn add asar
           '';
           installPhase =  ''
             # copy electron and files to out directory
