@@ -22,14 +22,21 @@
         kiosk-browser = pkgs.stdenv.mkDerivation {
           name = "kiosk-browser";
           src = ./.;
-          buildInputs = [pkgs.yarn node-modules pkgs.typescript pkgs.systemd ];
+          buildInputs = [ pkgs.yarn node-modules pkgs.typescript pkgs.systemd pkgs.electron_17 ];
           buildPhase = ''
-#            ${pkgs.yarn}/bin/yarn tsc
-            ${pkgs.yarn}/bin/yarn app:dist
+            # run tsc to generate build directory
+            tsc
+
+            yarn add asar
           '';
           installPhase =  ''
-          mkdir $out
-          mv dist $out/lib
+            # copy electron and files to out directory
+            # rename electron to package name
+            # generate asar file for node_modules and src
+            # copy asar file to kiosk-browser/resources/app.asar
+
+            mkdir $out
+            mv dist $out/lib
           '';
 
         };
