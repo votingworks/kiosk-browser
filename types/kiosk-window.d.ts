@@ -260,6 +260,12 @@ declare namespace KioskBrowser {
     powerDown(): Promise<void>;
 
     prepareToBootFromUsb(): Promise<boolean>;
+
+    showOpenDialog(
+      options?: import('electron').OpenDialogOptions,
+    ): Promise<import('electron').OpenDialogReturnValue>;
+
+    captureScreenshot(): Promise<Buffer>;
   }
 }
 

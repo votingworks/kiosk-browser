@@ -1,8 +1,14 @@
 import makeDebug from 'debug';
-import { contextBridge, ipcRenderer } from 'electron';
+import {
+  contextBridge,
+  ipcRenderer,
+  OpenDialogOptions,
+  OpenDialogReturnValue,
+} from 'electron';
 import { MakeDirectoryOptions } from 'fs';
 import { channel as cancelSpeakChannel } from './ipc/cancel-speak';
 import { channel as setClockChannel } from './ipc/clock';
+import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
 import {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntry,
@@ -35,6 +41,7 @@ import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
 import { channel as formatUsbDriveChannel } from './ipc/format-usb-drive';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as syncUsbDriveChannel } from './ipc/sync-usb-drive';
+import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
 
 import buildDevicesObservable from './utils/buildDevicesObservable';
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable';
@@ -77,6 +84,16 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async printToPDF(): Promise<Uint8Array> {
       debug('forwarding `printToPDF()` to main process');
       return (await ipcRenderer.invoke(printToPDFChannel)) as Uint8Array;
+    },
+
+    async showOpenDialog(
+      options?: OpenDialogOptions,
+    ): Promise<OpenDialogReturnValue> {
+      debug('forwarding `showOpenDialog` to main process');
+      return (await ipcRenderer.invoke(
+        showOpenDialogChannel,
+        options,
+      )) as OpenDialogReturnValue;
     },
 
     async getBatteryInfo(): Promise<BatteryInfo | undefined> {
@@ -275,6 +292,11 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async powerDown(): Promise<void> {
       debug('forwarding `powerDown` to the main process');
       await ipcRenderer.invoke(powerDownChannel);
+    },
+
+    async captureScreenshot(): Promise<Buffer> {
+      debug('forwarding `captureScreenshot` to the main process');
+      return (await ipcRenderer.invoke(captureScreenshotChannel)) as Buffer;
     },
   };
 }
