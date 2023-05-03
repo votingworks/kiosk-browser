@@ -24,6 +24,7 @@ import registerStorageRemoveHandler from './ipc/storage-remove';
 import registerStorageSetHandler from './ipc/storage-set';
 import registerSyncUsbDriveHandler from './ipc/sync-usb-drive';
 import registerUnmountUsbDriveHandler from './ipc/unmount-usb-drive';
+import registerFormatUsbDrive from './ipc/format-usb-drive';
 import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSignHandler from './ipc/sign';
@@ -124,6 +125,7 @@ async function createWindow(): Promise<void> {
     registerGetUsbDrivesHandler,
     registerMountUsbDriveHandler,
     registerUnmountUsbDriveHandler,
+    registerFormatUsbDrive,
     registerSyncUsbDriveHandler,
     registerStorageSetHandler,
     registerStorageGetHandler,

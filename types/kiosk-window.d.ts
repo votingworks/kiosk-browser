@@ -98,6 +98,12 @@ declare namespace KioskBrowser {
     mountPoint?: string;
   }
 
+  export type UsbFormat = 'fat32' | 'exfat';
+  export interface FormatUsbOptions {
+    format: UsbFormat;
+    name: string;
+  }
+
   export interface SaveAsOptions {
     title?: string;
     defaultPath?: string;
@@ -212,6 +218,7 @@ declare namespace KioskBrowser {
     mountUsbDrive(device: string): Promise<void>;
     unmountUsbDrive(device: string): Promise<void>;
     syncUsbDrive(mountPoint: string): Promise<void>;
+    formatUsbDrive(device: string, format: FormatUsbOptions): Promise<void>;
 
     /**
      * Reads the list of files at a specified directory path
