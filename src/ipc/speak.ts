@@ -8,6 +8,7 @@ const debug = makeDebug('kiosk-browser:speak');
 
 export interface Options {
   volume: number;
+  cacheOnly?: boolean;
 }
 
 async function setVolume(volume: number) {
@@ -38,9 +39,24 @@ async function setVolume(volume: number) {
  * @param volume Number between 0-100
  * @returns promise representing call to `spd-say`
  */
-async function speak(text: string, { volume }: Options): Promise<void> {
+async function speak(
+  text: string,
+  { volume, cacheOnly = false }: Options,
+): Promise<void> {
   // Set the audio volume before every utterance
   await setVolume(volume);
+
+  if (cacheOnly) {
+    debug('sending text "%s" to cache the wav file...', text);
+
+    try {
+      await exec('spd-cache', ['-w', text]);
+    } catch (e) {
+      debug('failed to send message to tts cache with error %s', e);
+    }
+
+    return;
+  }
 
   debug('sending text "%s" to speech dispatcher...', text);
   try {
