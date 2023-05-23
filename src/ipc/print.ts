@@ -75,6 +75,9 @@ async function printData({
   // duplex
   lprOptions.push('-o', `sides=${sides}`);
 
+  // collate
+  lprOptions.push('-o', 'collate=true');
+
   // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
     lprOptions.push('InputSlot=' + paperSource);
