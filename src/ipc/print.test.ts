@@ -39,7 +39,15 @@ test('registers a handler to trigger a print', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'mainprinter', '-o', 'sides=two-sided-long-edge', 'InputSlot=Tray3'],
+    [
+      '-P',
+      'mainprinter',
+      '-o',
+      'sides=two-sided-long-edge',
+      '-o',
+      'collate=true',
+      'InputSlot=Tray3',
+    ],
     expect.anything(),
   );
 });
@@ -65,7 +73,14 @@ test('uses the preferred printer if none is provided', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'main printer', '-o', 'sides=two-sided-long-edge'],
+    [
+      '-P',
+      'main printer',
+      '-o',
+      'sides=two-sided-long-edge',
+      '-o',
+      'collate=true',
+    ],
     expect.anything(),
   );
 });
@@ -106,7 +121,16 @@ test('prints a specified number of copies', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'main printer', '-o', 'sides=two-sided-long-edge', '-#', '123'],
+    [
+      '-P',
+      'main printer',
+      '-o',
+      'sides=two-sided-long-edge',
+      '-o',
+      'collate=true',
+      '-#',
+      '123',
+    ],
     expect.anything(),
   );
 });
@@ -153,7 +177,7 @@ test('allows specifying one-sided duplex', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'main printer', '-o', 'sides=one-sided'],
+    ['-P', 'main printer', '-o', 'sides=one-sided', '-o', 'collate=true'],
     expect.anything(),
   );
 });
@@ -179,7 +203,14 @@ test('allows specifying two-sided-short-edge duplex', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'main printer', '-o', 'sides=two-sided-short-edge'],
+    [
+      '-P',
+      'main printer',
+      '-o',
+      'sides=two-sided-short-edge',
+      '-o',
+      'collate=true',
+    ],
     expect.anything(),
   );
 });
