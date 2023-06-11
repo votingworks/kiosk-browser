@@ -6,6 +6,7 @@ import usbDetection from 'usb-detection';
 import registerSetClock from './ipc/clock';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
 import registerShowOpenDialog from './ipc/show-open-dialog';
+import registerShowSaveDialog from './ipc/show-save-dialog';
 import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries';
 import registerFileSystemMakeDirectoryHandler from './ipc/file-system-make-directory';
 import registerFileSystemReadFileHandler from './ipc/file-system-read-file';
@@ -123,6 +124,7 @@ async function createWindow(): Promise<void> {
     registerUnmountUsbDriveHandler,
     registerFormatUsbDrive,
     registerShowOpenDialog,
+    registerShowSaveDialog,
     registerSyncUsbDriveHandler,
     registerStorageSetHandler,
     registerStorageGetHandler,
