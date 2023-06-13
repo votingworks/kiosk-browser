@@ -265,6 +265,10 @@ declare namespace KioskBrowser {
       options?: import('electron').OpenDialogOptions,
     ): Promise<import('electron').OpenDialogReturnValue>;
 
+    showSaveDialog(
+      options?: import('electron').SaveDialogOptions,
+    ): Promise<import('electron').SaveDialogReturnValue>;
+
     captureScreenshot(): Promise<Buffer>;
   }
 }

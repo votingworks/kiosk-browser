@@ -4,11 +4,14 @@ import {
   ipcRenderer,
   OpenDialogOptions,
   OpenDialogReturnValue,
+  SaveDialogOptions,
+  SaveDialogReturnValue,
 } from 'electron';
 import { MakeDirectoryOptions } from 'fs';
 import { channel as cancelSpeakChannel } from './ipc/cancel-speak';
 import { channel as setClockChannel } from './ipc/clock';
 import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
+import { channel as showSaveDialogChannel } from './ipc/show-save-dialog';
 import {
   channel as fileSystemGetEntriesChannel,
   FileSystemEntry,
@@ -94,6 +97,16 @@ function makeKiosk(): KioskBrowser.Kiosk {
         showOpenDialogChannel,
         options,
       )) as OpenDialogReturnValue;
+    },
+
+    async showSaveDialog(
+      options?: SaveDialogOptions,
+    ): Promise<SaveDialogReturnValue> {
+      debug('forwarding `showSaveDialog` to main process');
+      return (await ipcRenderer.invoke(
+        showSaveDialogChannel,
+        options,
+      )) as SaveDialogReturnValue;
     },
 
     async getBatteryInfo(): Promise<BatteryInfo | undefined> {
