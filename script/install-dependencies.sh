@@ -10,8 +10,6 @@ if [ "$(id --user)" = 0 ]; then
   SUDO=
 fi
 
-$SUDO gem install fpm
-
 "${DIR}/verify-dependencies.sh"
 
 # Install kiosk-browser dependencies.
