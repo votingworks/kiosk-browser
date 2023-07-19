@@ -6,11 +6,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 "${DIR}/verify-dependencies.sh"
 
-# Install dependencies if not already installed.
-yarn install
-
 # Build the TypeScript files.
-yarn tsc
+yarn --offline tsc
+
+# Get the electron cache dir
+electron_timestamp=`ls ~/.cache/electron/`
+electron_cache="~/.cache/electron/${electron_timestamp}"
 
 # Build .deb file.
-yarn app:dist
+ELECTRON_CACHE=${electron_cache} yarn --offline app:dist
