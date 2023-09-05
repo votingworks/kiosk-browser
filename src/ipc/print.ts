@@ -3,6 +3,7 @@ import * as z from 'zod';
 import exec from '../utils/exec';
 import getPreferredPrinter from '../utils/getPreferredPrinter';
 import { debug } from '../utils/printing';
+import assert from 'assert';
 
 export const channel = 'print';
 
@@ -44,6 +45,7 @@ interface PrintOptions {
   paperSource?: string;
   copies?: number;
   sides?: PrintSides;
+  raw?: { [key: string]: string };
 }
 
 const PrintOptionsSchema = z.object({
@@ -53,6 +55,7 @@ const PrintOptionsSchema = z.object({
   sides: z
     .enum(Object.values(PrintSides) as [PrintSides, ...PrintSides[]])
     .optional(),
+  raw: z.record(z.string()).optional(),
 });
 
 interface PrintDataParameters extends PrintOptions {
@@ -65,6 +68,7 @@ async function printData({
   paperSource,
   copies,
   sides = PrintSides.TwoSidedLongEdge,
+  raw = {},
 }: PrintDataParameters): Promise<void> {
   const lprOptions: string[] = [];
 
@@ -78,6 +82,15 @@ async function printData({
   // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
     lprOptions.push('InputSlot=' + paperSource);
+  }
+
+  // -o already pushed, can add options from raw
+  for (const [key, value] of Object.entries(raw)) {
+    assert(
+      key.match(/^[a-zA-Z0-9][-a-zA-Z0-9]*$/),
+      'key must be dashed alphanumeric',
+    );
+    lprOptions.push(`${key}=${value}`);
   }
 
   if (typeof copies !== 'undefined') {
@@ -97,7 +110,7 @@ export default function register(ipcMain: IpcMain): void {
   ipcMain.handle(
     channel,
     async (event: IpcMainInvokeEvent, options: PrintOptions = {}) => {
-      const { deviceName, paperSource, copies, sides } =
+      const { deviceName, paperSource, copies, sides, raw } =
         PrintOptionsSchema.parse(options);
 
       debug('printing to PDF');
@@ -114,6 +127,7 @@ export default function register(ipcMain: IpcMain): void {
         paperSource,
         copies,
         sides,
+        raw,
       });
     },
   );

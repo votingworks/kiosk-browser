@@ -183,3 +183,61 @@ test('allows specifying two-sided-short-edge duplex', async () => {
     expect.anything(),
   );
 });
+
+test('passes through raw options', async () => {
+  const sender: Partial<WebContents> = {
+    getPrintersAsync: () => Promise.resolve([]),
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  };
+  const { ipcMain, ipcRenderer } = fakeIpc(sender);
+
+  register(ipcMain);
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakeElectronPrinter({ name: 'main printer' }),
+  );
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
+
+  await ipcRenderer.invoke(printChannel, {
+    raw: { 'fit-to-page': 'true' },
+  });
+
+  expect(execMock).toHaveBeenCalledWith(
+    'lpr',
+    [
+      '-P',
+      'main printer',
+      '-o',
+      'sides=two-sided-long-edge',
+      'fit-to-page=true',
+    ],
+    expect.anything(),
+  );
+});
+
+test('rejects invalid raw options', async () => {
+  const sender: Partial<WebContents> = {
+    getPrintersAsync: () => Promise.resolve([]),
+    printToPDF: jest.fn().mockResolvedValueOnce(Buffer.of(50, 44, 46)), // PDF
+  };
+  const { ipcMain, ipcRenderer } = fakeIpc(sender);
+
+  register(ipcMain);
+
+  getPreferredPrinterMock.mockReturnValueOnce(
+    fakeElectronPrinter({ name: 'main printer' }),
+  );
+
+  execMock.mockResolvedValueOnce({ stdout: '', stderr: '' });
+
+  await expect(
+    ipcRenderer.invoke(printChannel, { raw: { 'fit to page': 'true' } }),
+  ).rejects.toThrowError();
+
+  await expect(
+    ipcRenderer.invoke(printChannel, { raw: { '-#': '999' } }),
+  ).rejects.toThrowError();
+
+  expect(execMock).not.toHaveBeenCalled();
+});
