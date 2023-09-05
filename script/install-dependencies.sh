@@ -16,7 +16,7 @@ $SUDO apt-get install -y \
   libudev-dev \
   unzip \
   git \
-  python \
+  python3 \
   cups-client \
   ruby
 
