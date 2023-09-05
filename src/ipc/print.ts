@@ -79,9 +79,8 @@ async function printData({
   // duplex
   lprOptions.push('-o', `sides=${sides}`);
 
-  // -o already pushed, can add inputslot
   if (paperSource && availablePaperSources.includes(paperSource)) {
-    lprOptions.push('InputSlot=' + paperSource);
+    lprOptions.push('-o', 'InputSlot=' + paperSource);
   }
 
   // -o already pushed, can add options from raw
@@ -90,7 +89,7 @@ async function printData({
       key.match(/^[a-zA-Z0-9][-a-zA-Z0-9]*$/),
       'key must be dashed alphanumeric',
     );
-    lprOptions.push(`${key}=${value}`);
+    lprOptions.push('-o', `${key}=${value}`);
   }
 
   if (typeof copies !== 'undefined') {

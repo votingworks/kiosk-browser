@@ -39,7 +39,14 @@ test('registers a handler to trigger a print', async () => {
 
   expect(execMock).toHaveBeenCalledWith(
     'lpr',
-    ['-P', 'mainprinter', '-o', 'sides=two-sided-long-edge', 'InputSlot=Tray3'],
+    [
+      '-P',
+      'mainprinter',
+      '-o',
+      'sides=two-sided-long-edge',
+      '-o',
+      'InputSlot=Tray3',
+    ],
     expect.anything(),
   );
 });
@@ -210,6 +217,7 @@ test('passes through raw options', async () => {
       'main printer',
       '-o',
       'sides=two-sided-long-edge',
+      '-o',
       'fit-to-page=true',
     ],
     expect.anything(),
