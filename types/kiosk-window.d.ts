@@ -221,7 +221,6 @@ declare namespace KioskBrowser {
     getUsbDriveInfo(): Promise<UsbDriveInfo[]>;
     mountUsbDrive(device: string): Promise<void>;
     unmountUsbDrive(): Promise<void>;
-    formatUsbDrive(device: string, format: FormatUsbOptions): Promise<void>;
     syncUsbDrive(mountPoint: string): Promise<void>;
 
     /**
