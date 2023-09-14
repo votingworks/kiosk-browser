@@ -16,4 +16,4 @@ electron_timestamp=`ls ${local_user_home_dir}/.cache/electron/`
 electron_cache="${local_user_home_dir}/.cache/electron/${electron_timestamp}"
 
 # Build .deb file.
-ELECTRON_CACHE=${electron_cache} yarn --offline app:dist
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 ELECTRON_CACHE=${electron_cache} yarn --offline app:dist
