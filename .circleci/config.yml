@@ -17,8 +17,8 @@ jobs:
       - run:
           name: Setup dependencies
           command: |
-            sudo apt update -y
-            sudo apt install libudev-dev
+            sudo NEEDRESTART_MODE=a apt update -y
+            sudo NEEDRESTART_MODE=a apt install libudev-dev -y
             yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
       - run:
           name: Lint
