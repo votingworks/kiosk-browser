@@ -3,14 +3,17 @@
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+local_user=`logname`
+local_user_home_dir=$( getent passwd "${local_user}" | cut -d: -f6 )
 
 "${DIR}/verify-dependencies.sh"
 
-# Install dependencies if not already installed.
-yarn install
-
 # Build the TypeScript files.
-yarn tsc
+yarn --offline tsc
+
+# Get the electron cache dir
+electron_timestamp=`ls ${local_user_home_dir}/.cache/electron/`
+electron_cache="${local_user_home_dir}/.cache/electron/${electron_timestamp}"
 
 # Build .deb file.
-yarn app:dist
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 ELECTRON_CACHE=${electron_cache} yarn --offline app:dist
