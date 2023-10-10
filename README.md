@@ -30,17 +30,13 @@ Prints the current page using the default printer. This is different from `windo
 
 Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting origin must be allowed to write to disk.
 
-`kiosk.`**`getUsbDriveInfo`**`(): Promise<UsbDriveInfo[]>`
-
-Gets a list of USB drives and, if mounted, where. To mount or unmount a drive, pass its device name to `kiosk.mountUsbDrive` or `kiosk.unmountUsbDrive`.
-
 ## `sudo` Permissions
 
 `kiosk-browser` performs certain actions that require root privileges, and must do so non-interactively i.e. without entering the root password. To grant those privileges to yourself as the running user, you must edit your `sudoers` file at `/etc/sudoers` on Debian. For production VotingWorks systems, these permissions are setup in [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system) when [`./config/sudoers`](https://github.com/votingworks/vxsuite-complete-system/blob/56ac00498ed526b5874ab90231ef83ff84ee92df/config/sudoers) is copied to `/etc/sudoers` during machine setup. To set up the same permissions in your development environment, copy the lines pertaining to `vx-ui` into your `/etc/sudoers` file and replace `vx-ui` with your username.
 
 ## App Scripts Directory
 
-`kiosk-browser` relies on scripts like `mount-usb.sh`, `unmount-usb.sh`, and `sign.sh` for performing restricted actions that require `sudo` permissions without requiring that the running user has `sudo` access to the powerful underlying commands like `mount` or `umount`. `kiosk-browser` looks for these scripts in the app scripts directory, which can be passed with `--app-scripts-directory PATH`. The exact path will depend on where you're running `kiosk-browser` with respect to [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system), where the default app scripts live under `./app-scripts`.
+`kiosk-browser` relies on scripts like `sign.sh` for performing restricted actions that require `sudo` permissions without requiring that the running user has `sudo` access to the powerful underlying commands. `kiosk-browser` looks for these scripts in the app scripts directory, which can be passed with `--app-scripts-directory PATH`. The exact path will depend on where you're running `kiosk-browser` with respect to [`vxsuite-complete-system`](https://github.com/votingworks/vxsuite-complete-system), where the default app scripts live under `./app-scripts`.
 
 The scripts will require `NOPASSWD` `sudo` permissions as described in the previous section.
 
