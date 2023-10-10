@@ -23,9 +23,7 @@ import {
   channel as getBatteryInfoChannel,
 } from './ipc/get-battery-info';
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
-import { channel as getUsbDriveInfoChannel } from './ipc/get-usb-drive-info';
 import { channel as logChannel } from './ipc/log';
-import { channel as mountUsbDriveChannel } from './ipc/mount-usb-drive';
 import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb';
 import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
@@ -40,9 +38,7 @@ import { channel as storageGetChannel } from './ipc/storage-get';
 import { channel as storageRemoveChannel } from './ipc/storage-remove';
 import { channel as storageSetChannel } from './ipc/storage-set';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
-import { channel as unmountUsbDriveChannel } from './ipc/unmount-usb-drive';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
-import { channel as syncUsbDriveChannel } from './ipc/sync-usb-drive';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
 
 import buildDevicesObservable from './utils/buildDevicesObservable';
@@ -120,28 +116,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
       return (await ipcRenderer.invoke(
         getPrinterInfoChannel,
       )) as KioskBrowser.PrinterInfo[];
-    },
-
-    async getUsbDriveInfo(): Promise<KioskBrowser.UsbDriveInfo[]> {
-      debug('forwarding `getUsbDriveInfo` to main process');
-      return (await ipcRenderer.invoke(
-        getUsbDriveInfoChannel,
-      )) as KioskBrowser.UsbDriveInfo[];
-    },
-
-    async mountUsbDrive(device: string): Promise<void> {
-      debug('forwarding `mountUsbDrive` to main process');
-      await ipcRenderer.invoke(mountUsbDriveChannel, device);
-    },
-
-    async unmountUsbDrive(): Promise<void> {
-      debug('forwarding `unmountUsbDrive` to main process');
-      await ipcRenderer.invoke(unmountUsbDriveChannel);
-    },
-
-    async syncUsbDrive(mountPoint: string): Promise<void> {
-      debug('forwarding `syncUsbDrive` to main process');
-      await ipcRenderer.invoke(syncUsbDriveChannel, mountPoint);
     },
 
     async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
