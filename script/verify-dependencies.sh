@@ -7,8 +7,8 @@ if ! command -v node >/dev/null 2>&1; then
   exit 127
 fi
 
-if ! command -v yarn >/dev/null 2>&1; then
-  echo "yarn not found. please install it before continuing: https://www.yarnpkg.com/en/" >&2
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm not found. please install it before continuing: https://pnpm.io" >&2
   exit 127
 fi
 

@@ -11,31 +11,35 @@ jobs:
       - checkout
       - node/install:
           node-version: '16.14'
-          install-yarn: true
+      - run:
+          name: Install PNPM
+          command: |
+            curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=8.1.0 sh -
       - restore_cache:
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
       - run:
           name: Setup dependencies
           command: |
             sudo NEEDRESTART_MODE=a apt update -y
             sudo NEEDRESTART_MODE=a apt install libudev-dev -y
-            yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
+            npm install --global node-gyp
+            pnpm install --frozen-lockfile --store-dir ~/.cache/pnpm
       - run:
           name: Lint
-          command: yarn lint
+          command: pnpm lint
       - run:
           name: Test APIs
-          command: yarn test:coverage
+          command: pnpm test:coverage
       - run:
           name: Test Integration
-          command: yarn test:integration
+          command: pnpm test:integration
           environment:
             ELECTRON_ENABLE_LOGGING: true
             VITE_CI: true
       - save_cache:
           paths:
-            - '~/.cache/yarn'
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+            - '~/.cache/pnpm'
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
 
 workflows:
   test:

@@ -16,10 +16,10 @@
     "app:dist": "USE_SYSTEM_FPM=true electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "yarn lint --fix",
+    "lint:fix": "pnpm lint --fix",
     "start": "tsc && electron .",
     "test": "jest",
-    "test:ci": "yarn test:coverage && yarn test:integration",
+    "test:ci": "pnpm test:coverage && pnpm test:integration",
     "test:coverage": "jest --coverage",
     "test:integration": "./test/integration/run",
     "test:watch": "jest --watch"
