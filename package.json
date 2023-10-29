@@ -66,6 +66,7 @@
     "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "expect": "^29.7.0",
     "husky": "^8.0.3",
     "jest": "^28.1.0",
     "lint-staged": "^15.0.2",
@@ -74,7 +75,7 @@
     "sort-package-json": "^1.39.1",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4",
-    "vite": "^2.9.13"
+    "vite": "^4.5.0"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",
