@@ -48,6 +48,7 @@
     "zod": "^1.10.2"
   },
   "devDependencies": {
+    "@jest/expect": "^28",
     "@types/body-parser": "^1.19.2",
     "@types/debug": "^4.1.5",
     "@types/electron-json-storage": "^4.5.0",
