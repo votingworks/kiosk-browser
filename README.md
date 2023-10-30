@@ -4,7 +4,7 @@ Generic kiosk-mode browser.
 
 ## Build & Install
 
-1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
+1. Install [NodeJS](https://nodejs.org/en/) and [pnpm](https://pnpm.io).
 1. Install native package dependencies with `make install`.
 1. Build a Debian/Ubuntu package with `make build`.
 1. Install it with `sudo dpkg -i dist/kiosk-browser_*.deb`.
@@ -66,14 +66,14 @@ $ DEBUG=kiosk-browser:* kiosk-browser https://example.com/
 
 If you're working on a bug fix or feature for `kiosk-browser`, here's how to build and run it in development:
 
-1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
+1. Install [NodeJS](https://nodejs.org/en/) and [pnpm](https://pnpm.io).
 1. Install native package dependencies with `make install`.
-1. Run with `yarn start`. Changes will not automatically be picked up, so just Ctrl-C the `yarn start` and run it again.
+1. Run with `pnpm start`. Changes will not automatically be picked up, so just Ctrl-C the `pnpm start` and run it again.
 
 Kiosk browser has a number of command line arguments you can use if you want the permissions and print config to mimic production while also having access to devtools. You probably want to run `kiosk-browser` locally with the following command:
 
 ```sh
-DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG=../vxsuite-complete-system/printing/printer-autoconfigure.json KIOSK_BROWSER_APP_SCRIPTS_DIRECTORY=../vxsuite-complete-system/app-scripts yarn start
+DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG=../vxsuite-complete-system/printing/printer-autoconfigure.json KIOSK_BROWSER_APP_SCRIPTS_DIRECTORY=../vxsuite-complete-system/app-scripts pnpm start
 ```
 
 ## License

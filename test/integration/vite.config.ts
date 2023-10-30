@@ -119,6 +119,9 @@ export default defineConfig({
     alias: {
       // stub `jest-snapshot` since it relies on a bunch of NodeJS stuff
       'jest-snapshot': join(__dirname, 'support/stubs/jest-snapshot.ts'),
+
+      // stub `graceful-fs` since it relies on a bunch of NodeJS stuff
+      'graceful-fs': join(__dirname, 'support/stubs/graceful-fs.ts'),
     },
   },
 

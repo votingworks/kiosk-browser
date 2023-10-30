@@ -8,7 +8,7 @@ DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT="${DIR}/../.."
 
 # build `kiosk-browser`'s TypeScript project
-yarn -s tsc --project "${ROOT}/tsconfig.json"
+pnpm tsc --project "${ROOT}/tsconfig.json"
 
 # integration test configuration
 PORT=${PORT:-8080}
@@ -22,9 +22,9 @@ export \
 
 # run test server and `kiosk-browser` concurrently, exiting when either exits
 # and providing the exit code from the test server
-exec yarn -s concurrently \
+exec pnpm concurrently \
   --names 'server,browser' \
   --kill-others \
   --success command-server \
-  "yarn -s vite -l silent --strictPort --port '${PORT}' '${DIR}'" \
-  "yarn -s electron '${ROOT}'"
+  "vite -l silent --strictPort --port '${PORT}' '${DIR}'" \
+  "electron '${ROOT}'"
