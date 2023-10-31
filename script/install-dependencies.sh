@@ -13,4 +13,4 @@ fi
 "${DIR}/verify-dependencies.sh"
 
 # Install kiosk-browser dependencies.
-pnpm install --frozen-lockfile
+yarn install --frozen-lockfile
