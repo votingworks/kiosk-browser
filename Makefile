@@ -1,7 +1,9 @@
 all: install build
 
-install:
+install: FORCE
 	./script/install-dependencies.sh
 
-build:
+build: FORCE
 	./script/build.sh
+
+FORCE:
