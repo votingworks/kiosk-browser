@@ -4,7 +4,7 @@
 
 ## Running Tests
 
-You can run the tests with `pnpm test:integration`, which calls the `run` script in this directory. In development, the test server will keep running and re-run the tests when the source code changes. In CI, the test server will be started and the tests will be run once.
+You can run the tests with `yarn test:integration`, which calls the `run` script in this directory. In development, the test server will keep running and re-run the tests when the source code changes. In CI, the test server will be started and the tests will be run once.
 
 ## Adding a Test File
 

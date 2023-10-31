@@ -16,10 +16,10 @@
     "app:dist": "USE_SYSTEM_FPM=true electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "pnpm lint --fix",
+    "lint:fix": "yarn lint --fix",
     "start": "tsc && electron .",
     "test": "jest",
-    "test:ci": "pnpm test:coverage && pnpm test:integration",
+    "test:ci": "yarn test:coverage && yarn test:integration",
     "test:coverage": "jest --coverage",
     "test:integration": "./test/integration/run",
     "test:watch": "jest --watch"
@@ -48,7 +48,6 @@
     "zod": "^1.10.2"
   },
   "devDependencies": {
-    "@jest/expect": "^28",
     "@types/body-parser": "^1.19.2",
     "@types/debug": "^4.1.5",
     "@types/electron-json-storage": "^4.5.0",
@@ -67,16 +66,15 @@
     "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "expect": "^29.7.0",
-    "husky": "^8.0.3",
+    "husky": "^4.2.1",
     "jest": "^28.1.0",
-    "lint-staged": "^15.0.2",
+    "lint-staged": "^10.0.7",
     "memorystream": "^0.3.1",
     "prettier": "^2.6.2",
     "sort-package-json": "^1.39.1",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4",
-    "vite": "^4.5.0"
+    "vite": "^2.9.13"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",
