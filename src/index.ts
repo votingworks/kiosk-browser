@@ -93,6 +93,10 @@ async function createWindow(): Promise<void> {
       preload: join(__dirname, 'preload.js'),
     },
   });
+  // Don't allow opening new windows (e.g. by middle-clicking on a link)
+  mainWindow.webContents.setWindowOpenHandler(() => {
+    return { action: 'deny' };
+  });
 
   // and load the initial page.
   void mainWindow.loadURL(options.url.href);
