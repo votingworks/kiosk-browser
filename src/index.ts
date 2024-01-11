@@ -20,7 +20,6 @@ import registerQuitHandler from './ipc/quit';
 import registerSaveAsHandler from './ipc/saveAs';
 import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
-import registerSignHandler from './ipc/sign';
 import registerSpeakHandler from './ipc/speak';
 import registerCancelSpeakHandler from './ipc/cancel-speak';
 import registerRebootHandler from './ipc/reboot';
@@ -119,7 +118,6 @@ async function createWindow(): Promise<void> {
     registerSetClock,
     registerTotpGetHandler,
     registerLogHandler,
-    registerSignHandler,
     registerSpeakHandler,
     registerCancelSpeakHandler,
     registerRebootHandler,

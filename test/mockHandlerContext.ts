@@ -17,7 +17,6 @@ export function mockHandlerContext(
     autoconfiguredPrinter,
     ...overrides,
     options: {
-      appScriptsDirectory: '/tmp',
       url: new URL('about:blank'),
       originFilePermissions: [],
       ...overrides?.options,
