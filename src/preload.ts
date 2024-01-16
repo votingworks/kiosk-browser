@@ -33,10 +33,6 @@ import { channel as rebootToBiosChannel } from './ipc/reboot-to-bios';
 import { channel as powerDownChannel } from './ipc/power-down';
 import { PromptToSaveOptions } from './ipc/saveAs';
 import { channel as signChannel, SignParams } from './ipc/sign';
-import { channel as storageClearChannel } from './ipc/storage-clear';
-import { channel as storageGetChannel } from './ipc/storage-get';
-import { channel as storageRemoveChannel } from './ipc/storage-remove';
-import { channel as storageSetChannel } from './ipc/storage-set';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
@@ -160,30 +156,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
     ): Promise<void> {
       debug('forwarding `makeDirectory` to main process');
       await ipcRenderer.invoke(fileSystemMakeDirectoryChannel, path, options);
-    },
-
-    storage: {
-      async set(key: string, value: object): Promise<void> {
-        debug('forwarding `storageSet` to main process');
-        await ipcRenderer.invoke(storageSetChannel, key, value);
-      },
-
-      async get<T extends object>(key: string): Promise<T | undefined> {
-        debug('forwarding `storageGet` to main process');
-        return (await ipcRenderer.invoke(storageGetChannel, key)) as
-          | T
-          | undefined;
-      },
-
-      async remove(key: string): Promise<void> {
-        debug('forwarding `storageRemove` to main process');
-        await ipcRenderer.invoke(storageRemoveChannel, key);
-      },
-
-      async clear(): Promise<void> {
-        debug('forwarding `storageClear` to main process');
-        await ipcRenderer.invoke(storageClearChannel);
-      },
     },
 
     async setClock(params: KioskBrowser.SetClockParams): Promise<void> {

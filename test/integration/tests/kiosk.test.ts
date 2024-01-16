@@ -7,12 +7,6 @@ declare let kiosk: KioskBrowser.Kiosk;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let jest: never;
 
-test('storage', async () => {
-  await kiosk.storage.clear();
-  await kiosk.storage.set('some-key', { some: 'value' });
-  expect(await kiosk.storage.get('some-key')).toEqual({ some: 'value' });
-});
-
 test('file system', async () => {
   const root = `/tmp/kiosk-test-${Math.round(Math.random() * 100_000)}`;
   await kiosk.makeDirectory(root, { recursive: true });

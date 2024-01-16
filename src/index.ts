@@ -18,10 +18,6 @@ import registerPrinterSubscription from './ipc/printer-subscription';
 import registerPrintToPDFHandler from './ipc/printToPDF';
 import registerQuitHandler from './ipc/quit';
 import registerSaveAsHandler from './ipc/saveAs';
-import registerStorageClearHandler from './ipc/storage-clear';
-import registerStorageGetHandler from './ipc/storage-get';
-import registerStorageRemoveHandler from './ipc/storage-remove';
-import registerStorageSetHandler from './ipc/storage-set';
 import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSignHandler from './ipc/sign';
@@ -120,10 +116,6 @@ async function createWindow(): Promise<void> {
     registerFileSystemWriteFileHandler,
     registerShowOpenDialog,
     registerShowSaveDialog,
-    registerStorageSetHandler,
-    registerStorageGetHandler,
-    registerStorageRemoveHandler,
-    registerStorageClearHandler,
     registerSetClock,
     registerTotpGetHandler,
     registerLogHandler,
