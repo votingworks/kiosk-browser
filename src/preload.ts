@@ -32,7 +32,6 @@ import { channel as rebootChannel } from './ipc/reboot';
 import { channel as rebootToBiosChannel } from './ipc/reboot-to-bios';
 import { channel as powerDownChannel } from './ipc/power-down';
 import { PromptToSaveOptions } from './ipc/saveAs';
-import { channel as signChannel, SignParams } from './ipc/sign';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
@@ -170,11 +169,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
           | TotpInfo
           | undefined;
       },
-    },
-
-    async sign(params: SignParams): Promise<string> {
-      debug('forwarding `sign` to main process');
-      return (await ipcRenderer.invoke(signChannel, params)) as string;
     },
 
     async speak(utterance: string, options: SpeakOptions): Promise<void> {

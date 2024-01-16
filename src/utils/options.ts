@@ -17,7 +17,6 @@ export interface Options {
   autoconfigurePrintConfig?: PrintConfig;
   allowDevtools?: boolean;
   originFilePermissions: OriginFilePermission[];
-  appScriptsDirectory?: string;
 }
 
 export interface Help {
@@ -39,7 +38,6 @@ async function parseOptionsWithoutTryCatch(
   let helpArg: string | undefined;
   let allowDevtoolsArg: boolean | undefined;
   let originFilePermissions: OriginFilePermission[] | undefined;
-  let appScriptsDirectory: string | undefined;
   const warnings: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
@@ -67,14 +65,6 @@ async function parseOptionsWithoutTryCatch(
         ...(originFilePermissions ?? []),
         parseOriginFilePermissionString(value),
       ];
-    } else if (arg === '--app-scripts-directory' || arg === '-a') {
-      i++;
-      const value = argv[i];
-      debug('got option for %s: %s', arg, value);
-      if (!value || value.startsWith('-')) {
-        return { error: new Error(`expected value for option: ${arg}`) };
-      }
-      appScriptsDirectory = value;
     } else if (arg === '--help' || arg === '-h') {
       helpArg = arg;
     } else if (!arg.startsWith('-')) {
@@ -116,8 +106,6 @@ async function parseOptionsWithoutTryCatch(
         parseOriginFilePermissionString,
       ) ??
       [],
-    appScriptsDirectory:
-      appScriptsDirectory ?? env.KIOSK_BROWSER_APP_SCRIPTS_DIRECTORY,
   };
 
   debug('parsed options: %O', options);
