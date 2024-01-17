@@ -3,7 +3,6 @@ import storage from 'electron-json-storage';
 import { join } from 'path';
 import { of } from 'rxjs';
 import usbDetection from 'usb-detection';
-import registerSetClock from './ipc/clock';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
 import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerShowSaveDialog from './ipc/show-save-dialog';
@@ -22,10 +21,6 @@ import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
 import registerSpeakHandler from './ipc/speak';
 import registerCancelSpeakHandler from './ipc/cancel-speak';
-import registerRebootHandler from './ipc/reboot';
-import registerRebootToBiosHandler from './ipc/reboot-to-bios';
-import registerPowerDownHandler from './ipc/power-down';
-import registerPrepareBootUsb from './ipc/prepare-boot-usb';
 import registerCaptureScreenshot from './ipc/capture-screenshot';
 import parseOptions, { printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
@@ -115,15 +110,10 @@ async function createWindow(): Promise<void> {
     registerFileSystemWriteFileHandler,
     registerShowOpenDialog,
     registerShowSaveDialog,
-    registerSetClock,
     registerTotpGetHandler,
     registerLogHandler,
     registerSpeakHandler,
     registerCancelSpeakHandler,
-    registerRebootHandler,
-    registerPowerDownHandler,
-    registerPrepareBootUsb,
-    registerRebootToBiosHandler,
     registerCaptureScreenshot,
   ];
 

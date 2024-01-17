@@ -9,7 +9,6 @@ import {
 } from 'electron';
 import { MakeDirectoryOptions } from 'fs';
 import { channel as cancelSpeakChannel } from './ipc/cancel-speak';
-import { channel as setClockChannel } from './ipc/clock';
 import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
 import { channel as showSaveDialogChannel } from './ipc/show-save-dialog';
 import {
@@ -24,13 +23,9 @@ import {
 } from './ipc/get-battery-info';
 import { channel as getPrinterInfoChannel } from './ipc/get-printer-info';
 import { channel as logChannel } from './ipc/log';
-import { channel as prepareBootUsbChannel } from './ipc/prepare-boot-usb';
 import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
 import { channel as quitChannel } from './ipc/quit';
-import { channel as rebootChannel } from './ipc/reboot';
-import { channel as rebootToBiosChannel } from './ipc/reboot-to-bios';
-import { channel as powerDownChannel } from './ipc/power-down';
 import { PromptToSaveOptions } from './ipc/saveAs';
 import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
 import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
@@ -157,11 +152,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
       await ipcRenderer.invoke(fileSystemMakeDirectoryChannel, path, options);
     },
 
-    async setClock(params: KioskBrowser.SetClockParams): Promise<void> {
-      debug('forwarding `setClock` to main process');
-      await ipcRenderer.invoke(setClockChannel, params);
-    },
-
     totp: {
       async get(): Promise<TotpInfo | undefined> {
         debug('forwarding `totp.get` to main process');
@@ -179,11 +169,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
     async cancelSpeak(): Promise<void> {
       debug('forwarding `cancelSpeak` to main process');
       await ipcRenderer.invoke(cancelSpeakChannel);
-    },
-
-    async prepareToBootFromUsb(): Promise<boolean> {
-      debug('forwarding `prepareToBootFromUsb` to main process');
-      return (await ipcRenderer.invoke(prepareBootUsbChannel)) as boolean;
     },
 
     async log(message: string): Promise<void> {
@@ -221,21 +206,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
       } else {
         void ipcRenderer.invoke(quitChannel, exitCode);
       }
-    },
-
-    async reboot(): Promise<void> {
-      debug('forwarding `reboot` to the main process');
-      await ipcRenderer.invoke(rebootChannel);
-    },
-
-    async rebootToBios(): Promise<void> {
-      debug('forwarding `rebootToBios` to the main process');
-      await ipcRenderer.invoke(rebootToBiosChannel);
-    },
-
-    async powerDown(): Promise<void> {
-      debug('forwarding `powerDown` to the main process');
-      await ipcRenderer.invoke(powerDownChannel);
     },
 
     async captureScreenshot(): Promise<Buffer> {
