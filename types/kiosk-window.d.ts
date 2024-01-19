@@ -209,22 +209,12 @@ declare namespace KioskBrowser {
     readFile(path: string): Promise<Uint8Array>;
     readFile(path: string, encoding: string): Promise<string>;
 
-    setClock(params: SetClockParams): Promise<void>;
-
     totp: {
       get(): Promise<TotpInfo | undefined>;
     };
 
     speak(text: string, options: SpeakOptions): Promise<void>;
     cancelSpeak(): Promise<void>;
-
-    reboot(): Promise<void>;
-
-    rebootToBios(): Promise<void>;
-
-    powerDown(): Promise<void>;
-
-    prepareToBootFromUsb(): Promise<boolean>;
 
     showOpenDialog(
       options?: import('electron').OpenDialogOptions,
