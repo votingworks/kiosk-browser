@@ -101,35 +101,10 @@ declare namespace KioskBrowser {
     filters?: FileFilter[];
   }
 
-  export interface MakeDirectoryOptions {
-    recursive?: boolean;
-    mode?: number;
-  }
-
   export interface FileFilter {
     // Docs: http://electronjs.org/docs/api/structures/file-filter
     extensions: string[];
     name: string;
-  }
-
-  export enum FileSystemEntryType {
-    File = 1, // UV_DIRENT_FILE
-    Directory = 2, // UV_DIRENT_DIR
-    SymbolicLink = 3, // UV_DIRENT_LINK
-    FIFO = 4, // UV_DIRENT_FIFO
-    Socket = 5, // UV_DIRENT_SOCKET
-    CharacterDevice = 6, // UV_DIRENT_CHAR
-    BlockDevice = 7, // UV_DIRENT_BLOCK
-  }
-
-  export interface FileSystemEntry {
-    readonly name: string;
-    readonly path: string;
-    readonly type: FileSystemEntryType;
-    readonly size: number;
-    readonly mtime: Date;
-    readonly atime: Date;
-    readonly ctime: Date;
   }
 
   export interface FileWriter {
@@ -153,17 +128,8 @@ declare namespace KioskBrowser {
     IANAZone: string;
   }
 
-  export interface TotpInfo {
-    isoDatetime: string;
-    code: string;
-  }
-
   export interface Observable<T> {
     subscribe(callback: (value: T) => void): () => void;
-  }
-
-  export interface SpeakOptions {
-    volume: number;
   }
 
   export interface Kiosk {
@@ -186,35 +152,6 @@ declare namespace KioskBrowser {
      * Once chosen, resolves with a handle to the file to write data to it.
      */
     saveAs(options?: SaveAsOptions): Promise<FileWriter | undefined>;
-
-    /**
-     * Writes a file to a specified file path
-     */
-    writeFile(path: string): Promise<FileWriter>;
-    writeFile(path: string, content: Uint8Array | string): Promise<void>;
-
-    /*
-     * Creates a directory at the specified path.
-     */
-    makeDirectory(path: string, options?: MakeDirectoryOptions): Promise<void>;
-
-    /**
-     * Reads the list of files at a specified directory path
-     */
-    getFileSystemEntries(path: string): Promise<FileSystemEntry[]>;
-
-    /**
-     * Reads a file from a specified path
-     */
-    readFile(path: string): Promise<Uint8Array>;
-    readFile(path: string, encoding: string): Promise<string>;
-
-    totp: {
-      get(): Promise<TotpInfo | undefined>;
-    };
-
-    speak(text: string, options: SpeakOptions): Promise<void>;
-    cancelSpeak(): Promise<void>;
 
     showOpenDialog(
       options?: import('electron').OpenDialogOptions,

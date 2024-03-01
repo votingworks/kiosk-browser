@@ -7,16 +7,8 @@ import {
   SaveDialogOptions,
   SaveDialogReturnValue,
 } from 'electron';
-import { MakeDirectoryOptions } from 'fs';
-import { channel as cancelSpeakChannel } from './ipc/cancel-speak';
 import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
 import { channel as showSaveDialogChannel } from './ipc/show-save-dialog';
-import {
-  channel as fileSystemGetEntriesChannel,
-  FileSystemEntry,
-} from './ipc/file-system-get-entries';
-import { channel as fileSystemMakeDirectoryChannel } from './ipc/file-system-make-directory';
-import { channel as fileSystemReadFileChannel } from './ipc/file-system-read-file';
 import {
   BatteryInfo,
   channel as getBatteryInfoChannel,
@@ -27,21 +19,13 @@ import { channel as printChannel } from './ipc/print';
 import { channel as printToPDFChannel } from './ipc/printToPDF';
 import { channel as quitChannel } from './ipc/quit';
 import { PromptToSaveOptions } from './ipc/saveAs';
-import { channel as totpGetChannel, TotpInfo } from './ipc/totp-get';
-import { channel as speakChannel, Options as SpeakOptions } from './ipc/speak';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
 
 import buildDevicesObservable from './utils/buildDevicesObservable';
 import buildPrinterInfoObservable from './utils/buildPrinterInfoObservable';
-import { FileWriter, fromPath, fromPrompt } from './utils/FileWriter';
+import { FileWriter, fromPrompt } from './utils/FileWriter';
 
 const debug = makeDebug('kiosk-browser:client');
-
-function toDate(dateOrString: Date | string): Date {
-  return typeof dateOrString === 'string'
-    ? new Date(dateOrString)
-    : dateOrString;
-}
 
 function makeKiosk(): KioskBrowser.Kiosk {
   return {
@@ -106,69 +90,6 @@ function makeKiosk(): KioskBrowser.Kiosk {
       return (await ipcRenderer.invoke(
         getPrinterInfoChannel,
       )) as KioskBrowser.PrinterInfo[];
-    },
-
-    async getFileSystemEntries(path: string): Promise<FileSystemEntry[]> {
-      debug('forwarding `getFileSystemEntries` to main process');
-      const result = (await ipcRenderer.invoke(
-        fileSystemGetEntriesChannel,
-        path,
-      )) as FileSystemEntry[];
-      return result.map((entry) => ({
-        ...entry,
-        mtime: toDate(entry.mtime),
-        atime: toDate(entry.atime),
-        ctime: toDate(entry.ctime),
-      }));
-    },
-
-    readFile: (async (...args: unknown[]): Promise<Uint8Array | string> => {
-      debug('forwarding `readFile` to main process');
-      return (await ipcRenderer.invoke(fileSystemReadFileChannel, ...args)) as
-        | Uint8Array
-        | string;
-    }) as KioskBrowser.Kiosk['readFile'],
-
-    writeFile: (async (
-      path: string,
-      content?: Uint8Array | string,
-    ): Promise<FileWriter | void> => {
-      debug('forwarding `writeFile` to main process');
-      const writer = await fromPath(path);
-
-      if (typeof content !== 'undefined') {
-        await writer.write(content);
-        await writer.end();
-      } else {
-        return writer;
-      }
-    }) as KioskBrowser.Kiosk['writeFile'],
-
-    async makeDirectory(
-      path: string,
-      options: MakeDirectoryOptions = {},
-    ): Promise<void> {
-      debug('forwarding `makeDirectory` to main process');
-      await ipcRenderer.invoke(fileSystemMakeDirectoryChannel, path, options);
-    },
-
-    totp: {
-      async get(): Promise<TotpInfo | undefined> {
-        debug('forwarding `totp.get` to main process');
-        return (await ipcRenderer.invoke(totpGetChannel)) as
-          | TotpInfo
-          | undefined;
-      },
-    },
-
-    async speak(utterance: string, options: SpeakOptions): Promise<void> {
-      debug('forwarding `speak` to main process');
-      await ipcRenderer.invoke(speakChannel, utterance, options);
-    },
-
-    async cancelSpeak(): Promise<void> {
-      debug('forwarding `cancelSpeak` to main process');
-      await ipcRenderer.invoke(cancelSpeakChannel);
     },
 
     async log(message: string): Promise<void> {
