@@ -6,9 +6,6 @@ import usbDetection from 'usb-detection';
 import registerManageDeviceSubscriptionHandler from './ipc/device-subscription';
 import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerShowSaveDialog from './ipc/show-save-dialog';
-import registerFileSystemGetEntriesHandler from './ipc/file-system-get-entries';
-import registerFileSystemMakeDirectoryHandler from './ipc/file-system-make-directory';
-import registerFileSystemReadFileHandler from './ipc/file-system-read-file';
 import registerFileSystemWriteFileHandler from './ipc/file-system-write-file';
 import registerGetBatteryInfoHandler from './ipc/get-battery-info';
 import registerGetPrinterInfoHandler from './ipc/get-printer-info';
@@ -17,10 +14,7 @@ import registerPrinterSubscription from './ipc/printer-subscription';
 import registerPrintToPDFHandler from './ipc/printToPDF';
 import registerQuitHandler from './ipc/quit';
 import registerSaveAsHandler from './ipc/saveAs';
-import registerTotpGetHandler from './ipc/totp-get';
 import registerLogHandler from './ipc/log';
-import registerSpeakHandler from './ipc/speak';
-import registerCancelSpeakHandler from './ipc/cancel-speak';
 import registerCaptureScreenshot from './ipc/capture-screenshot';
 import parseOptions, { printHelp } from './utils/options';
 import autoconfigurePrint from './utils/printing/autoconfigurePrinter';
@@ -104,16 +98,10 @@ async function createWindow(): Promise<void> {
     registerPrintToPDFHandler,
     registerQuitHandler,
     registerSaveAsHandler,
-    registerFileSystemGetEntriesHandler,
-    registerFileSystemMakeDirectoryHandler,
-    registerFileSystemReadFileHandler,
     registerFileSystemWriteFileHandler,
     registerShowOpenDialog,
     registerShowSaveDialog,
-    registerTotpGetHandler,
     registerLogHandler,
-    registerSpeakHandler,
-    registerCancelSpeakHandler,
     registerCaptureScreenshot,
   ];
 
