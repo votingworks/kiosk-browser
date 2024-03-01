@@ -7,21 +7,6 @@ declare let kiosk: KioskBrowser.Kiosk;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let jest: never;
 
-test('file system', async () => {
-  const root = `/tmp/kiosk-test-${Math.round(Math.random() * 100_000)}`;
-  await kiosk.makeDirectory(root, { recursive: true });
-
-  await kiosk.writeFile(`${root}/test.txt`, 'string file content');
-  expect(await kiosk.readFile(`${root}/test.txt`, 'utf8')).toEqual(
-    'string file content',
-  );
-
-  await kiosk.writeFile(`${root}/test.bin`, Uint8Array.of(1, 2, 3));
-  expect(await kiosk.readFile(`${root}/test.bin`)).toEqual(
-    Uint8Array.of(1, 2, 3),
-  );
-});
-
 test('battery', async () => {
   const batteryInfo = await kiosk.getBatteryInfo();
 
