@@ -1,69 +1,13 @@
-import { waitFor } from '../support/minitest';
-
 // Declare `kiosk` as a definitely defined global variable
 declare let kiosk: KioskBrowser.Kiosk;
 
-// This isn't actually Jest, so we can't use `jest`.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare let jest: never;
-
-test('battery', async () => {
-  const batteryInfo = await kiosk.getBatteryInfo();
-
-  if (batteryInfo) {
-    expect(batteryInfo).toEqual({
-      discharging: expect.any(Boolean) as boolean,
-      level: expect.any(Number) as number,
-    });
-    expect(batteryInfo.level).toBeGreaterThanOrEqual(0);
-    expect(batteryInfo.level).toBeLessThanOrEqual(1);
-  }
-});
-
-test('print to PDF', async () => {
-  const pdf = await kiosk.printToPDF();
-  const prelude = '%PDF-1.4';
-  expect(pdf).toBeInstanceOf(Uint8Array);
-  expect(
-    Array.from(pdf.slice(0, prelude.length))
-      .map((c) => String.fromCharCode(c))
-      .join(''),
-  ).toEqual(prelude);
-});
-
-test('devices', async () => {
-  let devices: KioskBrowser.Device[] | undefined;
-
-  const unsubscribe = kiosk.devices.subscribe((newDevices) => {
-    devices = [...newDevices];
-  });
-
-  await waitFor(() => {
-    expect(devices).toBeInstanceOf(Array);
-  });
-
-  unsubscribe();
-});
-
-// TODO: Run in CI when we understand why it fails. Fails with the following:
-//
-//   [6434:0111/214247.890907:INFO:electron_api_printing.cc(78)] Failed to enumerate printers
-//
-(process.env.CI ? test.skip : test)('printers', async () => {
-  let printers: KioskBrowser.PrinterInfo[] | undefined;
-
-  const unsubscribe = kiosk.printers.subscribe((newPrinters) => {
-    printers = [...newPrinters];
-  });
-
-  await waitFor(
-    () => {
-      expect(printers).toBeInstanceOf(Array);
-    },
-    { timeout: 10_000 },
+const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
+test('screenshot', async () => {
+  const screenshot = await kiosk.captureScreenshot();
+  expect(screenshot).toBeInstanceOf(Uint8Array);
+  expect(Array.from(screenshot.slice(0, PNG_SIGNATURE.length))).toEqual(
+    PNG_SIGNATURE,
   );
-
-  unsubscribe();
 });
 
 // force tooling to consider this a module

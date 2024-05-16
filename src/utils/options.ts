@@ -1,9 +1,6 @@
 import chalk from 'chalk';
 import makeDebug from 'debug';
-import { promises } from 'fs';
-import { isAbsolute, join } from 'path';
 import { AccessType, OriginFilePermission } from './access';
-import { PrintConfig } from './printing';
 
 const debug = makeDebug('kiosk-browser:options');
 
@@ -14,7 +11,6 @@ export type ParseOptionsResult =
 
 export interface Options {
   url: URL;
-  autoconfigurePrintConfig?: PrintConfig;
   allowDevtools?: boolean;
   originFilePermissions: OriginFilePermission[];
 }
@@ -27,14 +23,13 @@ export interface Invalid {
   error: Error;
 }
 
-async function parseOptionsWithoutTryCatch(
+function parseOptionsWithoutTryCatch(
   argv: typeof process.argv = [],
   env: typeof process.env = {},
-): Promise<ParseOptionsResult> {
+): ParseOptionsResult {
   debug('parsing options from argv=%o and env=%O', argv, env);
 
   let urlArg: string | undefined;
-  let autoconfigurePrintConfigArg: string | undefined;
   let helpArg: string | undefined;
   let allowDevtoolsArg: boolean | undefined;
   let originFilePermissions: OriginFilePermission[] | undefined;
@@ -47,10 +42,6 @@ async function parseOptionsWithoutTryCatch(
       i++;
       urlArg = getOptionValue();
       debug('got option for %s: %s', arg, urlArg);
-    } else if (arg === '--autoconfigure-print-config' || arg === '-p') {
-      i++;
-      autoconfigurePrintConfigArg = getOptionValue();
-      debug('got option for %s: %s', arg, autoconfigurePrintConfigArg);
     } else if (arg === '--allow-devtools') {
       allowDevtoolsArg = true;
       debug('got flag: %s', arg);
@@ -94,10 +85,6 @@ async function parseOptionsWithoutTryCatch(
 
   const options: Options = {
     url: new URL(urlArg ?? env.KIOSK_BROWSER_URL ?? 'about:blank'),
-    autoconfigurePrintConfig: await loadPrintConfig(
-      autoconfigurePrintConfigArg ??
-        env.KIOSK_BROWSER_AUTOCONFIGURE_PRINT_CONFIG,
-    ),
     allowDevtools:
       allowDevtoolsArg ?? env.KIOSK_BROWSER_ALLOW_DEVTOOLS === 'true',
     originFilePermissions:
@@ -144,36 +131,15 @@ function parseOriginFilePermissionString(value: string): OriginFilePermission {
 /**
  * Gets the URL to navigate.
  */
-export default async function parseOptions(
+export default function parseOptions(
   argv: typeof process.argv = [],
   env: typeof process.env = {},
-): Promise<ParseOptionsResult> {
+): ParseOptionsResult {
   try {
-    return await parseOptionsWithoutTryCatch(argv, env);
+    return parseOptionsWithoutTryCatch(argv, env);
   } catch (error) {
     return { error: error as Error };
   }
-}
-
-export async function loadPrintConfig(
-  printConfigPath?: string,
-): Promise<PrintConfig | undefined> {
-  if (typeof printConfigPath === 'undefined') {
-    return;
-  }
-
-  const printConfigJSON = await promises.readFile(printConfigPath, 'utf8');
-  const printConfig = JSON.parse(printConfigJSON) as PrintConfig;
-
-  for (const printer of printConfig.printers) {
-    if ('path' in printer.ppd) {
-      if (!isAbsolute(printer.ppd.path)) {
-        printer.ppd.path = join(printConfigPath, '..', printer.ppd.path);
-      }
-    }
-  }
-
-  return printConfig;
 }
 
 export function printHelp(
