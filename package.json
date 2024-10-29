@@ -4,7 +4,7 @@
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-only",
   "author": {
     "name": "VotingWorks",
     "email": "contact@voting.works",
