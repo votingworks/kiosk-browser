@@ -52,4 +52,5 @@ DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER
 
 ## License
 
-GPL-3.0
+All files are licensed under GNU GPL v3.0 only. Refer to the [license file](./LICENSE) for
+more information.
