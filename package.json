@@ -5,11 +5,6 @@
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
   "license": "GPL-3.0-only",
-  "author": {
-    "name": "VotingWorks",
-    "email": "contact@voting.works",
-    "url": "https://voting.works"
-  },
   "main": "build/src/index.js",
   "scripts": {
     "app:dir": "electron-builder --dir",
