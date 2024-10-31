@@ -23,27 +23,27 @@ Virtual6 disconnected`,
   });
 
   expect(await getMainScreen()).toMatchInlineSnapshot(`
-    Object {
+    {
       "connected": true,
       "height": 760,
       "index": 1,
-      "modes": Array [
-        Object {
+      "modes": [
+        {
           "height": "768",
           "rate": 59.95,
           "width": "1024",
         },
-        Object {
+        {
           "height": "760",
           "rate": 59.93,
           "width": "1314",
         },
-        Object {
+        {
           "height": "600",
           "rate": 59.96,
           "width": "800",
         },
-        Object {
+        {
           "height": "480",
           "rate": 59.94,
           "width": "640",
