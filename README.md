@@ -1,6 +1,6 @@
 # kiosk-browser
 
-Generic kiosk-mode browser.
+A generic Electron-based kiosk-mode browser that runs our [vxsuite](https://github.com/votingworks/vxsuite) app frontends in production.
 
 ## Build & Install
 
@@ -12,11 +12,13 @@ Generic kiosk-mode browser.
 
 ## Kiosk Page API
 
-Web pages loaded by `kiosk-browser` have an extra API accessible via the global `kiosk` object.
+Web pages loaded by kiosk-browser have an extra API accessible via the global `kiosk` object.
 
 `kiosk.`**`saveAs`**`(): Promise<FileWriter | undefined>`
 
 Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting origin must be allowed to write to disk.
+
+We're increasingly moving away from these APIs in [vxsuite](https://github.com/votingworks/vxsuite), but a few last uses remain.
 
 ## File Access APIs
 
@@ -38,16 +40,21 @@ $ DEBUG=kiosk-browser:* kiosk-browser https://example.com/
 
 ## Development
 
-If you're working on a bug fix or feature for `kiosk-browser`, here's how to build and run it in development:
+If you're working on a bug fix or feature for kiosk-browser, here's how to build and run it in development:
 
 1. Install [NodeJS](https://nodejs.org/en/) and [Yarn](https://www.yarnpkg.com/en/).
 1. Install native package dependencies with `make install`.
 1. Run with `yarn start`. Changes will not automatically be picked up, so just Ctrl-C the `yarn start` and run it again.
 
-Kiosk browser has a number of command line arguments you can use if you want the permissions and print config to mimic production while also having access to devtools. You probably want to run `kiosk-browser` locally with the following command:
+kiosk-browser has a number of command line arguments you can use if you want the permissions and print config to mimic production while also having access to devtools. You probably want to run kiosk-browser locally with the following command:
 
 ```sh
-DEBUG=kiosk-browser:* DISPLAY=:0 KIOSK_BROWSER_ALLOW_DEVTOOLS=true KIOSK_BROWSER_URL=http://localhost:3000/ KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' yarn start
+DEBUG=kiosk-browser:* \
+  DISPLAY=:0 \
+  KIOSK_BROWSER_ALLOW_DEVTOOLS=true \
+  KIOSK_BROWSER_FILE_PERMISSIONS='o=http://localhost:3000,p=/**/*,rw' \
+  KIOSK_BROWSER_URL=http://localhost:3000 \
+  yarn start
 ```
 
 ## License
