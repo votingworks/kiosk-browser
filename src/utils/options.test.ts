@@ -60,33 +60,6 @@ test('allow devtools', () => {
   );
 });
 
-test('file permission with default origin and access', () => {
-  const options = parseOptionsWithoutHelp(['--add-file-perm', 'p=/media/**/*']);
-  expect(options.originFilePermissions).toEqual([
-    { origins: '**/*', paths: '/media/**/*', access: 'rw' },
-  ]);
-});
-
-test('file permission with default access', () => {
-  const options = parseOptionsWithoutHelp([
-    '--add-file-perm',
-    'o=http://localhost,p=/media/**/*',
-  ]);
-  expect(options.originFilePermissions).toEqual([
-    { origins: 'http://localhost', paths: '/media/**/*', access: 'rw' },
-  ]);
-});
-
-test('file permission', () => {
-  const options = parseOptionsWithoutHelp([
-    '--add-file-perm',
-    'o=http://localhost:*,p=/media/**/*,ro',
-  ]);
-  expect(options.originFilePermissions).toEqual([
-    { origins: 'http://localhost:*', paths: '/media/**/*', access: 'ro' },
-  ]);
-});
-
 class SimpleWriter {
   private buffer = '';
 
@@ -106,6 +79,4 @@ test('help', () => {
   const help = out.toString();
   expect(help).toContain('kiosk-browser [OPTIONS] [URL]');
   expect(help).toContain('-u, --url URL');
-  expect(help).toContain('-p, --autoconfigure-print-config PATH');
-  expect(help).toContain('Auto-Configure Printers');
 });

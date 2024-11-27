@@ -14,15 +14,7 @@ A generic Electron-based kiosk-mode browser that runs our [vxsuite](https://gith
 
 Web pages loaded by kiosk-browser have an extra API accessible via the global `kiosk` object.
 
-`kiosk.`**`saveAs`**`(): Promise<FileWriter | undefined>`
-
-Presents a file save dialog to the user and, if a file is chosen, resolves to an object with `write(data)` and `end()` methods, similar to `fs.WriteStream` from `NodeJS`. To use this API, the requesting origin must be allowed to write to disk.
-
 We're increasingly moving away from these APIs in [vxsuite](https://github.com/votingworks/vxsuite), but a few last uses remain.
-
-## File Access APIs
-
-To access the file system, a host must be granted access with `--add-file-perm [HOST:]PATH[:ACCESS]`. For example, `--add-file-perm localhost:**/*:rw` grants localhost read-write access anywhere. Access modifiers: `rw` (default, read-write), `ro` (read-only), and `wo` (write-only). Note that the order permissions are added is important. If you add a permission that says access to `/media/**/*` is read-only first, then another that says `/media/usb-stick/**/*` is read-write, access to `/media/usb-stick/file.txt` will be read-only because the first permission matches the path. To fix this, reverse the order.
 
 ## Debugging
 
