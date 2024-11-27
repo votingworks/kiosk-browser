@@ -14,6 +14,16 @@ function parseOptionsWithoutHelp(
   return result.options;
 }
 
+test.each(['-u', '--url'])('accepts a URL as %s', (flag) => {
+  const options = parseOptionsWithoutHelp([flag, 'https://example.com/']);
+  expect(options.url.href).toEqual('https://example.com/');
+});
+
+test.each(['-h', '--help'])('%s is interpreted as wanting help', (flag) => {
+  const options = parseOptions([flag]);
+  expect('help' in options).toBe(true);
+});
+
 test('returns the first argument URL if it can be parsed as a URL', () => {
   const options = parseOptionsWithoutHelp(['https://example.com/']);
   expect(options.url.href).toEqual('https://example.com/');
@@ -31,6 +41,24 @@ test('prefers the argument URL to the environment URL', () => {
     KIOSK_BROWSER_URL: 'https://example.com/env',
   });
   expect(options.url.href).toEqual('https://example.com/argv');
+});
+
+test('rejects multiple URL arguments', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['https://example.com/', 'https://example.com/']);
+  }).toThrowError('duplicate URL argument: https://example.com/');
+});
+
+test('rejects missing values for options', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['--url']);
+  }).toThrowError('expected value for option: --url');
+});
+
+test('rejects invalid options', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['--invalid']);
+  }).toThrowError('unexpected option: --invalid');
 });
 
 test('falls back to about:blank if nothing else is given', () => {
