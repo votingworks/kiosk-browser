@@ -11,7 +11,6 @@ module.exports = {
     '!src/index.ts',
     '!src/preload.ts',
   ],
-  testPathIgnorePatterns: ['/test/integration/'],
   modulePathIgnorePatterns: [
     '<rootDir>/build/',
     '<rootDir>/dist/',
