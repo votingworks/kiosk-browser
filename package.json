@@ -36,7 +36,6 @@
     "chalk": "^3.0.0",
     "debug": "^4.1.1",
     "multimatch": "^4.0.0",
-    "uuid": "^8.3.1",
     "xrandr-parse": "^1.0.0"
   },
   "devDependencies": {

@@ -1,10 +1,7 @@
 import { app, BrowserWindow, ipcMain, IpcMain } from 'electron';
 import { join } from 'path';
 import registerShowOpenDialog from './ipc/show-open-dialog';
-import registerShowSaveDialog from './ipc/show-save-dialog';
-import registerFileSystemWriteFileHandler from './ipc/file-system-write-file';
 import registerQuitHandler from './ipc/quit';
-import registerSaveAsHandler from './ipc/saveAs';
 import registerLogHandler from './ipc/log';
 import registerCaptureScreenshot from './ipc/capture-screenshot';
 import parseOptions, { printHelp } from './utils/options';
@@ -70,10 +67,7 @@ async function createWindow(): Promise<void> {
   // Register IPC handlers.
   const handlers: RegisterIpcHandler[] = [
     registerQuitHandler,
-    registerSaveAsHandler,
-    registerFileSystemWriteFileHandler,
     registerShowOpenDialog,
-    registerShowSaveDialog,
     registerLogHandler,
     registerCaptureScreenshot,
   ];
