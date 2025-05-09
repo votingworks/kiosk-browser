@@ -10,15 +10,13 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '16.14'
+          node-version: '22.14'
           install-yarn: true
       - restore_cache:
           key: yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Setup dependencies
           command: |
-            sudo NEEDRESTART_MODE=a apt update -y
-            sudo NEEDRESTART_MODE=a apt install libudev-dev -y
             yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
       - run:
           name: Lint

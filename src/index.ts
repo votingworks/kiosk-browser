@@ -51,6 +51,11 @@ async function createWindow(): Promise<void> {
     webPreferences: {
       devTools: options.allowDevtools || !app.isPackaged,
       preload: join(__dirname, 'preload.js'),
+      /**
+       * After Electron 20, sandboxing is enabled by default, which causes our
+       * preload script to break because it has Node.js dependencies.
+       */
+      sandbox: false,
     },
   });
   // Don't allow opening new windows (e.g. by middle-clicking on a link)
