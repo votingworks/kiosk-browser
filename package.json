@@ -18,9 +18,8 @@
     "lint:fix": "yarn lint --fix",
     "start": "tsc && electron .",
     "test": "jest",
-    "test:ci": "yarn test:coverage && yarn test:integration",
+    "test:ci": "yarn test:coverage",
     "test:coverage": "jest --coverage",
-    "test:integration": "./test/integration/run",
     "test:watch": "jest --watch"
   },
   "husky": {

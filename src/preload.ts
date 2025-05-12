@@ -1,68 +1,38 @@
 import makeDebug from 'debug';
-import {
-  contextBridge,
-  ipcRenderer,
-  OpenDialogOptions,
-  OpenDialogReturnValue,
-  SaveDialogOptions,
-  SaveDialogReturnValue,
-} from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
-import { channel as showSaveDialogChannel } from './ipc/show-save-dialog';
 import { channel as logChannel } from './ipc/log';
 import { channel as quitChannel } from './ipc/quit';
-import { PromptToSaveOptions } from './ipc/saveAs';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
 
-import { FileWriter, fromPrompt } from './utils/FileWriter';
-
 const debug = makeDebug('kiosk-browser:client');
+type Kiosk = KioskBrowser.Kiosk;
 
-function makeKiosk(): KioskBrowser.Kiosk {
+function makeKiosk(): Kiosk {
   return {
-    async showOpenDialog(
-      options?: OpenDialogOptions,
-    ): Promise<OpenDialogReturnValue> {
+    async showOpenDialog(options) {
       debug('forwarding `showOpenDialog` to main process');
       return (await ipcRenderer.invoke(
         showOpenDialogChannel,
         options,
-      )) as OpenDialogReturnValue;
+      )) as ReturnType<Kiosk['showOpenDialog']>;
     },
 
-    async showSaveDialog(
-      options?: SaveDialogOptions,
-    ): Promise<SaveDialogReturnValue> {
-      debug('forwarding `showSaveDialog` to main process');
-      return (await ipcRenderer.invoke(
-        showSaveDialogChannel,
-        options,
-      )) as SaveDialogReturnValue;
-    },
-
-    async log(message: string): Promise<void> {
+    async log(message) {
       debug('forwarding `log` to the main process');
       await ipcRenderer.invoke(logChannel, message);
     },
 
-    async saveAs(
-      options?: PromptToSaveOptions,
-    ): Promise<FileWriter | undefined> {
-      return await fromPrompt(options);
-    },
-
-    quit(exitCode?: number): void {
+    quit() {
       debug('forwarding `quit` to main process');
-      if (typeof exitCode === 'undefined') {
-        void ipcRenderer.invoke(quitChannel);
-      } else {
-        void ipcRenderer.invoke(quitChannel, exitCode);
-      }
+      void ipcRenderer.invoke(quitChannel);
     },
 
-    async captureScreenshot(): Promise<Buffer> {
+    async captureScreenshot() {
       debug('forwarding `captureScreenshot` to the main process');
-      return (await ipcRenderer.invoke(captureScreenshotChannel)) as Buffer;
+      return (await ipcRenderer.invoke(captureScreenshotChannel)) as ReturnType<
+        Kiosk['captureScreenshot']
+      >;
     },
   };
 }

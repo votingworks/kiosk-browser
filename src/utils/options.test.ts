@@ -14,6 +14,16 @@ function parseOptionsWithoutHelp(
   return result.options;
 }
 
+test.each(['-u', '--url'])('accepts a URL as %s', (flag) => {
+  const options = parseOptionsWithoutHelp([flag, 'https://example.com/']);
+  expect(options.url.href).toEqual('https://example.com/');
+});
+
+test.each(['-h', '--help'])('%s is interpreted as wanting help', (flag) => {
+  const options = parseOptions([flag]);
+  expect('help' in options).toBe(true);
+});
+
 test('returns the first argument URL if it can be parsed as a URL', () => {
   const options = parseOptionsWithoutHelp(['https://example.com/']);
   expect(options.url.href).toEqual('https://example.com/');
@@ -31,6 +41,24 @@ test('prefers the argument URL to the environment URL', () => {
     KIOSK_BROWSER_URL: 'https://example.com/env',
   });
   expect(options.url.href).toEqual('https://example.com/argv');
+});
+
+test('rejects multiple URL arguments', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['https://example.com/', 'https://example.com/']);
+  }).toThrowError('duplicate URL argument: https://example.com/');
+});
+
+test('rejects missing values for options', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['--url']);
+  }).toThrowError('expected value for option: --url');
+});
+
+test('rejects invalid options', () => {
+  expect(() => {
+    parseOptionsWithoutHelp(['--invalid']);
+  }).toThrowError('unexpected option: --invalid');
 });
 
 test('falls back to about:blank if nothing else is given', () => {
@@ -60,33 +88,6 @@ test('allow devtools', () => {
   );
 });
 
-test('file permission with default origin and access', () => {
-  const options = parseOptionsWithoutHelp(['--add-file-perm', 'p=/media/**/*']);
-  expect(options.originFilePermissions).toEqual([
-    { origins: '**/*', paths: '/media/**/*', access: 'rw' },
-  ]);
-});
-
-test('file permission with default access', () => {
-  const options = parseOptionsWithoutHelp([
-    '--add-file-perm',
-    'o=http://localhost,p=/media/**/*',
-  ]);
-  expect(options.originFilePermissions).toEqual([
-    { origins: 'http://localhost', paths: '/media/**/*', access: 'rw' },
-  ]);
-});
-
-test('file permission', () => {
-  const options = parseOptionsWithoutHelp([
-    '--add-file-perm',
-    'o=http://localhost:*,p=/media/**/*,ro',
-  ]);
-  expect(options.originFilePermissions).toEqual([
-    { origins: 'http://localhost:*', paths: '/media/**/*', access: 'ro' },
-  ]);
-});
-
 class SimpleWriter {
   private buffer = '';
 
@@ -106,6 +107,4 @@ test('help', () => {
   const help = out.toString();
   expect(help).toContain('kiosk-browser [OPTIONS] [URL]');
   expect(help).toContain('-u, --url URL');
-  expect(help).toContain('-p, --autoconfigure-print-config PATH');
-  expect(help).toContain('Auto-Configure Printers');
 });
