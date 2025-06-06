@@ -51,6 +51,7 @@ async function createWindow(): Promise<void> {
     webPreferences: {
       devTools: options.allowDevtools || !app.isPackaged,
       preload: join(__dirname, 'preload.js'),
+      sandbox: false,
     },
   });
   // Don't allow opening new windows (e.g. by middle-clicking on a link)

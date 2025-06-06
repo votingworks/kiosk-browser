@@ -34,27 +34,20 @@
   "dependencies": {
     "chalk": "^3.0.0",
     "debug": "^4.1.1",
-    "multimatch": "^4.0.0",
-    "uuid": "^8.3.1",
     "xrandr-parse": "^1.0.0"
   },
   "devDependencies": {
-    "@types/body-parser": "^1.19.2",
     "@types/debug": "^4.1.5",
     "@types/jest": "^27.5.1",
     "@types/memorystream": "^0.3.0",
     "@types/node": "16.11.29",
-    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
-    "body-parser": "^1.20.0",
-    "concurrently": "^7.2.0",
-    "electron": "17",
-    "electron-builder": "^23.0.3",
+    "electron": "36",
+    "electron-builder": "^26.0.12",
     "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "expect": "28.1.0",
     "husky": "^4.2.1",
     "jest": "^29.7.0",
     "lint-staged": "^10.0.7",
@@ -62,8 +55,7 @@
     "prettier": "^2.6.2",
     "sort-package-json": "^1.39.1",
     "ts-jest": "^29.2.5",
-    "typescript": "^4.6.4",
-    "vite": "^2.9.13"
+    "typescript": "^4.6.4"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",
