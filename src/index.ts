@@ -16,6 +16,10 @@ export type RegisterIpcHandler = (
 // Allow use of `speechSynthesis` API.
 app.commandLine.appendSwitch('enable-speech-dispatcher');
 
+// Prevent Chromium from launching with GTK 4, which will fail in dev. See:
+// https://github.com/electron/electron/issues/46538
+app.commandLine.appendSwitch('gtk-version', '3');
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | undefined;
