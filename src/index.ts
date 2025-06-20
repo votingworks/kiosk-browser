@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, IpcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, IpcMain, globalShortcut } from 'electron';
 import { join } from 'path';
 import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerQuitHandler from './ipc/quit';
@@ -108,11 +108,19 @@ async function createWindow(): Promise<void> {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+  // Register global shortcuts to prevent problematic keyboard shortcuts
+  globalShortcut.register('Control+M', () => {
+    // Do nothing to prevent minimize behavior
+  });
+
   void createWindow();
 });
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
+  // Unregister all global shortcuts when the app is closing
+  globalShortcut.unregisterAll();
+
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -126,4 +134,9 @@ app.on('activate', () => {
   if (mainWindow === undefined) {
     void createWindow();
   }
+});
+
+// Clean up global shortcuts when the app is about to quit
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
