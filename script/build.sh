@@ -22,4 +22,4 @@ if [[ ! -f ${prebuilt_package_path} ]]; then
   # Build .deb file.
   ELECTRON_SKIP_BINARY_DOWNLOAD=1 ELECTRON_CACHE=${electron_cache} yarn --offline app:dist
 
-}
+fi
