@@ -7,9 +7,9 @@ local_user=`logname`
 local_user_home_dir=$( getent passwd "${local_user}" | cut -d: -f6 )
 
 version=$( grep version package.json | cut -d':' -f2 | xargs | sed 's/,//' )
-prebuilt_package_url="https://votingworks-apt-snapshots.s3.us-west-2.amazonaws.com/kiosk-browser_${version}_amd64.deb"
+prebuilt_package_path="dist/kiosk-browser_${version}_amd64.deb"
 
-curl --output-dir dist/kiosk-browser_${version}_amd64.deb -O ${prebuilt_package_url} || {
+if [[ ! -f ${prebuilt_package_path} ]]; then
   "${DIR}/verify-dependencies.sh"
 
   # Build the TypeScript files.
