@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 yarn install --frozen-lockfile
 
 version=$( grep version package.json | cut -d':' -f2 | xargs | sed 's/,//' )
-prebuilt_package_url="https://votingworks-apt-snapshots.s3.us-west-2.amazonaws.com/kiosk-browser_${version}_amd64.deb"
+prebuilt_package_url="https://votingworks-apt-snapshots.s3.us-west-2.amazonaws.com/kiosk-browser/kiosk-browser_${version}_amd64.deb"
 
 mkdir -p dist
 
