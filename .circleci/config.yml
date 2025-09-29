@@ -30,8 +30,46 @@ jobs:
           paths:
             - '~/.cache/yarn'
           key: yarn-packages-{{ checksum "yarn.lock" }}
+  enforce-version-bump:
+    machine:
+      image: 'ubuntu-2204:current'
+    steps:
+      - checkout
+      - run:
+          name: Install jq
+          command: |
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+      - run:
+          name: Fetch main
+          command: |
+            git fetch --no-tags --depth=1 origin main
+      - run:
+          name: Enforce version bump
+          command: |
+            set -euo pipefail
+
+            BASE_BRANCH="origin/main"
+
+            CURRENT_VERSION="$(jq -r '.version' package.json)"
+            BASE_VERSION="$(git show ${BASE_BRANCH}:package.json 2>/dev/null | jq -r '.version')"
+
+            echo "Base version:    ${BASE_VERSION}"
+            echo "Current version: ${CURRENT_VERSION}"
+
+            if [ "${BASE_VERSION}" = "${CURRENT_VERSION}" ]; then
+              echo "ERROR: Changes detected but package.json version was not updated. Please bump the version."
+              exit 1
+            fi
+
+            echo "Version changed; passing."
 
 workflows:
   test:
     jobs:
       - test
+      - enforce-version-bump:
+          filters:
+            branches:
+              ignore:
+                - main
