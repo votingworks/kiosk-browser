@@ -4,6 +4,7 @@ import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
 import { channel as logChannel } from './ipc/log';
 import { channel as quitChannel } from './ipc/quit';
 import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
+import { channel as rebootChannel } from './ipc/reboot';
 
 const debug = makeDebug('kiosk-browser:client');
 type Kiosk = KioskBrowser.Kiosk;
@@ -33,6 +34,11 @@ function makeKiosk(): Kiosk {
       return (await ipcRenderer.invoke(captureScreenshotChannel)) as ReturnType<
         Kiosk['captureScreenshot']
       >;
+    },
+
+    async reboot(): Promise<void> {
+      debug('forwarding `reboot` to the main process');
+      await ipcRenderer.invoke(rebootChannel);
     },
   };
 }
