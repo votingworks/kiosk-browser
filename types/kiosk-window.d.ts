@@ -8,6 +8,8 @@ declare namespace KioskBrowser {
     ): Promise<import('electron').OpenDialogReturnValue>;
 
     captureScreenshot(): Promise<Uint8Array>;
+
+    reboot(): Promise<void>;
   }
 }
 

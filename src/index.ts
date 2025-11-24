@@ -4,6 +4,7 @@ import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerQuitHandler from './ipc/quit';
 import registerLogHandler from './ipc/log';
 import registerCaptureScreenshot from './ipc/capture-screenshot';
+import registerRebootHandler from './ipc/reboot';
 import parseOptions, { printHelp } from './utils/options';
 import { getMainScreen } from './utils/screen';
 import { HandlerContext } from './handlerContext';
@@ -71,6 +72,7 @@ async function createWindow(): Promise<void> {
     registerShowOpenDialog,
     registerLogHandler,
     registerCaptureScreenshot,
+    registerRebootHandler,
   ];
 
   const handlerCleanups = handlers
