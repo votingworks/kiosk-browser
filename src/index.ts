@@ -5,6 +5,7 @@ import registerQuitHandler from './ipc/quit';
 import registerLogHandler from './ipc/log';
 import registerCaptureScreenshot from './ipc/capture-screenshot';
 import registerRebootHandler from './ipc/reboot';
+import allowSelfCapture from './display-media';
 import parseOptions, { printHelp } from './utils/options';
 import { getMainScreen } from './utils/screen';
 import { HandlerContext } from './handlerContext';
@@ -42,6 +43,7 @@ async function createWindow(): Promise<void> {
   const { options } = parseOptionsResult;
 
   const mainScreen = await getMainScreen();
+  const allowDevtools = options.allowDevtools || !app.isPackaged;
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -50,7 +52,7 @@ async function createWindow(): Promise<void> {
     kiosk: true,
     frame: false,
     webPreferences: {
-      devTools: options.allowDevtools || !app.isPackaged,
+      devTools: allowDevtools,
       preload: join(__dirname, 'preload.js'),
       sandbox: false,
     },
@@ -59,6 +61,10 @@ async function createWindow(): Promise<void> {
   mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: 'deny' };
   });
+
+  if (allowDevtools) {
+    allowSelfCapture(mainWindow.webContents.session);
+  }
 
   // and load the initial page.
   void mainWindow.loadURL(options.url.href);
