@@ -51,6 +51,7 @@ async function createWindow(): Promise<void> {
     height: mainScreen?.height ?? 600,
     kiosk: true,
     frame: false,
+    roundedCorners: false,
     webPreferences: {
       devTools: allowDevtools,
       preload: join(__dirname, 'preload.js'),

@@ -9,6 +9,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Install kiosk-browser dependencies.
 yarn install --frozen-lockfile
 
+# Electron no longer downloads its binary on install; fetch it now so offline builds have it cached.
+node node_modules/electron/install.js
+
 version=$( grep version package.json | cut -d':' -f2 | xargs | sed 's/,//' )
 prebuilt_package_url="https://votingworks-apt-snapshots.s3.us-west-2.amazonaws.com/kiosk-browser/kiosk-browser_${version}_amd64.deb"
 

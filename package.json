@@ -1,6 +1,6 @@
 {
   "name": "kiosk-browser",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
@@ -43,7 +43,7 @@
     "@types/node": "24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.71.1",
     "@typescript-eslint/parser": "^8.71.1",
-    "electron": "37",
+    "electron": "44",
     "electron-builder": "^26.0.12",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.5.0",
