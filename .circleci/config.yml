@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '20.16'
+          node-version: '24.19'
           install-yarn: true
       - restore_cache:
           key: yarn-packages-{{ checksum "yarn.lock" }}
