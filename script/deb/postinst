@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]; then
+  update-alternatives --install /usr/bin/kiosk-browser kiosk-browser /opt/kiosk-browser/kiosk-browser 100
+
+  # Chromium needs a setuid sandbox helper only when user namespaces are unavailable.
+  if [ -L /proc/self/ns/user ] && unshare --user true 2>/dev/null; then
+    chmod 0755 /opt/kiosk-browser/chrome-sandbox
+  else
+    chmod 4755 /opt/kiosk-browser/chrome-sandbox
+  fi
+fi
