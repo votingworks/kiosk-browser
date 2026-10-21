@@ -1,6 +1,6 @@
 {
   "name": "kiosk-browser",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
@@ -40,12 +40,12 @@
     "@types/debug": "^4.1.5",
     "@types/jest": "^27.5.1",
     "@types/memorystream": "^0.3.0",
-    "@types/node": "16.11.29",
-    "@typescript-eslint/eslint-plugin": "^5.25.0",
-    "@typescript-eslint/parser": "^5.25.0",
+    "@types/node": "24.9.1",
+    "@typescript-eslint/eslint-plugin": "^8.71.1",
+    "@typescript-eslint/parser": "^8.71.1",
     "electron": "37",
     "electron-builder": "^26.0.12",
-    "eslint": "^8.15.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^4.2.1",
@@ -55,7 +55,7 @@
     "prettier": "^2.6.2",
     "sort-package-json": "^1.39.1",
     "ts-jest": "^29.2.5",
-    "typescript": "^4.6.4"
+    "typescript": "^5.9.3"
   },
   "build": {
     "appId": "com.votingworks.kiosk-browser",
