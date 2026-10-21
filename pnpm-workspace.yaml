@@ -1,0 +1,3 @@
+# Which dependency build scripts may run.
+allowBuilds:
+  electron-winstaller: false

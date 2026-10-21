@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.0.3
+  node: circleci/node@6.3.0
 
 jobs:
   test:
@@ -11,25 +11,21 @@ jobs:
       - checkout
       - node/install:
           node-version: '24.19'
-          install-yarn: true
-      - restore_cache:
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+          install-pnpm: true
       - run:
-          name: Setup dependencies
+          name: Install native dependencies
           command: |
             sudo NEEDRESTART_MODE=a apt update -y
             sudo NEEDRESTART_MODE=a apt install libudev-dev -y
-            yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
+      - node/install-packages:
+          pkg-manager: pnpm
+          cache-path: ~/.local/share/pnpm/store
       - run:
           name: Lint
-          command: yarn lint
+          command: pnpm lint
       - run:
           name: Test APIs
-          command: yarn test:coverage
-      - save_cache:
-          paths:
-            - '~/.cache/yarn'
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+          command: pnpm test:coverage
   enforce-version-bump:
     machine:
       image: 'ubuntu-2204:current'
