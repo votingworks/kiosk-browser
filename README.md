@@ -6,7 +6,7 @@ A generic Electron-based kiosk-mode browser that runs our [vxsuite](https://gith
 
 1. Install [NodeJS](https://nodejs.org/en/) and [pnpm](https://pnpm.io/installation).
 1. Install native package dependencies with `make install`.
-1. Build a Debian/Ubuntu package with `make build`.
+1. Build a Debian 12/13 package with `make build`.
 1. Install it with `sudo dpkg -i dist/kiosk-browser_*.deb`.
 1. Run with the URL you want to visit as a CLI argument (e.g. `kiosk-browser https://example.com/`) or with an environment variable (e.g. `KIOSK_BROWSER_URL=https://example.com/ kiosk-browser`).
 
