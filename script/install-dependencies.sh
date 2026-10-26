@@ -7,7 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 "${DIR}/verify-dependencies.sh"
 
 # Install kiosk-browser dependencies.
-yarn install --frozen-lockfile
+pnpm install --frozen-lockfile
 
 # Electron no longer downloads its binary on install; fetch it now so offline builds have it cached.
 node node_modules/electron/install.js
