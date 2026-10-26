@@ -12,7 +12,7 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 127
 fi
 
-if ! command -v fpm >/dev/null 2>&1; then
-  echo "fpm not found. please install it before continuing: https://fpm.readthedocs.io/en/latest/" >&2
+if ! command -v dpkg-deb >/dev/null 2>&1; then
+  echo "dpkg-deb not found. please install it before continuing: https://packages.debian.org/dpkg" >&2
   exit 127
 fi

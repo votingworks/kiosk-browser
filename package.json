@@ -1,6 +1,6 @@
 {
   "name": "kiosk-browser",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
@@ -9,15 +9,13 @@
     "name": "VotingWorks",
     "email": "eng@voting.works"
   },
-  "main": "build/src/index.js",
+  "main": "build/index.js",
   "scripts": {
-    "app:dir": "electron-builder --dir",
-    "app:dist": "USE_SYSTEM_FPM=true electron-builder",
-    "postinstall": "electron-builder install-app-deps",
+    "app:dist": "script/build-deb.sh",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "pnpm lint --fix",
     "prepare": "husky",
-    "start": "tsc && electron .",
+    "start": "tsc -p tsconfig.build.json && electron .",
     "test": "jest",
     "test:ci": "pnpm test:coverage",
     "test:coverage": "jest --coverage",
@@ -33,6 +31,7 @@
     "xrandr-parse": "^1.0.0"
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
     "@types/debug": "^4.1.5",
     "@types/jest": "^27.5.1",
     "@types/memorystream": "^0.3.0",
@@ -40,7 +39,6 @@
     "@typescript-eslint/eslint-plugin": "^8.71.1",
     "@typescript-eslint/parser": "^8.71.1",
     "electron": "44",
-    "electron-builder": "^26.15.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -52,17 +50,6 @@
     "sort-package-json": "^1.39.1",
     "ts-jest": "^29.2.5",
     "typescript": "^5.9.3"
-  },
-  "build": {
-    "appId": "com.votingworks.kiosk-browser",
-    "electronDist": "node_modules/electron/dist",
-    "files": [
-      "build/src/**/*"
-    ],
-    "linux": {
-      "target": "deb",
-      "category": "Utility"
-    }
   },
   "packageManager": "pnpm@12.9.1",
   "productName": "kiosk-browser"

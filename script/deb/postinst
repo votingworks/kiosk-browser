@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]; then
+  update-alternatives --install /usr/bin/kiosk-browser kiosk-browser /opt/kiosk-browser/kiosk-browser 100
+fi
