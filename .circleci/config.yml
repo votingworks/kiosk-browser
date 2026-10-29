@@ -12,11 +12,6 @@ jobs:
       - node/install:
           node-version: '24.19'
           install-pnpm: true
-      - run:
-          name: Install native dependencies
-          command: |
-            sudo NEEDRESTART_MODE=a apt update -y
-            sudo NEEDRESTART_MODE=a apt install libudev-dev -y
       - node/install-packages:
           pkg-manager: pnpm
           cache-path: ~/.local/share/pnpm/store

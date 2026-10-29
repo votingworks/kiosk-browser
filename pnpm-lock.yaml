@@ -166,9 +166,6 @@ importers:
 
   .:
     dependencies:
-      chalk:
-        specifier: ^3.0.0
-        version: 3.0.0
       debug:
         specifier: ^4.1.1
         version: 4.4.3(supports-color@8.1.1)
@@ -182,9 +179,6 @@ importers:
       '@types/jest':
         specifier: ^27.5.1
         version: 27.5.1
-      '@types/memorystream':
-        specifier: ^0.3.0
-        version: 0.3.0
       '@types/node':
         specifier: 24.9.1
         version: 24.9.1
@@ -215,9 +209,6 @@ importers:
       lint-staged:
         specifier: ^10.0.7
         version: 10.0.7(supports-color@8.1.1)
-      memorystream:
-        specifier: ^0.3.1
-        version: 0.3.1
       prettier:
         specifier: ^2.6.2
         version: 2.6.2
@@ -614,9 +605,6 @@ packages:
 
   '@types/jest@27.5.1':
     resolution: {integrity: sha512-fUy7YRpT+rHXto1YlL+J9rs0uLGyiqVt3ZOTQR+4ROc47yNl8WLdVLgUloBRhOxP1PZvguHl44T3H0wAWxahYQ==}
-
-  '@types/memorystream@0.3.0':
-    resolution: {integrity: sha512-gzh6mqZcLryYHn4g2MuMWjo9J1+Py/XYwITyZmUxV7ZoBIi7bTbBgSiuC5tcm3UL3gmaiYssQFDlXr/3fK94cw==}
 
   '@types/minimatch@3.0.3':
     resolution: {integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==}
@@ -1702,10 +1690,6 @@ packages:
 
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
-
-  memorystream@0.3.1:
-    resolution: {integrity: sha512-S3UwM3yj5mtUSEfP41UZmt/0SCoVYUcU1rkXv+BQ5Ig8ndL4sPoJNBUJERafdPb5jjHJGuMgytgKvKIf58XNBw==}
-    engines: {node: '>= 0.10.0'}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -2831,10 +2815,6 @@ snapshots:
     dependencies:
       jest-matcher-utils: 27.5.1
       pretty-format: 27.5.1
-
-  '@types/memorystream@0.3.0':
-    dependencies:
-      '@types/node': 24.9.1
 
   '@types/minimatch@3.0.3': {}
 
@@ -4138,8 +4118,6 @@ snapshots:
   makeerror@1.0.12:
     dependencies:
       tmpl: 1.0.5
-
-  memorystream@0.3.1: {}
 
   merge-stream@2.0.0: {}
 
