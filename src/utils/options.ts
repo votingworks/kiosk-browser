@@ -1,5 +1,5 @@
-import chalk from 'chalk';
 import makeDebug from 'debug';
+import { styleText } from 'util';
 
 const debug = makeDebug('kiosk-browser:options');
 
@@ -97,11 +97,10 @@ export default function parseOptions(
 export function printHelp(
   out: { write(str: string): void } = process.stdout,
 ): void {
-  const b = chalk.bold.underline;
   const text = `
 kiosk-browser [OPTIONS] [URL]
 
-${b('Options')}
+${styleText(['bold', 'underline'], 'Options')}
    -u, --url URL           Visit this URL on load.
        --allow-devtools    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I,
                            and let the page record itself with getDisplayMedia.

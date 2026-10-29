@@ -1,6 +1,6 @@
 {
   "name": "kiosk-browser",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Generic kiosk-mode browser.",
   "keywords": [],
   "homepage": "https://github.com/votingworks/kiosk-browser",
@@ -26,14 +26,12 @@
     "package.json": "sort-package-json"
   },
   "dependencies": {
-    "chalk": "^3.0.0",
     "debug": "^4.1.1"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
     "@types/debug": "^4.1.5",
     "@types/jest": "^27.5.1",
-    "@types/memorystream": "^0.3.0",
     "@types/node": "24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.71.1",
     "@typescript-eslint/parser": "^8.71.1",
@@ -44,7 +42,6 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "lint-staged": "^10.0.7",
-    "memorystream": "^0.3.1",
     "prettier": "^2.6.2",
     "sort-package-json": "^1.39.1",
     "ts-jest": "^29.2.5",
