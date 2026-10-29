@@ -172,9 +172,6 @@ importers:
       debug:
         specifier: ^4.1.1
         version: 4.4.3(supports-color@8.1.1)
-      xrandr-parse:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@electron/packager':
         specifier: ^20.3.0
@@ -2242,9 +2239,6 @@ packages:
   xmlbuilder@15.1.1:
     resolution: {integrity: sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==}
     engines: {node: '>=8.0'}
-
-  xrandr-parse@1.0.0:
-    resolution: {integrity: sha512-lu6zT5OqSDWSDF8PW4kSTm4YFyue842ecqHEpS3soEpwy73rKmF/ZBi8G+REJ89QA/wmC+cqDSpZSWKxQhqMzA==}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -4600,8 +4594,6 @@ snapshots:
       signal-exit: 3.0.7
 
   xmlbuilder@15.1.1: {}
-
-  xrandr-parse@1.0.0: {}
 
   y18n@5.0.8: {}
 

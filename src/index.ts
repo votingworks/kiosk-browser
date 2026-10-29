@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, IpcMain, globalShortcut } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  IpcMain,
+  globalShortcut,
+  screen,
+} from 'electron';
 import { join } from 'path';
 import registerShowOpenDialog from './ipc/show-open-dialog';
 import registerQuitHandler from './ipc/quit';
@@ -7,7 +14,6 @@ import registerCaptureScreenshot from './ipc/capture-screenshot';
 import registerRebootHandler from './ipc/reboot';
 import allowSelfCapture from './display-media';
 import parseOptions, { printHelp } from './utils/options';
-import { getMainScreen } from './utils/screen';
 import { HandlerContext } from './handlerContext';
 
 export type RegisterIpcHandler = (
@@ -22,7 +28,7 @@ app.commandLine.appendSwitch('enable-speech-dispatcher');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | undefined;
 
-async function createWindow(): Promise<void> {
+function createWindow(): void {
   const parseOptionsResult = parseOptions(
     // https://github.com/electron/electron/issues/4690
     process.argv.slice(app.isPackaged ? 1 : 2),
@@ -42,13 +48,13 @@ async function createWindow(): Promise<void> {
 
   const { options } = parseOptionsResult;
 
-  const mainScreen = await getMainScreen();
+  const { width, height } = screen.getPrimaryDisplay().size;
   const allowDevtools = options.allowDevtools || !app.isPackaged;
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: mainScreen?.width ?? 800,
-    height: mainScreen?.height ?? 600,
+    width,
+    height,
     kiosk: true,
     frame: false,
     roundedCorners: false,
@@ -118,7 +124,7 @@ app.on('ready', () => {
     // Do nothing to prevent minimize behavior
   });
 
-  void createWindow();
+  createWindow();
 });
 
 // Quit when all windows are closed.
