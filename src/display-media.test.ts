@@ -14,8 +14,8 @@ function registeredHandler(): Parameters<SetDisplayMediaRequestHandler>[0] {
   return setDisplayMediaRequestHandler.mock.calls[0][0];
 }
 
-test('grants the requesting frame as the video source', () => {
-  const frame = {};
+test('grants the requesting top-level frame as the video source', () => {
+  const frame = { parent: null };
   const callback = jest.fn();
 
   registeredHandler()?.(
@@ -24,6 +24,19 @@ test('grants the requesting frame as the video source', () => {
   );
 
   expect(callback).toHaveBeenCalledWith({ video: frame });
+});
+
+test('denies requests from subframes', () => {
+  const callback = jest.fn();
+
+  registeredHandler()?.(
+    {
+      frame: { parent: {} },
+    } as unknown as DisplayMediaRequestHandlerHandlerRequest,
+    callback,
+  );
+
+  expect(callback).toHaveBeenCalledWith({});
 });
 
 test('denies requests without a frame', () => {
