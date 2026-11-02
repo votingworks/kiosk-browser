@@ -102,8 +102,7 @@ kiosk-browser [OPTIONS] [URL]
 
 ${styleText(['bold', 'underline'], 'Options')}
    -u, --url URL           Visit this URL on load.
-       --allow-devtools    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I,
-                           and let the page record itself with getDisplayMedia.
+       --allow-devtools    Allow devtools to be opened by pressing Ctrl/Cmd+Shift+I.
 `.trim();
 
   for (const line of text.split('\n')) {

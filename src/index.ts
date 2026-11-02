@@ -69,9 +69,7 @@ function createWindow(): void {
     return { action: 'deny' };
   });
 
-  if (allowDevtools) {
-    allowSelfCapture(mainWindow.webContents.session);
-  }
+  allowSelfCapture(mainWindow.webContents.session);
 
   // and load the initial page.
   void mainWindow.loadURL(options.url.href);
