@@ -2,8 +2,6 @@ import makeDebug from 'debug';
 import { contextBridge, ipcRenderer } from 'electron';
 import { channel as showOpenDialogChannel } from './ipc/show-open-dialog';
 import { channel as logChannel } from './ipc/log';
-import { channel as quitChannel } from './ipc/quit';
-import { channel as captureScreenshotChannel } from './ipc/capture-screenshot';
 import { channel as rebootChannel } from './ipc/reboot';
 
 const debug = makeDebug('kiosk-browser:client');
@@ -22,18 +20,6 @@ function makeKiosk(): Kiosk {
     async log(message) {
       debug('forwarding `log` to the main process');
       await ipcRenderer.invoke(logChannel, message);
-    },
-
-    quit() {
-      debug('forwarding `quit` to main process');
-      void ipcRenderer.invoke(quitChannel);
-    },
-
-    async captureScreenshot() {
-      debug('forwarding `captureScreenshot` to the main process');
-      return (await ipcRenderer.invoke(captureScreenshotChannel)) as ReturnType<
-        Kiosk['captureScreenshot']
-      >;
     },
 
     async reboot(): Promise<void> {
