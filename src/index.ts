@@ -8,9 +8,7 @@ import {
 } from 'electron';
 import { join } from 'path';
 import registerShowOpenDialog from './ipc/show-open-dialog';
-import registerQuitHandler from './ipc/quit';
 import registerLogHandler from './ipc/log';
-import registerCaptureScreenshot from './ipc/capture-screenshot';
 import registerRebootHandler from './ipc/reboot';
 import allowSelfCapture from './display-media';
 import parseOptions, { printHelp } from './utils/options';
@@ -79,10 +77,8 @@ function createWindow(): void {
 
   // Register IPC handlers.
   const handlers: RegisterIpcHandler[] = [
-    registerQuitHandler,
     registerShowOpenDialog,
     registerLogHandler,
-    registerCaptureScreenshot,
     registerRebootHandler,
   ];
 
